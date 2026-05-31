@@ -1,0 +1,29 @@
+# Credentials — never commit these
+.env
+env
+
+# Data files — too large for GitHub
+*.csv
+data/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+
+# Model artifacts
+catboost_info/
+*.pkl
+*.joblib
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+run_output.txt
