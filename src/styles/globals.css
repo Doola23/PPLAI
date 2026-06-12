@@ -1,0 +1,249 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@font-face { font-family: 'Miguer Sans'; src: url('../assets/fonts/MiguerSans-Bold.otf') format('opentype'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Miguer Sans'; src: url('../assets/fonts/MiguerSans-ExtraBold.otf') format('opentype'); font-weight: 800; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Miguer Sans'; src: url('../assets/fonts/MiguerSans-Black.otf') format('opentype'); font-weight: 900; font-style: normal; font-display: swap; }
+
+@font-face {
+  font-family: 'DM Sans';
+  src: url('/fonts/DMSans-Variable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Type scale ── */
+:root {
+  --text-xs:   0.75rem;    /* 12px — labels, badges, captions */
+  --text-sm:   0.875rem;   /* 14px — secondary body, table cells */
+  --text-base: 1rem;       /* 16px — primary body, paragraphs */
+  --text-lg:   1.125rem;   /* 18px — lead text, card subtitles */
+  --text-xl:   1.5rem;     /* 24px — h6, section subheadings */
+  --text-2xl:  2rem;       /* 32px — h5, card titles */
+  --text-3xl:  2.5rem;     /* 40px — h4, page section titles */
+  --text-4xl:  3.5rem;     /* 56px — h3 */
+  --text-5xl:  4.5rem;     /* 72px — h2 */
+  --text-6xl:  6rem;       /* 96px — h1, hero */
+}
+
+:root {
+  --bg-black: #000000;
+  --bg-dark: #000000;
+  --bg-darker: #000000;
+  --text-white: #ffffff;
+  --text-light: rgba(255,255,255,0.85);
+  --text-gray: rgba(255,255,255,0.5);
+  --text-dark-gray: rgba(255,255,255,0.28);
+  --border-dark: rgba(255,255,255,0.07);
+  --border-light: rgba(255,255,255,0.14);
+  --primary-dark: #2B4C5E;
+  --celtic-blue: #1A65D3;
+  --celtic-blue-hover: #1153b3;
+  --surface-card: rgba(26,101,211,0.38);
+  --surface-card-elevated: rgba(26,101,211,0.52);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Non-dashboard pages get DM Sans as secondary/body font */
+.page-non-dashboard {
+  --font-secondary: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.page-non-dashboard p:not([class*="lproof-v2__numbers"]):not([class*="lfooter2__chat-label"]),
+.page-non-dashboard label,
+.page-non-dashboard input,
+.page-non-dashboard button,
+.page-non-dashboard span:not([class*="heading"]):not([class*="eyebrow"]):not([class*="title"]),
+.page-non-dashboard a,
+.page-non-dashboard li,
+.page-non-dashboard td,
+.page-non-dashboard th,
+.page-non-dashboard small {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+  background-color: var(--bg-black);
+  color: var(--text-white);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: var(--text-base);
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  text-transform: uppercase;
+}
+
+p {
+  font-size: var(--text-base);
+  line-height: 1.7;
+}
+
+/* Subheading utility — use <p class="subheading"> or .subheading */
+.subheading {
+  font-family: 'DM Sans', sans-serif;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Miguer Sans', sans-serif;
+  font-weight: 900;
+  font-stretch: normal;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: var(--text-6xl); }
+h2 { font-size: var(--text-5xl); }
+h3 { font-size: var(--text-4xl); }
+h4 { font-size: var(--text-3xl); }
+h5 { font-size: var(--text-2xl); }
+h6 { font-size: var(--text-xl); }
+
+#root {
+  isolation: isolate;
+  min-height: 100vh;
+}
+
+::selection {
+  background: var(--celtic-blue);
+  color: #F2F2F2;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-darker);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-dark);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-light);
+}
+
+:focus-visible {
+  outline: 2px solid var(--celtic-blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+a,
+button {
+  transition: all 200ms ease-out;
+}
+
+canvas {
+  display: block;
+  touch-action: none;
+}
+
+/* ── Custom Cursor ── */
+@media (pointer: fine) and (hover: hover) {
+  *, *::before, *::after { cursor: none !important; }
+}
+
+.cursor-reticle,
+.cursor-ring {
+  position: fixed;
+  top: 0; left: 0;
+  pointer-events: none;
+  z-index: 99999;
+  will-change: transform;
+}
+
+/* Precision reticle — SVG crosshair */
+.cursor-reticle {
+  width: 28px; height: 28px;
+  margin-left: -14px; margin-top: -14px;
+  color: rgba(255,255,255,0.55);
+  transition: transform 0.1s cubic-bezier(0.16,1,0.3,1), color 0.2s ease, opacity 0.2s ease;
+}
+
+/* Hover: arms dim slightly, centre dot brightens via SVG fill override */
+.cursor-reticle--hover {
+  color: rgba(255,255,255,0.35);
+  transform: scale(0.75) !important;
+}
+
+/* Click: compress inward */
+.cursor-reticle--click {
+  transform: scale(0.6) !important;
+  opacity: 0.7;
+}
+
+/* Trailing ring */
+.cursor-ring {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(26,101,211,0.4);
+  margin-left: -20px; margin-top: -20px;
+  transition:
+    width  0.35s cubic-bezier(0.16,1,0.3,1),
+    height 0.35s cubic-bezier(0.16,1,0.3,1),
+    margin 0.35s cubic-bezier(0.16,1,0.3,1),
+    border-color 0.25s ease,
+    background   0.25s ease;
+}
+
+/* Hover — ring contracts to a tight halo */
+.cursor-ring--hover {
+  width: 28px; height: 28px;
+  margin-left: -14px; margin-top: -14px;
+  border-color: rgba(26,101,211,0.75);
+  background: rgba(26,101,211,0.06);
+}
+
+/* Hide on touch / coarse-pointer devices */
+@media (hover: none), (pointer: coarse) {
+  .cursor-reticle, .cursor-ring { display: none; }
+  *, *::before, *::after { cursor: auto !important; }
+}
+
+/* Skip link */
+.skip-link {
+  position: fixed;
+  top: -100%;
+  left: 16px;
+  z-index: 99999;
+  padding: 10px 20px;
+  background: #1A65D3;
+  color: #F2F2F2;
+  font-weight: 700;
+  font-size: 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+.skip-link:focus { top: 16px; }
+
+/* prefers-reduced-motion — disable all non-essential animations */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .cursor-reticle, .cursor-ring { display: none; }
+}

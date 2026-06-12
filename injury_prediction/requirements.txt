@@ -1,0 +1,10 @@
+pandas
+numpy
+xgboost
+scikit-learn
+imbalanced-learn
+optuna
+boto3
+python-dotenv
+lightgbm
+catboost

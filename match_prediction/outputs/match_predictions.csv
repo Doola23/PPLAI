@@ -1,0 +1,381 @@
+Home,Away,Score,Actual,Predicted,Correct,H%,D%,A%
+Manchester United,Fulham,1-0,H,H,True,56.8,9.5,33.7
+Ipswich,Liverpool,0-2,A,A,True,23.4,36.5,40.1
+Arsenal,Wolves,2-0,H,H,True,81.7,11.0,7.4
+Everton,Brighton,0-3,A,A,True,30.2,13.3,56.5
+Newcastle,Southampton,1-0,H,H,True,71.9,13.6,14.4
+Nott'm Forest,Bournemouth,1-1,D,H,False,47.3,16.0,36.8
+West Ham,Aston Villa,1-2,A,A,True,31.0,21.2,47.7
+Chelsea,Manchester City,0-2,A,A,True,14.6,34.3,51.1
+Brentford,Crystal Palace,2-1,H,H,True,40.5,23.6,35.9
+Leicester,Tottenham,1-1,D,A,False,20.8,21.2,57.9
+Brighton,Manchester United,2-1,H,H,True,36.5,33.9,29.5
+Crystal Palace,West Ham,0-2,A,A,True,35.3,29.2,35.4
+Fulham,Leicester,2-1,H,H,True,70.0,24.2,5.8
+Manchester City,Ipswich,4-1,H,H,True,88.8,5.6,5.6
+Southampton,Nott'm Forest,0-1,A,A,True,24.8,19.2,56.0
+Tottenham,Everton,4-0,H,H,True,82.9,11.5,5.6
+Aston Villa,Arsenal,0-2,A,A,True,16.9,15.3,67.7
+Bournemouth,Newcastle,1-1,D,A,False,21.9,21.6,56.5
+Wolves,Chelsea,2-6,A,A,True,36.8,17.8,45.4
+Liverpool,Brentford,2-0,H,H,True,72.1,20.3,7.6
+Nott'm Forest,Wolves,1-1,D,H,False,66.2,17.5,16.3
+West Ham,Manchester City,1-3,A,A,True,9.9,44.5,45.6
+Ipswich,Fulham,1-1,D,A,False,25.6,20.6,53.8
+Leicester,Aston Villa,1-2,A,A,True,22.4,14.3,63.3
+Everton,Bournemouth,2-3,A,A,True,29.8,11.2,59.0
+Brentford,Southampton,3-1,H,H,True,61.7,9.8,28.5
+Arsenal,Brighton,1-1,D,H,False,67.1,20.1,12.8
+Chelsea,Crystal Palace,1-1,D,H,False,69.1,18.2,12.8
+Newcastle,Tottenham,2-1,H,A,False,28.6,28.7,42.6
+Manchester United,Liverpool,0-3,A,A,True,30.0,16.2,53.8
+Southampton,Manchester United,0-3,A,A,True,19.4,28.8,51.8
+Brighton,Ipswich,0-0,D,H,False,53.6,24.5,21.9
+Crystal Palace,Leicester,2-2,D,H,False,53.8,29.9,16.3
+Fulham,West Ham,1-1,D,H,False,40.8,40.7,18.5
+Liverpool,Nott'm Forest,0-1,A,H,False,83.6,10.3,6.1
+Manchester City,Brentford,2-1,H,H,True,83.3,6.8,9.8
+Aston Villa,Everton,3-2,H,H,True,68.6,21.1,10.3
+Bournemouth,Chelsea,0-1,A,A,True,20.2,20.9,58.9
+Wolves,Newcastle,1-2,A,A,True,27.4,29.9,42.7
+Tottenham,Arsenal,0-1,A,D,False,32.7,41.1,26.2
+West Ham,Chelsea,0-3,A,D,False,26.8,51.6,21.6
+Aston Villa,Wolves,3-1,H,H,True,58.4,29.9,11.6
+Fulham,Newcastle,3-1,H,H,True,55.2,26.5,18.3
+Leicester,Everton,1-1,D,D,True,37.0,45.9,17.1
+Liverpool,Bournemouth,3-0,H,H,True,75.9,10.2,13.9
+Southampton,Ipswich,1-1,D,A,False,31.8,32.1,36.2
+Tottenham,Brentford,3-1,H,H,True,73.3,18.9,7.8
+Crystal Palace,Manchester United,0-0,D,D,True,31.0,37.9,31.1
+Brighton,Nott'm Forest,2-2,D,H,False,42.1,20.9,37.0
+Manchester City,Arsenal,2-2,D,H,False,70.2,17.5,12.3
+Wolves,Liverpool,1-2,A,A,True,6.9,13.9,79.2
+Nott'm Forest,Fulham,0-1,A,A,True,38.5,15.9,45.6
+Everton,Crystal Palace,2-1,H,A,False,20.4,30.8,48.8
+Chelsea,Brighton,4-2,H,H,True,68.8,15.7,15.5
+Brentford,West Ham,1-1,D,H,False,40.4,22.1,37.5
+Arsenal,Leicester,4-2,H,H,True,80.6,12.6,6.8
+Newcastle,Manchester City,1-1,D,A,False,31.7,31.1,37.2
+Ipswich,Aston Villa,2-2,D,A,False,35.7,14.7,49.7
+Manchester United,Tottenham,0-3,A,H,False,59.0,19.4,21.5
+Bournemouth,Southampton,3-1,H,H,True,53.0,31.7,15.3
+Crystal Palace,Liverpool,0-1,A,A,True,7.8,35.4,56.8
+Arsenal,Southampton,3-1,H,H,True,81.3,10.9,7.8
+Brentford,Wolves,5-3,H,D,False,33.2,39.6,27.2
+Leicester,Bournemouth,1-0,H,H,True,46.4,15.0,38.7
+Manchester City,Fulham,3-2,H,H,True,87.2,3.8,9.0
+West Ham,Ipswich,4-1,H,H,True,68.8,15.2,16.0
+Everton,Newcastle,0-0,D,A,False,27.2,20.5,52.4
+Brighton,Tottenham,3-2,H,A,False,26.5,23.1,50.4
+Chelsea,Nott'm Forest,1-1,D,H,False,55.3,22.2,22.5
+Aston Villa,Manchester United,0-0,D,H,False,51.0,14.5,34.5
+Tottenham,West Ham,4-1,H,H,True,81.2,15.3,3.4
+Fulham,Aston Villa,1-3,A,H,False,44.8,31.8,23.4
+Ipswich,Everton,0-2,A,H,False,38.1,37.0,24.9
+Manchester United,Brentford,2-1,H,H,True,69.1,18.1,12.8
+Newcastle,Brighton,0-1,A,H,False,56.6,32.0,11.4
+Southampton,Leicester,2-3,A,H,False,52.5,16.0,31.5
+Bournemouth,Arsenal,2-0,H,A,False,13.7,34.1,52.2
+Wolves,Manchester City,1-2,A,A,True,16.3,24.0,59.6
+Liverpool,Chelsea,2-1,H,H,True,75.9,19.4,4.6
+Nott'm Forest,Crystal Palace,1-0,H,H,True,42.3,40.9,16.9
+Leicester,Nott'm Forest,1-3,A,A,True,27.5,34.1,38.4
+Everton,Fulham,1-1,D,A,False,22.8,11.7,65.5
+Manchester City,Southampton,1-0,H,H,True,77.4,12.3,10.3
+Brentford,Ipswich,4-3,H,H,True,66.6,21.4,12.1
+Aston Villa,Bournemouth,1-1,D,H,False,58.7,10.9,30.3
+Brighton,Wolves,2-2,D,H,False,45.4,34.4,20.2
+Chelsea,Newcastle,2-1,H,H,True,63.3,25.6,11.1
+Crystal Palace,Tottenham,1-0,H,H,True,36.9,29.9,33.2
+West Ham,Manchester United,2-1,H,D,False,34.7,41.8,23.5
+Arsenal,Liverpool,2-2,D,H,False,58.3,20.4,21.3
+Newcastle,Arsenal,1-0,H,A,False,30.2,24.1,45.7
+Bournemouth,Manchester City,2-1,H,A,False,17.0,23.8,59.2
+Ipswich,Leicester,1-1,D,H,False,68.4,17.4,14.2
+Liverpool,Brighton,2-1,H,H,True,74.8,15.0,10.2
+Nott'm Forest,West Ham,3-0,H,H,True,58.8,25.8,15.4
+Southampton,Everton,1-0,H,A,False,25.6,25.9,48.5
+Wolves,Crystal Palace,2-2,D,H,False,41.2,35.8,23.0
+Manchester United,Chelsea,1-1,D,H,False,54.7,28.5,16.8
+Tottenham,Aston Villa,4-1,H,H,True,70.7,16.4,12.9
+Fulham,Brentford,2-1,H,H,True,45.0,41.9,13.1
+Brentford,Bournemouth,3-2,H,H,True,44.5,28.2,27.3
+Crystal Palace,Fulham,0-2,A,A,True,38.1,16.0,45.9
+West Ham,Everton,0-0,D,H,False,41.8,34.6,23.6
+Wolves,Southampton,2-0,H,H,True,75.2,12.5,12.3
+Brighton,Manchester City,2-1,H,H,True,37.7,27.1,35.2
+Liverpool,Aston Villa,2-0,H,H,True,73.0,14.4,12.6
+Manchester United,Leicester,3-0,H,H,True,81.1,11.3,7.6
+Nott'm Forest,Newcastle,1-3,A,H,False,45.7,27.5,26.8
+Tottenham,Ipswich,1-2,A,H,False,69.5,23.4,7.1
+Chelsea,Arsenal,1-1,D,H,False,35.5,34.8,29.7
+Fulham,Wolves,1-4,A,D,False,41.2,50.0,8.8
+Manchester City,Tottenham,0-4,A,H,False,80.1,6.3,13.6
+Everton,Brentford,0-0,D,H,False,37.6,28.2,34.2
+Leicester,Chelsea,1-2,A,A,True,32.5,33.7,33.8
+Aston Villa,Crystal Palace,2-2,D,H,False,67.8,20.9,11.3
+Arsenal,Nott'm Forest,3-0,H,H,True,73.6,8.4,18.1
+Bournemouth,Brighton,1-2,A,H,False,35.7,33.5,30.9
+Southampton,Liverpool,2-3,A,A,True,6.4,29.6,64.0
+Ipswich,Manchester United,1-1,D,A,False,21.9,25.4,52.6
+Newcastle,West Ham,0-2,A,H,False,74.2,15.2,10.6
+Brighton,Southampton,1-1,D,H,False,67.0,19.3,13.7
+Wolves,Bournemouth,2-4,A,H,False,48.7,20.0,31.4
+Nott'm Forest,Ipswich,1-0,H,H,True,61.3,13.7,25.0
+West Ham,Arsenal,2-5,A,A,True,27.0,35.5,37.4
+Brentford,Leicester,4-1,H,H,True,54.7,29.0,16.3
+Crystal Palace,Newcastle,1-1,D,H,False,50.6,27.8,21.6
+Chelsea,Aston Villa,3-0,H,H,True,66.1,12.0,21.9
+Manchester United,Everton,4-0,H,H,True,61.2,26.9,11.8
+Tottenham,Fulham,1-1,D,H,False,58.4,14.7,26.8
+Liverpool,Manchester City,2-0,H,H,True,61.5,24.1,14.4
+Ipswich,Crystal Palace,0-1,A,A,True,32.9,25.1,42.0
+Leicester,West Ham,3-1,H,A,False,25.9,22.1,52.0
+Arsenal,Manchester United,2-0,H,H,True,50.3,39.0,10.7
+Everton,Wolves,4-0,H,H,True,48.2,39.8,12.1
+Manchester City,Nott'm Forest,3-0,H,H,True,83.9,3.9,12.2
+Newcastle,Liverpool,3-3,D,A,False,21.6,31.7,46.8
+Southampton,Chelsea,1-5,A,A,True,12.3,31.8,55.8
+Aston Villa,Brentford,3-1,H,H,True,64.5,23.8,11.7
+Bournemouth,Tottenham,1-0,H,A,False,25.6,33.5,40.9
+Fulham,Brighton,3-1,H,H,True,68.7,20.3,11.0
+Crystal Palace,Manchester City,2-2,D,A,False,31.2,29.0,39.8
+Manchester United,Nott'm Forest,2-3,A,H,False,62.3,15.5,22.2
+Aston Villa,Southampton,1-0,H,H,True,82.6,11.3,6.0
+Brentford,Newcastle,4-2,H,H,True,38.0,33.0,29.0
+Fulham,Arsenal,1-1,D,A,False,31.5,25.9,42.7
+Ipswich,Bournemouth,1-2,A,A,True,41.6,14.0,44.4
+Leicester,Brighton,2-2,D,A,False,20.6,19.7,59.6
+Tottenham,Chelsea,3-4,A,D,False,34.1,37.6,28.4
+West Ham,Wolves,2-1,H,H,True,61.9,20.7,17.5
+Arsenal,Everton,0-0,D,H,False,74.8,15.0,10.2
+Liverpool,Fulham,2-2,D,H,False,77.7,8.8,13.5
+Newcastle,Leicester,4-0,H,H,True,77.4,16.6,6.1
+Wolves,Ipswich,1-2,A,H,False,63.8,15.7,20.5
+Nott'm Forest,Aston Villa,2-1,H,H,True,46.6,30.6,22.8
+Chelsea,Brentford,2-1,H,H,True,48.3,41.5,10.2
+Southampton,Tottenham,0-5,A,A,True,21.2,19.1,59.8
+Brighton,Crystal Palace,1-3,A,H,False,50.0,19.5,30.5
+Manchester City,Manchester United,1-2,A,H,False,61.6,8.0,30.4
+Bournemouth,West Ham,1-1,D,H,False,55.6,17.6,26.8
+Aston Villa,Manchester City,2-1,H,H,True,51.4,9.5,39.0
+Brentford,Nott'm Forest,0-2,A,H,False,35.0,31.8,33.1
+Ipswich,Newcastle,0-4,A,A,True,18.8,19.0,62.3
+West Ham,Brighton,1-1,D,H,False,40.2,27.9,31.9
+Crystal Palace,Arsenal,1-5,A,A,True,20.1,24.9,55.0
+Tottenham,Liverpool,3-6,A,A,True,37.2,13.1,49.7
+Manchester United,Bournemouth,0-3,A,H,False,62.1,15.9,21.9
+Everton,Chelsea,0-0,D,A,False,23.3,36.1,40.6
+Fulham,Southampton,0-0,D,H,False,56.4,39.5,4.1
+Leicester,Wolves,0-3,A,D,False,27.1,46.8,26.0
+Southampton,West Ham,0-1,A,A,True,32.5,20.0,47.5
+Liverpool,Leicester,3-1,H,H,True,75.2,18.7,6.1
+Wolves,Manchester United,2-0,H,A,False,22.6,20.5,56.9
+Nott'm Forest,Tottenham,1-0,H,H,True,49.4,26.0,24.6
+Chelsea,Fulham,1-2,A,H,False,56.0,15.2,28.9
+Bournemouth,Crystal Palace,0-0,D,H,False,60.6,23.3,16.1
+Manchester City,Everton,1-1,D,H,False,70.9,13.6,15.5
+Newcastle,Aston Villa,3-0,H,H,True,47.9,31.4,20.7
+Brighton,Brentford,0-0,D,H,False,53.8,13.5,32.7
+Arsenal,Ipswich,1-0,H,H,True,80.4,12.6,7.0
+Leicester,Manchester City,0-2,A,A,True,22.3,14.1,63.6
+Crystal Palace,Southampton,2-1,H,H,True,69.2,16.4,14.4
+Everton,Nott'm Forest,0-2,A,A,True,27.1,32.1,40.8
+Fulham,Bournemouth,2-2,D,H,False,46.0,34.4,19.6
+Tottenham,Wolves,2-2,D,H,False,67.1,21.4,11.5
+West Ham,Liverpool,0-5,A,A,True,15.2,29.1,55.7
+Manchester United,Newcastle,0-2,A,A,True,14.7,35.5,49.8
+Ipswich,Chelsea,2-0,H,A,False,22.5,26.5,51.1
+Aston Villa,Brighton,2-2,D,H,False,45.6,23.7,30.7
+Brentford,Arsenal,1-3,A,A,True,25.6,26.7,47.7
+Tottenham,Newcastle,1-2,A,A,True,16.5,35.0,48.4
+Aston Villa,Leicester,2-1,H,H,True,57.2,28.8,14.0
+Bournemouth,Everton,1-0,H,H,True,70.0,12.6,17.4
+Crystal Palace,Chelsea,1-1,D,H,False,58.9,21.7,19.4
+Manchester City,West Ham,4-1,H,H,True,65.1,15.5,19.4
+Southampton,Brentford,0-5,A,A,True,31.2,13.0,55.8
+Brighton,Arsenal,1-1,D,A,False,28.4,25.4,46.2
+Fulham,Ipswich,2-2,D,H,False,72.8,23.3,3.9
+Liverpool,Manchester United,2-2,D,H,False,67.2,18.8,14.0
+Wolves,Nott'm Forest,0-3,A,D,False,36.5,37.0,26.6
+Nott'm Forest,Liverpool,1-1,D,A,False,26.2,23.9,50.0
+West Ham,Fulham,3-2,H,A,False,25.8,22.2,52.0
+Chelsea,Bournemouth,2-2,D,H,False,77.5,11.0,11.5
+Brentford,Manchester City,2-2,D,A,False,28.7,15.4,55.9
+Everton,Aston Villa,0-1,A,D,False,38.7,39.6,21.7
+Leicester,Crystal Palace,0-2,A,A,True,24.5,31.2,44.3
+Newcastle,Wolves,3-0,H,D,False,44.1,46.5,9.4
+Arsenal,Tottenham,2-1,H,H,True,58.1,17.5,24.4
+Ipswich,Brighton,0-2,A,A,True,39.1,12.5,48.4
+Manchester United,Southampton,3-1,H,H,True,50.4,33.2,16.5
+Newcastle,Bournemouth,1-4,A,H,False,75.4,11.9,12.6
+Brentford,Liverpool,0-2,A,A,True,11.9,7.7,80.4
+Leicester,Fulham,0-2,A,A,True,19.6,10.5,69.9
+West Ham,Crystal Palace,0-2,A,H,False,46.4,33.7,19.8
+Arsenal,Aston Villa,2-2,D,H,False,72.3,16.7,11.0
+Ipswich,Manchester City,0-6,A,A,True,28.1,21.8,50.1
+Nott'm Forest,Southampton,3-2,H,H,True,76.4,16.1,7.5
+Everton,Tottenham,3-2,H,H,True,55.1,25.2,19.7
+Manchester United,Brighton,1-3,A,H,False,48.3,33.5,18.1
+Chelsea,Wolves,3-1,H,H,True,57.8,33.2,9.0
+Bournemouth,Nott'm Forest,5-0,H,H,True,44.7,27.2,28.0
+Brighton,Everton,0-1,A,H,False,53.7,20.5,25.8
+Liverpool,Ipswich,4-1,H,H,True,88.7,8.7,2.6
+Southampton,Newcastle,1-3,A,A,True,7.6,33.9,58.5
+Wolves,Arsenal,0-1,A,A,True,18.2,22.1,59.7
+Manchester City,Chelsea,3-1,H,D,False,32.5,35.8,31.7
+Crystal Palace,Brentford,1-2,A,H,False,45.3,23.2,31.6
+Tottenham,Leicester,1-2,A,H,False,70.5,15.2,14.3
+Aston Villa,West Ham,1-1,D,H,False,72.1,20.5,7.5
+Fulham,Manchester United,0-1,A,H,False,46.4,43.2,10.4
+Newcastle,Fulham,1-2,A,H,False,51.4,13.5,35.2
+Wolves,Aston Villa,2-0,H,H,True,42.9,27.1,30.0
+Ipswich,Southampton,1-2,A,H,False,67.0,18.8,14.1
+Bournemouth,Liverpool,0-2,A,A,True,28.5,22.6,48.8
+Nott'm Forest,Brighton,7-0,H,H,True,43.8,20.3,36.0
+Everton,Leicester,4-0,H,H,True,60.7,26.5,12.8
+Brentford,Tottenham,0-2,A,H,False,46.2,30.9,22.9
+Manchester United,Crystal Palace,0-2,A,H,False,44.9,26.0,29.1
+Arsenal,Manchester City,5-1,H,H,True,85.1,7.5,7.3
+Chelsea,West Ham,2-1,H,H,True,67.7,23.5,8.9
+Everton,Liverpool,2-2,D,A,False,8.8,11.1,80.1
+Brighton,Chelsea,3-0,H,H,True,44.6,32.0,23.4
+Southampton,Bournemouth,1-3,A,A,True,12.0,16.6,71.4
+Crystal Palace,Everton,1-2,A,H,False,63.0,19.6,17.4
+West Ham,Brentford,0-1,A,H,False,47.3,22.4,30.3
+Fulham,Nott'm Forest,2-1,H,H,True,51.9,31.2,17.0
+Aston Villa,Ipswich,1-1,D,H,False,63.7,20.3,16.0
+Leicester,Arsenal,0-2,A,A,True,14.6,39.3,46.1
+Manchester City,Newcastle,4-0,H,H,True,46.3,26.5,27.2
+Liverpool,Wolves,2-1,H,H,True,88.0,10.0,2.0
+Tottenham,Manchester United,1-0,H,H,True,43.4,31.6,25.0
+Aston Villa,Liverpool,2-2,D,A,False,30.6,24.0,45.4
+Leicester,Brentford,0-4,A,A,True,22.0,17.5,60.5
+Ipswich,Tottenham,1-4,A,H,False,46.1,20.3,33.6
+Fulham,Crystal Palace,0-2,A,H,False,49.0,28.8,22.3
+Southampton,Brighton,0-4,A,A,True,11.8,28.6,59.6
+Arsenal,West Ham,0-1,A,H,False,72.1,16.4,11.6
+Everton,Manchester United,2-2,D,H,False,58.0,14.4,27.6
+Bournemouth,Wolves,0-1,A,H,False,65.4,18.4,16.2
+Aston Villa,Chelsea,2-1,H,H,True,53.0,24.2,22.8
+Manchester City,Liverpool,0-2,A,A,True,34.8,19.7,45.5
+Newcastle,Nott'm Forest,4-3,H,H,True,42.4,19.1,38.5
+Brighton,Bournemouth,2-1,H,H,True,54.4,19.0,26.6
+Crystal Palace,Aston Villa,4-1,H,H,True,43.5,38.0,18.5
+Wolves,Fulham,1-2,A,H,False,49.8,23.4,26.8
+Chelsea,Southampton,4-0,H,H,True,82.5,9.2,8.2
+Brentford,Everton,1-1,D,H,False,41.9,27.8,30.3
+Manchester United,Ipswich,3-2,H,H,True,69.2,18.7,12.0
+Nott'm Forest,Arsenal,0-0,D,A,False,32.0,28.3,39.7
+Tottenham,Manchester City,0-1,A,H,False,43.6,15.1,41.3
+Liverpool,Newcastle,2-0,H,H,True,76.2,20.5,3.3
+West Ham,Leicester,2-0,H,H,True,60.2,27.0,12.7
+Wolves,Everton,1-1,D,H,False,50.1,30.6,19.3
+Brentford,Aston Villa,0-1,A,D,False,40.3,41.1,18.6
+Liverpool,Southampton,3-1,H,H,True,79.5,17.5,3.0
+Brighton,Fulham,2-1,H,A,False,29.5,20.9,49.7
+Nott'm Forest,Manchester City,1-0,H,H,True,51.4,21.9,26.7
+Crystal Palace,Ipswich,1-0,H,H,True,53.1,31.3,15.5
+Chelsea,Leicester,1-0,H,H,True,73.6,20.0,6.4
+Tottenham,Bournemouth,2-2,D,A,False,20.4,16.3,63.3
+Manchester United,Arsenal,1-1,D,A,False,26.2,22.0,51.8
+West Ham,Newcastle,0-1,A,H,False,46.7,24.9,28.4
+Everton,West Ham,1-1,D,H,False,52.4,25.6,22.0
+Ipswich,Nott'm Forest,2-4,A,H,False,41.7,23.0,35.3
+Manchester City,Brighton,2-2,D,H,False,65.2,15.5,19.3
+Southampton,Wolves,1-2,A,A,True,12.0,21.4,66.6
+Bournemouth,Brentford,1-2,A,H,False,59.3,23.4,17.3
+Leicester,Manchester United,0-3,A,A,True,31.7,18.4,49.8
+Arsenal,Chelsea,1-0,H,H,True,70.4,14.3,15.3
+Fulham,Tottenham,2-0,H,H,True,53.3,28.1,18.6
+Nott'm Forest,Manchester United,1-0,H,H,True,52.1,30.1,17.8
+Arsenal,Fulham,2-1,H,H,True,62.8,14.6,22.6
+Wolves,West Ham,1-0,H,H,True,42.5,39.1,18.3
+Bournemouth,Ipswich,1-2,A,H,False,53.4,26.3,20.3
+Brighton,Aston Villa,0-3,A,H,False,39.9,29.1,31.0
+Manchester City,Leicester,2-0,H,H,True,64.8,9.6,25.5
+Newcastle,Brentford,2-1,H,H,True,46.4,31.0,22.6
+Southampton,Crystal Palace,1-1,D,A,False,7.3,20.5,72.2
+Liverpool,Everton,1-0,H,H,True,79.9,10.7,9.5
+Chelsea,Tottenham,1-0,H,H,True,63.8,23.0,13.2
+West Ham,Bournemouth,2-2,D,A,False,28.0,20.5,51.5
+Aston Villa,Nott'm Forest,2-1,H,H,True,44.0,43.1,12.9
+Crystal Palace,Brighton,2-1,H,H,True,40.7,35.5,23.8
+Everton,Arsenal,1-1,D,A,False,34.9,28.2,36.8
+Ipswich,Wolves,1-2,A,H,False,48.9,33.5,17.6
+Brentford,Chelsea,0-0,D,D,True,27.6,37.9,34.5
+Fulham,Liverpool,3-2,H,A,False,16.9,38.7,44.5
+Tottenham,Southampton,3-1,H,H,True,76.3,10.8,12.9
+Manchester United,Manchester City,0-0,D,H,False,51.8,26.5,21.7
+Leicester,Newcastle,0-3,A,D,False,21.5,41.1,37.4
+Southampton,Aston Villa,0-3,A,A,True,7.9,21.8,70.3
+Nott'm Forest,Everton,0-1,A,H,False,45.9,30.7,23.4
+Arsenal,Brentford,1-1,D,H,False,63.7,17.8,18.5
+Manchester City,Crystal Palace,5-2,H,H,True,68.0,22.7,9.3
+Brighton,Leicester,2-2,D,H,False,52.8,36.6,10.6
+Liverpool,West Ham,2-1,H,H,True,85.7,11.1,3.2
+Wolves,Tottenham,4-2,H,A,False,30.2,23.6,46.2
+Newcastle,Manchester United,4-1,H,H,True,57.0,23.7,19.3
+Chelsea,Ipswich,2-2,D,H,False,72.0,16.6,11.4
+Bournemouth,Fulham,1-0,H,H,True,43.5,13.1,43.4
+Newcastle,Crystal Palace,5-0,H,H,True,51.4,39.1,9.6
+Brentford,Brighton,4-2,H,D,False,28.5,37.5,34.0
+Crystal Palace,Bournemouth,0-0,D,H,False,39.7,32.6,27.7
+Everton,Manchester City,0-2,A,H,False,38.5,25.9,35.6
+West Ham,Southampton,1-1,D,H,False,73.0,16.3,10.7
+Aston Villa,Newcastle,4-1,H,A,False,22.6,33.6,43.8
+Fulham,Chelsea,1-2,A,H,False,39.0,23.9,37.1
+Ipswich,Arsenal,0-4,A,A,True,16.7,24.8,58.5
+Manchester United,Wolves,0-1,A,D,False,34.9,44.0,21.1
+Leicester,Liverpool,0-1,A,A,True,5.9,18.2,75.9
+Tottenham,Nott'm Forest,1-2,A,A,True,26.3,33.9,39.8
+Manchester City,Aston Villa,2-1,H,H,True,59.0,11.1,29.9
+Arsenal,Crystal Palace,2-2,D,H,False,64.0,26.1,9.9
+Wolves,Leicester,3-0,H,H,True,59.2,24.6,16.2
+Southampton,Fulham,1-2,A,A,True,11.8,10.1,78.1
+Brighton,West Ham,3-2,H,H,True,61.7,25.1,13.2
+Chelsea,Everton,1-0,H,H,True,75.7,19.0,5.3
+Newcastle,Ipswich,3-0,H,H,True,62.2,18.1,19.7
+Bournemouth,Manchester United,1-1,D,H,False,64.8,23.1,12.1
+Liverpool,Tottenham,5-1,H,H,True,74.9,17.3,7.9
+Nott'm Forest,Brentford,0-2,A,D,False,42.6,46.3,11.1
+Manchester City,Wolves,1-0,H,H,True,66.1,23.3,10.6
+Aston Villa,Fulham,1-0,H,H,True,67.3,13.2,19.5
+Everton,Ipswich,2-2,D,H,False,48.2,26.4,25.4
+Leicester,Southampton,2-0,H,H,True,48.9,12.7,38.3
+Arsenal,Bournemouth,1-2,A,H,False,52.7,12.6,34.6
+Chelsea,Liverpool,3-1,H,H,True,53.9,21.2,24.9
+West Ham,Tottenham,1-1,D,H,False,61.3,18.6,20.0
+Brighton,Newcastle,1-1,D,A,False,23.5,36.6,39.8
+Brentford,Manchester United,4-3,H,H,True,69.6,16.4,14.0
+Crystal Palace,Nott'm Forest,1-1,D,H,False,52.4,15.5,32.1
+Fulham,Everton,1-3,A,H,False,46.9,36.6,16.5
+Ipswich,Brentford,0-1,A,A,True,35.6,22.8,41.6
+Southampton,Manchester City,0-0,D,D,True,20.3,40.1,39.6
+Wolves,Brighton,0-2,A,A,True,31.6,32.6,35.8
+Bournemouth,Aston Villa,0-1,A,H,False,36.6,30.0,33.4
+Newcastle,Chelsea,2-0,H,H,True,49.5,33.2,17.3
+Manchester United,West Ham,0-2,A,H,False,47.6,26.9,25.5
+Nott'm Forest,Leicester,2-2,D,H,False,61.9,26.4,11.8
+Tottenham,Crystal Palace,0-2,A,A,True,23.0,31.4,45.7
+Liverpool,Arsenal,2-2,D,H,False,70.8,15.6,13.7
+Chelsea,Manchester United,1-0,H,H,True,62.5,32.4,5.1
+Aston Villa,Tottenham,2-0,H,H,True,64.7,22.3,13.0
+Everton,Southampton,2-0,H,H,True,62.7,21.9,15.4
+West Ham,Nott'm Forest,1-2,A,A,True,23.0,25.2,51.8
+Brentford,Fulham,2-3,A,H,False,43.7,13.8,42.5
+Leicester,Ipswich,2-0,H,H,True,42.4,22.9,34.7
+Arsenal,Newcastle,1-0,H,H,True,58.3,17.7,24.0
+Brighton,Liverpool,3-2,H,A,False,32.3,12.9,54.8
+Crystal Palace,Wolves,4-2,H,H,True,53.2,12.9,33.9
+Manchester City,Bournemouth,3-1,H,H,True,73.2,7.9,18.9
+Southampton,Arsenal,1-2,A,A,True,29.7,21.7,48.6
+Nott'm Forest,Chelsea,0-1,A,H,False,56.9,24.1,19.0
+Newcastle,Everton,0-1,A,H,False,61.5,31.2,7.3
+Manchester United,Aston Villa,2-0,H,A,False,17.1,40.0,42.9
+Tottenham,Brighton,1-4,A,H,False,35.1,33.3,31.5
+Ipswich,West Ham,1-3,A,A,True,41.0,8.1,50.9
+Fulham,Manchester City,0-2,A,A,True,31.3,25.5,43.2
+Bournemouth,Leicester,2-0,H,H,True,70.7,22.4,6.9
+Liverpool,Crystal Palace,1-1,D,H,False,71.1,23.5,5.4
+Wolves,Brentford,1-1,D,D,True,30.9,36.2,32.9
