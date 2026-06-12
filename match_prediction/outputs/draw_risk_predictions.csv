@@ -1,0 +1,381 @@
+Home,Away,Actual,Predicted,Correct,Draw_Risk_Label,Draw_Risk_Prob,Was_Draw
+Manchester United,Fulham,H,H,True,LOW,16.4,False
+Ipswich,Liverpool,A,A,True,HIGH,42.7,False
+Arsenal,Wolves,H,H,True,LOW,8.4,False
+Everton,Brighton,A,A,True,LOW,17.6,False
+Newcastle,Southampton,H,H,True,LOW,13.6,False
+Nott'm Forest,Bournemouth,D,H,False,LOW,21.5,True
+West Ham,Aston Villa,A,A,True,LOW,27.2,False
+Chelsea,Manchester City,A,A,True,HIGH,47.3,False
+Brentford,Crystal Palace,H,H,True,MEDIUM,32.5,False
+Leicester,Tottenham,D,A,False,LOW,27.4,True
+Brighton,Manchester United,H,H,True,HIGH,47.4,False
+Crystal Palace,West Ham,A,A,True,MEDIUM,35.0,False
+Fulham,Leicester,H,H,True,MEDIUM,31.2,False
+Manchester City,Ipswich,H,H,True,LOW,5.5,False
+Southampton,Nott'm Forest,A,A,True,LOW,25.9,False
+Tottenham,Everton,H,H,True,LOW,25.1,False
+Aston Villa,Arsenal,A,A,True,LOW,13.3,False
+Bournemouth,Newcastle,D,A,False,LOW,24.0,True
+Wolves,Chelsea,A,A,True,LOW,22.8,False
+Liverpool,Brentford,H,H,True,LOW,26.3,False
+Nott'm Forest,Wolves,D,H,False,LOW,27.0,True
+West Ham,Manchester City,A,A,True,HIGH,70.2,False
+Ipswich,Fulham,D,A,False,HIGH,42.4,True
+Leicester,Aston Villa,A,A,True,LOW,26.9,False
+Everton,Bournemouth,A,A,True,LOW,18.1,False
+Brentford,Southampton,H,H,True,LOW,16.1,False
+Arsenal,Brighton,D,H,False,LOW,23.9,True
+Chelsea,Crystal Palace,D,H,False,HIGH,41.6,True
+Newcastle,Tottenham,H,A,False,MEDIUM,31.3,False
+Manchester United,Liverpool,A,A,True,LOW,24.3,False
+Southampton,Manchester United,A,A,True,LOW,29.7,False
+Brighton,Ipswich,D,H,False,LOW,23.0,True
+Crystal Palace,Leicester,D,H,False,MEDIUM,31.1,True
+Fulham,West Ham,D,H,False,HIGH,55.8,True
+Liverpool,Nott'm Forest,A,H,False,LOW,15.4,False
+Manchester City,Brentford,H,H,True,LOW,9.4,False
+Aston Villa,Everton,H,H,True,LOW,19.9,False
+Bournemouth,Chelsea,A,A,True,LOW,21.3,False
+Wolves,Newcastle,A,A,True,HIGH,41.4,False
+Tottenham,Arsenal,A,D,False,HIGH,49.7,False
+West Ham,Chelsea,A,D,False,HIGH,62.6,False
+Aston Villa,Wolves,H,H,True,MEDIUM,38.9,False
+Fulham,Newcastle,H,H,True,HIGH,46.0,False
+Leicester,Everton,D,D,True,HIGH,54.4,True
+Liverpool,Bournemouth,H,H,True,LOW,10.7,False
+Southampton,Ipswich,D,A,False,MEDIUM,34.4,True
+Tottenham,Brentford,H,H,True,LOW,18.4,False
+Crystal Palace,Manchester United,D,D,True,HIGH,51.1,True
+Brighton,Nott'm Forest,D,H,False,LOW,27.6,True
+Manchester City,Arsenal,D,H,False,LOW,22.1,True
+Wolves,Liverpool,A,A,True,LOW,14.1,False
+Nott'm Forest,Fulham,A,A,True,LOW,27.8,False
+Everton,Crystal Palace,H,A,False,HIGH,40.8,False
+Chelsea,Brighton,H,H,True,LOW,25.4,False
+Brentford,West Ham,D,H,False,MEDIUM,30.2,True
+Arsenal,Leicester,H,H,True,LOW,16.7,False
+Newcastle,Manchester City,D,A,False,MEDIUM,36.1,True
+Ipswich,Aston Villa,D,A,False,LOW,28.4,True
+Manchester United,Tottenham,A,H,False,MEDIUM,34.2,False
+Bournemouth,Southampton,H,H,True,MEDIUM,34.0,False
+Crystal Palace,Liverpool,A,A,True,HIGH,40.5,False
+Arsenal,Southampton,H,H,True,LOW,13.9,False
+Brentford,Wolves,H,D,False,HIGH,60.6,False
+Leicester,Bournemouth,H,H,True,LOW,25.2,False
+Manchester City,Fulham,H,H,True,LOW,8.4,False
+West Ham,Ipswich,H,H,True,LOW,18.1,False
+Everton,Newcastle,D,A,False,MEDIUM,33.2,True
+Brighton,Tottenham,H,A,False,LOW,26.4,False
+Chelsea,Nott'm Forest,D,H,False,MEDIUM,30.2,True
+Aston Villa,Manchester United,D,H,False,LOW,21.3,True
+Tottenham,West Ham,H,H,True,LOW,22.2,False
+Fulham,Aston Villa,A,H,False,HIGH,49.2,False
+Ipswich,Everton,A,H,False,MEDIUM,38.1,False
+Manchester United,Brentford,H,H,True,LOW,25.8,False
+Newcastle,Brighton,A,H,False,HIGH,42.7,False
+Southampton,Leicester,A,H,False,LOW,23.9,False
+Bournemouth,Arsenal,H,A,False,MEDIUM,30.3,False
+Wolves,Manchester City,A,A,True,MEDIUM,30.7,False
+Liverpool,Chelsea,H,H,True,MEDIUM,31.6,False
+Nott'm Forest,Crystal Palace,H,H,True,HIGH,52.2,False
+Leicester,Nott'm Forest,A,A,True,HIGH,50.7,False
+Everton,Fulham,D,A,False,LOW,16.9,True
+Manchester City,Southampton,H,H,True,LOW,20.6,False
+Brentford,Ipswich,H,H,True,LOW,25.6,False
+Aston Villa,Bournemouth,D,H,False,LOW,16.8,True
+Brighton,Wolves,D,H,False,HIGH,43.5,True
+Chelsea,Newcastle,H,H,True,HIGH,40.5,False
+Crystal Palace,Tottenham,H,H,True,MEDIUM,33.6,False
+West Ham,Manchester United,H,D,False,HIGH,57.6,False
+Arsenal,Liverpool,D,H,False,LOW,25.9,True
+Newcastle,Arsenal,H,A,False,MEDIUM,32.1,False
+Bournemouth,Manchester City,H,A,False,MEDIUM,38.4,False
+Ipswich,Leicester,D,H,False,LOW,28.7,True
+Liverpool,Brighton,H,H,True,LOW,20.5,False
+Nott'm Forest,West Ham,H,H,True,HIGH,44.8,False
+Southampton,Everton,H,A,False,HIGH,42.1,False
+Wolves,Crystal Palace,D,H,False,HIGH,46.5,True
+Manchester United,Chelsea,D,H,False,MEDIUM,34.7,True
+Tottenham,Aston Villa,H,H,True,LOW,24.3,False
+Fulham,Brentford,H,H,True,HIGH,61.8,False
+Brentford,Bournemouth,H,H,True,HIGH,46.6,False
+Crystal Palace,Fulham,A,A,True,LOW,27.9,False
+West Ham,Everton,D,H,False,HIGH,56.6,True
+Wolves,Southampton,H,H,True,LOW,20.8,False
+Brighton,Manchester City,H,H,True,MEDIUM,32.9,False
+Liverpool,Aston Villa,H,H,True,LOW,23.3,False
+Manchester United,Leicester,H,H,True,LOW,13.9,False
+Nott'm Forest,Newcastle,A,H,False,MEDIUM,33.2,False
+Tottenham,Ipswich,A,H,False,LOW,25.3,False
+Chelsea,Arsenal,D,H,False,HIGH,43.4,True
+Fulham,Wolves,A,D,False,HIGH,56.1,False
+Manchester City,Tottenham,A,H,False,LOW,8.8,False
+Everton,Brentford,D,H,False,MEDIUM,34.6,True
+Leicester,Chelsea,A,A,True,HIGH,44.8,False
+Aston Villa,Crystal Palace,D,H,False,LOW,28.6,True
+Arsenal,Nott'm Forest,H,H,True,LOW,9.9,False
+Bournemouth,Brighton,A,H,False,MEDIUM,35.8,False
+Southampton,Liverpool,A,A,True,LOW,26.8,False
+Ipswich,Manchester United,D,A,False,HIGH,43.0,True
+Newcastle,West Ham,A,H,False,LOW,28.4,False
+Brighton,Southampton,D,H,False,MEDIUM,30.2,True
+Wolves,Bournemouth,A,H,False,MEDIUM,34.5,False
+Nott'm Forest,Ipswich,H,H,True,LOW,22.9,False
+West Ham,Arsenal,A,A,True,HIGH,45.9,False
+Brentford,Leicester,H,H,True,MEDIUM,38.5,False
+Crystal Palace,Newcastle,D,H,False,MEDIUM,37.8,True
+Chelsea,Aston Villa,H,H,True,LOW,22.7,False
+Manchester United,Everton,H,H,True,HIGH,46.6,False
+Tottenham,Fulham,D,H,False,LOW,11.8,True
+Liverpool,Manchester City,H,H,True,LOW,24.9,False
+Ipswich,Crystal Palace,A,A,True,MEDIUM,35.7,False
+Leicester,West Ham,H,A,False,MEDIUM,34.1,False
+Arsenal,Manchester United,H,H,True,HIGH,46.3,False
+Everton,Wolves,H,H,True,MEDIUM,38.9,False
+Manchester City,Nott'm Forest,H,H,True,LOW,6.8,False
+Newcastle,Liverpool,D,A,False,MEDIUM,38.2,True
+Southampton,Chelsea,A,A,True,HIGH,40.4,False
+Aston Villa,Brentford,H,H,True,MEDIUM,33.2,False
+Bournemouth,Tottenham,H,A,False,MEDIUM,37.1,False
+Fulham,Brighton,H,H,True,MEDIUM,31.1,False
+Crystal Palace,Manchester City,D,A,False,HIGH,43.1,True
+Manchester United,Nott'm Forest,A,H,False,LOW,22.9,False
+Aston Villa,Southampton,H,H,True,LOW,18.6,False
+Brentford,Newcastle,H,H,True,HIGH,44.0,False
+Fulham,Arsenal,D,A,False,MEDIUM,37.2,True
+Ipswich,Bournemouth,A,A,True,LOW,20.7,False
+Leicester,Brighton,D,A,False,LOW,27.4,True
+Tottenham,Chelsea,A,D,False,HIGH,49.4,False
+West Ham,Wolves,H,H,True,MEDIUM,38.7,False
+Arsenal,Everton,D,H,False,LOW,22.2,True
+Liverpool,Fulham,D,H,False,LOW,19.0,True
+Newcastle,Leicester,H,H,True,LOW,21.2,False
+Wolves,Ipswich,A,H,False,MEDIUM,35.6,False
+Nott'm Forest,Aston Villa,H,H,True,HIGH,49.7,False
+Chelsea,Brentford,H,H,True,HIGH,52.6,False
+Southampton,Tottenham,A,A,True,LOW,26.2,False
+Brighton,Crystal Palace,A,H,False,LOW,25.3,False
+Manchester City,Manchester United,A,H,False,LOW,12.5,False
+Bournemouth,West Ham,D,H,False,LOW,21.5,True
+Aston Villa,Manchester City,H,H,True,LOW,12.7,False
+Brentford,Nott'm Forest,A,H,False,HIGH,45.6,False
+Ipswich,Newcastle,A,A,True,LOW,26.3,False
+West Ham,Brighton,D,H,False,HIGH,41.2,True
+Crystal Palace,Arsenal,A,A,True,MEDIUM,38.6,False
+Tottenham,Liverpool,A,A,True,LOW,14.0,False
+Manchester United,Bournemouth,A,H,False,MEDIUM,31.7,False
+Everton,Chelsea,D,A,False,HIGH,45.4,True
+Fulham,Southampton,D,H,False,HIGH,45.3,True
+Leicester,Wolves,A,D,False,HIGH,56.2,False
+Southampton,West Ham,A,A,True,LOW,23.6,False
+Liverpool,Leicester,H,H,True,LOW,25.0,False
+Wolves,Manchester United,H,A,False,LOW,22.8,False
+Nott'm Forest,Tottenham,H,H,True,MEDIUM,30.9,False
+Chelsea,Fulham,A,H,False,LOW,27.1,False
+Bournemouth,Crystal Palace,D,H,False,LOW,22.4,True
+Manchester City,Everton,D,H,False,LOW,19.2,True
+Newcastle,Aston Villa,H,H,True,HIGH,41.0,False
+Brighton,Brentford,D,H,False,LOW,15.7,True
+Arsenal,Ipswich,H,H,True,LOW,9.0,False
+Leicester,Manchester City,A,A,True,LOW,28.3,False
+Crystal Palace,Southampton,H,H,True,LOW,20.0,False
+Everton,Nott'm Forest,A,A,True,MEDIUM,34.2,False
+Fulham,Bournemouth,D,H,False,HIGH,45.4,True
+Tottenham,Wolves,D,H,False,LOW,28.5,True
+West Ham,Liverpool,A,A,True,HIGH,47.0,False
+Manchester United,Newcastle,A,A,True,HIGH,41.1,False
+Ipswich,Chelsea,H,A,False,MEDIUM,35.4,False
+Aston Villa,Brighton,D,H,False,MEDIUM,37.0,True
+Brentford,Arsenal,A,A,True,HIGH,41.8,False
+Tottenham,Newcastle,A,A,True,HIGH,42.9,False
+Aston Villa,Leicester,H,H,True,LOW,29.1,False
+Bournemouth,Everton,H,H,True,LOW,14.7,False
+Crystal Palace,Chelsea,D,H,False,LOW,23.5,True
+Manchester City,West Ham,H,H,True,LOW,17.0,False
+Southampton,Brentford,A,A,True,LOW,14.1,False
+Brighton,Arsenal,D,A,False,LOW,29.7,True
+Fulham,Ipswich,D,H,False,LOW,24.7,True
+Liverpool,Manchester United,D,H,False,LOW,24.7,True
+Wolves,Nott'm Forest,A,D,False,HIGH,54.6,False
+Nott'm Forest,Liverpool,D,A,False,HIGH,44.9,True
+West Ham,Fulham,H,A,False,LOW,29.5,False
+Chelsea,Bournemouth,D,H,False,LOW,17.7,True
+Brentford,Manchester City,D,A,False,LOW,25.2,True
+Everton,Aston Villa,A,D,False,MEDIUM,37.3,False
+Leicester,Crystal Palace,A,A,True,MEDIUM,36.9,False
+Newcastle,Wolves,H,D,False,HIGH,56.1,False
+Arsenal,Tottenham,H,H,True,LOW,20.8,False
+Ipswich,Brighton,A,A,True,LOW,12.1,False
+Manchester United,Southampton,H,H,True,MEDIUM,34.2,False
+Newcastle,Bournemouth,A,H,False,LOW,15.8,False
+Brentford,Liverpool,A,A,True,LOW,10.4,False
+Leicester,Fulham,A,A,True,LOW,16.2,False
+West Ham,Crystal Palace,A,H,False,MEDIUM,37.2,False
+Arsenal,Aston Villa,D,H,False,LOW,23.5,True
+Ipswich,Manchester City,A,A,True,MEDIUM,32.2,False
+Nott'm Forest,Southampton,H,H,True,LOW,20.7,False
+Everton,Tottenham,H,H,True,LOW,26.6,False
+Manchester United,Brighton,A,H,False,HIGH,48.2,False
+Chelsea,Wolves,H,H,True,MEDIUM,33.2,False
+Bournemouth,Nott'm Forest,H,H,True,MEDIUM,35.4,False
+Brighton,Everton,A,H,False,MEDIUM,33.9,False
+Liverpool,Ipswich,H,H,True,LOW,11.5,False
+Southampton,Newcastle,A,A,True,MEDIUM,32.3,False
+Wolves,Arsenal,A,A,True,LOW,26.1,False
+Manchester City,Chelsea,H,D,False,HIGH,43.2,False
+Crystal Palace,Brentford,A,H,False,LOW,25.0,False
+Tottenham,Leicester,A,H,False,LOW,12.6,False
+Aston Villa,West Ham,D,H,False,LOW,20.7,True
+Fulham,Manchester United,A,H,False,HIGH,60.0,False
+Newcastle,Fulham,A,H,False,LOW,24.0,False
+Wolves,Aston Villa,H,H,True,LOW,29.6,False
+Ipswich,Southampton,A,H,False,LOW,28.8,False
+Bournemouth,Liverpool,A,A,True,LOW,22.0,False
+Nott'm Forest,Brighton,H,H,True,LOW,29.8,False
+Everton,Leicester,H,H,True,HIGH,44.3,False
+Brentford,Tottenham,A,H,False,MEDIUM,37.3,False
+Manchester United,Crystal Palace,A,H,False,MEDIUM,32.5,False
+Arsenal,Manchester City,H,H,True,LOW,13.1,False
+Chelsea,West Ham,H,H,True,MEDIUM,31.0,False
+Everton,Liverpool,D,A,False,LOW,23.5,True
+Brighton,Chelsea,H,H,True,HIGH,47.3,False
+Southampton,Bournemouth,A,A,True,LOW,25.8,False
+Crystal Palace,Everton,A,H,False,MEDIUM,30.9,False
+West Ham,Brentford,A,H,False,LOW,25.5,False
+Fulham,Nott'm Forest,H,H,True,HIGH,43.6,False
+Aston Villa,Ipswich,D,H,False,LOW,24.2,True
+Leicester,Arsenal,A,A,True,HIGH,43.0,False
+Manchester City,Newcastle,H,H,True,HIGH,48.1,False
+Liverpool,Wolves,H,H,True,LOW,15.7,False
+Tottenham,Manchester United,H,H,True,MEDIUM,35.3,False
+Aston Villa,Liverpool,D,A,False,LOW,16.6,True
+Leicester,Brentford,A,A,True,LOW,27.1,False
+Ipswich,Tottenham,A,H,False,LOW,27.0,False
+Fulham,Crystal Palace,A,H,False,HIGH,40.5,False
+Southampton,Brighton,A,A,True,MEDIUM,33.8,False
+Arsenal,West Ham,A,H,False,LOW,20.0,False
+Everton,Manchester United,D,H,False,LOW,21.3,True
+Bournemouth,Wolves,A,H,False,LOW,23.4,False
+Aston Villa,Chelsea,H,H,True,MEDIUM,32.7,False
+Manchester City,Liverpool,A,A,True,LOW,25.1,False
+Newcastle,Nott'm Forest,H,H,True,LOW,25.8,False
+Brighton,Bournemouth,H,H,True,MEDIUM,32.0,False
+Crystal Palace,Aston Villa,H,H,True,HIGH,47.4,False
+Wolves,Fulham,A,H,False,HIGH,49.9,False
+Chelsea,Southampton,H,H,True,LOW,9.1,False
+Brentford,Everton,D,H,False,HIGH,41.5,True
+Manchester United,Ipswich,H,H,True,LOW,27.9,False
+Nott'm Forest,Arsenal,D,A,False,MEDIUM,32.1,True
+Tottenham,Manchester City,A,H,False,LOW,14.1,False
+Liverpool,Newcastle,H,H,True,MEDIUM,32.9,False
+West Ham,Leicester,H,H,True,MEDIUM,39.4,False
+Wolves,Everton,D,H,False,HIGH,43.6,True
+Brentford,Aston Villa,A,D,False,HIGH,55.8,False
+Liverpool,Southampton,H,H,True,LOW,16.3,False
+Brighton,Fulham,H,A,False,MEDIUM,34.1,False
+Nott'm Forest,Manchester City,H,H,True,LOW,24.9,False
+Crystal Palace,Ipswich,H,H,True,MEDIUM,36.6,False
+Chelsea,Leicester,H,H,True,LOW,25.8,False
+Tottenham,Bournemouth,D,A,False,LOW,23.3,True
+Manchester United,Arsenal,D,A,False,LOW,21.3,True
+West Ham,Newcastle,A,H,False,LOW,26.7,False
+Everton,West Ham,D,H,False,MEDIUM,33.1,True
+Ipswich,Nott'm Forest,A,H,False,MEDIUM,38.4,False
+Manchester City,Brighton,D,H,False,LOW,24.0,True
+Southampton,Wolves,A,A,True,MEDIUM,39.8,False
+Bournemouth,Brentford,A,H,False,MEDIUM,30.0,False
+Leicester,Manchester United,A,A,True,LOW,27.5,False
+Arsenal,Chelsea,H,H,True,LOW,17.3,False
+Fulham,Tottenham,H,H,True,MEDIUM,36.2,False
+Nott'm Forest,Manchester United,H,H,True,HIGH,48.2,False
+Arsenal,Fulham,H,H,True,LOW,17.5,False
+Wolves,West Ham,H,H,True,HIGH,46.3,False
+Bournemouth,Ipswich,A,H,False,LOW,20.2,False
+Brighton,Aston Villa,A,H,False,MEDIUM,37.3,False
+Manchester City,Leicester,H,H,True,LOW,12.7,False
+Newcastle,Brentford,H,H,True,HIGH,40.7,False
+Southampton,Crystal Palace,D,A,False,HIGH,40.3,True
+Liverpool,Everton,H,H,True,LOW,14.1,False
+Chelsea,Tottenham,H,H,True,LOW,28.1,False
+West Ham,Bournemouth,D,A,False,MEDIUM,34.5,True
+Aston Villa,Nott'm Forest,H,H,True,HIGH,56.7,False
+Crystal Palace,Brighton,H,H,True,MEDIUM,37.3,False
+Everton,Arsenal,D,A,False,MEDIUM,36.3,True
+Ipswich,Wolves,A,H,False,HIGH,58.4,False
+Brentford,Chelsea,D,D,True,HIGH,51.3,True
+Fulham,Liverpool,H,A,False,HIGH,48.6,False
+Tottenham,Southampton,H,H,True,LOW,8.2,False
+Manchester United,Manchester City,D,H,False,MEDIUM,37.9,True
+Leicester,Newcastle,A,D,False,HIGH,47.3,False
+Southampton,Aston Villa,A,A,True,MEDIUM,34.6,False
+Nott'm Forest,Everton,A,H,False,HIGH,40.5,False
+Arsenal,Brentford,D,H,False,LOW,23.9,True
+Manchester City,Crystal Palace,H,H,True,LOW,26.5,False
+Brighton,Leicester,D,H,False,MEDIUM,38.1,True
+Liverpool,West Ham,H,H,True,LOW,14.5,False
+Wolves,Tottenham,H,A,False,MEDIUM,35.9,False
+Newcastle,Manchester United,H,H,True,LOW,29.6,False
+Chelsea,Ipswich,D,H,False,LOW,23.4,True
+Bournemouth,Fulham,H,H,True,LOW,15.8,False
+Newcastle,Crystal Palace,H,H,True,HIGH,41.2,False
+Brentford,Brighton,H,D,False,HIGH,52.9,False
+Crystal Palace,Bournemouth,D,H,False,HIGH,42.9,True
+Everton,Manchester City,A,H,False,HIGH,41.9,False
+West Ham,Southampton,D,H,False,LOW,23.6,True
+Aston Villa,Newcastle,H,A,False,HIGH,47.0,False
+Fulham,Chelsea,A,H,False,MEDIUM,36.7,False
+Ipswich,Arsenal,A,A,True,LOW,25.1,False
+Manchester United,Wolves,A,D,False,HIGH,56.4,False
+Leicester,Liverpool,A,A,True,LOW,26.3,False
+Tottenham,Nott'm Forest,A,A,True,MEDIUM,31.4,False
+Manchester City,Aston Villa,H,H,True,LOW,14.1,False
+Arsenal,Crystal Palace,D,H,False,LOW,21.7,True
+Wolves,Leicester,H,H,True,MEDIUM,30.1,False
+Southampton,Fulham,A,A,True,LOW,14.9,False
+Brighton,West Ham,H,H,True,LOW,25.4,False
+Chelsea,Everton,H,H,True,LOW,27.5,False
+Newcastle,Ipswich,H,H,True,LOW,15.4,False
+Bournemouth,Manchester United,D,H,False,MEDIUM,31.7,True
+Liverpool,Tottenham,H,H,True,LOW,24.0,False
+Nott'm Forest,Brentford,A,D,False,HIGH,53.9,False
+Manchester City,Wolves,H,H,True,MEDIUM,32.4,False
+Aston Villa,Fulham,H,H,True,LOW,25.5,False
+Everton,Ipswich,D,H,False,LOW,29.3,True
+Leicester,Southampton,H,H,True,LOW,19.2,False
+Arsenal,Bournemouth,A,H,False,LOW,21.0,False
+Chelsea,Liverpool,H,H,True,MEDIUM,30.4,False
+West Ham,Tottenham,D,H,False,LOW,24.9,True
+Brighton,Newcastle,D,A,False,HIGH,41.1,True
+Brentford,Manchester United,H,H,True,LOW,24.5,False
+Crystal Palace,Nott'm Forest,D,H,False,LOW,15.6,True
+Fulham,Everton,A,H,False,HIGH,46.8,False
+Ipswich,Brentford,A,A,True,LOW,18.9,False
+Southampton,Manchester City,D,D,True,HIGH,48.2,True
+Wolves,Brighton,A,A,True,HIGH,45.0,False
+Bournemouth,Aston Villa,A,H,False,MEDIUM,39.4,False
+Newcastle,Chelsea,H,H,True,HIGH,44.7,False
+Manchester United,West Ham,A,H,False,MEDIUM,34.6,False
+Nott'm Forest,Leicester,D,H,False,MEDIUM,37.7,True
+Tottenham,Crystal Palace,A,A,True,MEDIUM,31.2,False
+Liverpool,Arsenal,D,H,False,LOW,27.5,True
+Chelsea,Manchester United,H,H,True,HIGH,50.0,False
+Aston Villa,Tottenham,H,H,True,LOW,27.7,False
+Everton,Southampton,H,H,True,MEDIUM,32.6,False
+West Ham,Nott'm Forest,A,A,True,MEDIUM,32.1,False
+Brentford,Fulham,A,H,False,LOW,27.9,False
+Leicester,Ipswich,H,H,True,HIGH,40.1,False
+Arsenal,Newcastle,H,H,True,LOW,27.1,False
+Brighton,Liverpool,H,A,False,LOW,19.2,False
+Crystal Palace,Wolves,H,H,True,LOW,17.3,False
+Manchester City,Bournemouth,H,H,True,LOW,14.5,False
+Southampton,Arsenal,A,A,True,LOW,25.3,False
+Nott'm Forest,Chelsea,A,H,False,MEDIUM,38.3,False
+Newcastle,Everton,A,H,False,HIGH,45.3,False
+Manchester United,Aston Villa,H,A,False,HIGH,48.5,False
+Tottenham,Brighton,A,H,False,MEDIUM,34.5,False
+Ipswich,West Ham,A,A,True,LOW,12.1,False
+Fulham,Manchester City,A,A,True,MEDIUM,32.2,False
+Bournemouth,Leicester,H,H,True,LOW,19.4,False
+Liverpool,Crystal Palace,D,H,False,LOW,26.7,True
+Wolves,Brentford,D,D,True,HIGH,46.8,True

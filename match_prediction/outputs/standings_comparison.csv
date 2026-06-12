@@ -1,0 +1,21 @@
+Team,Actual_Pos,Actual_Pts,Predicted_Pos,Predicted_Pts,Diff,Within_2
+Liverpool,1,84,1,80.5,0,True
+Arsenal,2,74,2,71.5,0,True
+Manchester City,3,71,3,68.4,0,True
+Chelsea,4,69,4,61.7,0,True
+Newcastle,5,66,5,59.9,0,True
+Aston Villa,6,66,7,57.3,1,True
+Nott'm Forest,7,65,8,54.8,1,True
+Brighton,8,61,12,51.9,4,False
+Bournemouth,9,56,11,52.4,2,True
+Brentford,10,56,14,46.6,4,False
+Fulham,11,54,6,58.7,-5,False
+Crystal Palace,12,53,13,50.1,1,True
+Everton,13,48,17,41.6,4,False
+West Ham,14,43,15,45.5,1,True
+Manchester United,15,42,10,53.3,-5,False
+Wolves,16,42,16,42.8,0,True
+Tottenham,17,38,9,54.5,-8,False
+Leicester,18,25,19,31.9,1,True
+Ipswich,19,22,18,38.5,-1,True
+Southampton,20,12,20,27.4,0,True

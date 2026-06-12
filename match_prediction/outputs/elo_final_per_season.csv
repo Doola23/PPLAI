@@ -1,0 +1,201 @@
+season,team,final_elo
+15_16,Arsenal,1574.72
+15_16,Aston Villa,1344.36
+15_16,Bournemouth,1458.6
+15_16,Chelsea,1512.52
+15_16,Crystal Palace,1448.25
+15_16,Everton,1471.64
+15_16,Leicester,1630.31
+15_16,Liverpool,1538.16
+15_16,Man City,1548.93
+15_16,Man United,1550.74
+15_16,Newcastle,1434.69
+15_16,Norwich,1414.62
+15_16,Southampton,1557.17
+15_16,Stoke,1479.95
+15_16,Sunderland,1467.2
+15_16,Swansea,1495.84
+15_16,Tottenham,1590.02
+15_16,Watford,1457.11
+15_16,West Brom,1464.89
+15_16,West Ham,1560.28
+16_17,Arsenal,1620.49
+16_17,Bournemouth,1470.34
+16_17,Burnley,1461.95
+16_17,Chelsea,1677.56
+16_17,Crystal Palace,1444.44
+16_17,Everton,1541.55
+16_17,Hull,1433.62
+16_17,Leicester,1529.3
+16_17,Liverpool,1616.81
+16_17,Man City,1629.58
+16_17,Man United,1608.95
+16_17,Middlesbrough,1405.67
+16_17,Southampton,1516.52
+16_17,Stoke,1459.06
+16_17,Sunderland,1369.21
+16_17,Swansea,1458.92
+16_17,Tottenham,1679.65
+16_17,Watford,1432.11
+16_17,West Brom,1458.42
+16_17,West Ham,1488.97
+17_18,Arsenal,1586.25
+17_18,Bournemouth,1471.29
+17_18,Brighton,1478.52
+17_18,Burnley,1511.48
+17_18,Chelsea,1660.63
+17_18,Crystal Palace,1477.8
+17_18,Everton,1527.37
+17_18,Huddersfield,1456.9
+17_18,Leicester,1500.15
+17_18,Liverpool,1657.99
+17_18,Man City,1756.64
+17_18,Man United,1670.21
+17_18,Newcastle,1454.11
+17_18,Southampton,1469.44
+17_18,Stoke,1416.42
+17_18,Swansea,1430.92
+17_18,Tottenham,1691.83
+17_18,Watford,1427.86
+17_18,West Brom,1426.73
+17_18,West Ham,1478.98
+18_19,Arsenal,1610.64
+18_19,Bournemouth,1476.96
+18_19,Brighton,1433.92
+18_19,Burnley,1484.55
+18_19,Cardiff,1420.49
+18_19,Chelsea,1655.68
+18_19,Crystal Palace,1511.09
+18_19,Everton,1541.76
+18_19,Fulham,1416.84
+18_19,Huddersfield,1329.47
+18_19,Leicester,1514.4
+18_19,Liverpool,1774.84
+18_19,Man City,1816.91
+18_19,Man United,1654.8
+18_19,Newcastle,1484.33
+18_19,Southampton,1470.96
+18_19,Tottenham,1645.39
+18_19,Watford,1483.37
+18_19,West Ham,1506.91
+18_19,Wolves,1550.05
+19_20,Arsenal,1595.94
+19_20,Aston Villa,1387.71
+19_20,Bournemouth,1409.67
+19_20,Brighton,1451.71
+19_20,Burnley,1546.32
+19_20,Chelsea,1627.15
+19_20,Crystal Palace,1479.68
+19_20,Everton,1549.02
+19_20,Leicester,1557.66
+19_20,Liverpool,1819.68
+19_20,Man City,1771.91
+19_20,Man United,1644.19
+19_20,Newcastle,1490.66
+19_20,Norwich,1335.15
+19_20,Sheffield United,1541.76
+19_20,Southampton,1512.49
+19_20,Tottenham,1616.86
+19_20,Watford,1443.71
+19_20,West Ham,1482.91
+19_20,Wolves,1590.46
+20_21,Arsenal,1609.84
+20_21,Aston Villa,1482.73
+20_21,Brighton,1489.5
+20_21,Burnley,1488.45
+20_21,Chelsea,1659.25
+20_21,Crystal Palace,1479.49
+20_21,Everton,1559.87
+20_21,Fulham,1405.85
+20_21,Leeds,1560.78
+20_21,Leicester,1602.38
+20_21,Liverpool,1732.34
+20_21,Man City,1775.68
+20_21,Man United,1677.29
+20_21,Newcastle,1490.81
+20_21,Sheffield United,1403.76
+20_21,Southampton,1481.01
+20_21,Tottenham,1590.68
+20_21,West Brom,1395.43
+20_21,West Ham,1568.41
+20_21,Wolves,1527.98
+21_22,Arsenal,1631.01
+21_22,Aston Villa,1496.31
+21_22,Brentford,1516.11
+21_22,Brighton,1527.99
+21_22,Burnley,1473.9
+21_22,Chelsea,1667.92
+21_22,Crystal Palace,1511.86
+21_22,Everton,1495.78
+21_22,Leeds,1489.01
+21_22,Leicester,1561.66
+21_22,Liverpool,1803.82
+21_22,Man City,1817.08
+21_22,Man United,1627.5
+21_22,Newcastle,1537.13
+21_22,Norwich,1328.76
+21_22,Southampton,1472.26
+21_22,Tottenham,1646.47
+21_22,Watford,1362.61
+21_22,West Ham,1569.6
+21_22,Wolves,1518.35
+22_23,Arsenal,1699.86
+22_23,Aston Villa,1579.85
+22_23,Bournemouth,1447.89
+22_23,Brentford,1572.41
+22_23,Brighton,1595.21
+22_23,Chelsea,1553.93
+22_23,Crystal Palace,1525.83
+22_23,Everton,1472.76
+22_23,Fulham,1489.6
+22_23,Leeds,1446.1
+22_23,Leicester,1473.41
+22_23,Liverpool,1734.31
+22_23,Man City,1835.11
+22_23,Man United,1668.56
+22_23,Newcastle,1640.62
+22_23,Nott'm Forest,1483.2
+22_23,Southampton,1389.46
+22_23,Tottenham,1598.53
+22_23,West Ham,1519.57
+22_23,Wolves,1501.97
+23_24,Arsenal,1774.67
+23_24,Aston Villa,1635.32
+23_24,Bournemouth,1503.0
+23_24,Brentford,1525.5
+23_24,Brighton,1556.51
+23_24,Burnley,1417.31
+23_24,Chelsea,1619.33
+23_24,Crystal Palace,1541.52
+23_24,Everton,1522.83
+23_24,Fulham,1500.55
+23_24,Liverpool,1748.62
+23_24,Luton,1428.47
+23_24,Man City,1843.8
+23_24,Man United,1621.92
+23_24,Newcastle,1608.31
+23_24,Nott'm Forest,1453.2
+23_24,Sheffield United,1342.48
+23_24,Tottenham,1612.55
+23_24,West Ham,1535.4
+23_24,Wolves,1498.06
+24_25,Arsenal,1751.24
+24_25,Aston Villa,1668.73
+24_25,Bournemouth,1556.12
+24_25,Brentford,1572.86
+24_25,Brighton,1602.8
+24_25,Chelsea,1654.35
+24_25,Crystal Palace,1590.68
+24_25,Everton,1552.39
+24_25,Fulham,1560.93
+24_25,Ipswich,1417.46
+24_25,Leicester,1415.24
+24_25,Liverpool,1776.81
+24_25,Man City,1760.47
+24_25,Man United,1534.78
+24_25,Newcastle,1657.01
+24_25,Nott'm Forest,1585.77
+24_25,Southampton,1321.54
+24_25,Tottenham,1514.23
+24_25,West Ham,1506.03
+24_25,Wolves,1507.13

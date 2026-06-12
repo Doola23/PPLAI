@@ -1,0 +1,82 @@
+import { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { useReveal } from '../../hooks/useReveal';
+
+const ROLES = ['Head Coaches', 'Analysts', 'Scouts', 'Physios', 'Sporting Directors'];
+const EASE = [0.16, 1, 0.3, 1] as const;
+
+function CyclingPill({ words, color }: { words: string[]; color: string }) {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI(n => (n + 1) % words.length), 2200);
+    return () => clearInterval(t);
+  }, [words.length]);
+
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle', margin: '0 6px' }}>
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={words[i]}
+          initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          exit={{ opacity: 0, y: -12, filter: 'blur(4px)' }}
+          transition={{ duration: 0.35, ease: EASE }}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: color === 'dark' ? 'rgba(255,255,255,0.08)' : '#1A65D3',
+            border: `1px solid ${color === 'dark' ? 'rgba(255,255,255,0.18)' : 'transparent'}`,
+            color: '#fff', borderRadius: 999, padding: '4px 18px 4px 14px',
+            fontWeight: 900, fontSize: 'inherit',
+            letterSpacing: '-0.01em', whiteSpace: 'nowrap',
+          }}
+        >
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: color === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.7)', flexShrink: 0 }} />
+          {words[i]}
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  );
+}
+
+export default function ProblemSection() {
+  const navigate = useNavigate();
+  const headRef = useRef<HTMLDivElement>(null);
+  const btnsRef = useRef<HTMLDivElement>(null);
+  useReveal(headRef as React.RefObject<HTMLElement>, 0.2);
+  useReveal(btnsRef as React.RefObject<HTMLElement>, 0.2);
+
+  return (
+    <section className="lproblem-v2" id="problem" style={{ background: '#000000' }}>
+
+      <div className="lproblem-v2__head" style={{ textAlign: 'center' }}>
+
+        <div
+          ref={headRef}
+          className="lreveal"
+          style={{ '--reveal-y': '36px', '--reveal-blur': '8px', '--reveal-delay': '0ms' } as React.CSSProperties}
+        >
+          <h2 style={{
+            fontFamily: 'Miguer Sans, sans-serif', fontWeight: 900, fontSize: 'var(--fs-h2)',
+            lineHeight: 1.12, letterSpacing: '-0.02em', color: '#fff',
+            textTransform: 'uppercase', textAlign: 'center', maxWidth: 1100, margin: '0 auto',
+          }}>
+            Your rivals are already ahead.{' '}
+            <CyclingPill words={ROLES} color="accent" />
+          </h2>
+        </div>
+
+        <div
+          ref={btnsRef}
+          className="lreveal"
+          style={{ '--reveal-y': '24px', '--reveal-blur': '6px', '--reveal-delay': '150ms', display: 'flex', justifyContent: 'center', gap: 16, marginTop: 40 } as React.CSSProperties}
+        >
+          <button className="lbtn" onClick={() => { navigate('/signup'); window.scrollTo(0, 0); }}>Signup</button>
+          <button className="lbtn lbtn--outline" onClick={() => { navigate('/features'); window.scrollTo(0, 0); }}>Explore</button>
+        </div>
+
+      </div>
+
+    </section>
+  );
+}
