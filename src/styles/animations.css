@@ -1,0 +1,127 @@
+@keyframes heroLoadIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.hero-text {
+  animation: heroLoadIn 700ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.hero-text:nth-child(1) {
+  animation-delay: 0ms;
+}
+.hero-text:nth-child(2) {
+  animation-delay: 120ms;
+}
+.hero-text:nth-child(3) {
+  animation-delay: 220ms;
+}
+.hero-text:nth-child(4) {
+  animation-delay: 320ms;
+}
+
+@keyframes playerLoadIn {
+  from {
+    opacity: 0;
+    transform: scale(0.7) rotateY(45deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotateY(0);
+  }
+}
+
+.player-model {
+  animation: playerLoadIn 900ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 200ms;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, -10px);
+  }
+}
+
+.scroll-indicator {
+  animation: bounce 2.2s ease-in-out infinite;
+}
+
+@keyframes rotateCW {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rotateCCW {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.circle-1 {
+  animation: rotateCW 35s linear infinite;
+  transform-box: fill-box;
+}
+
+.circle-2 {
+  animation: rotateCCW 45s linear infinite;
+  transform-box: fill-box;
+}
+
+@keyframes glowPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(26,101,211, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(26,101,211, 0.4);
+  }
+}
+
+.glow-hover:hover {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-text,
+  .player-model,
+  .scroll-indicator,
+  .circle-1,
+  .circle-2,
+  .float {
+    animation: none !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
