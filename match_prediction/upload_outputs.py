@@ -5,9 +5,9 @@ from decimal import Decimal
 
 dynamodb = boto3.resource(
     'dynamodb',
-    region_name='eu-north-1',
-    aws_access_key_id='***REMOVED***',
-    aws_secret_access_key='***REMOVED***'
+    region_name='',
+    aws_access_key_id='',
+    aws_secret_access_key=''
 )
 
 def to_decimal(obj):
