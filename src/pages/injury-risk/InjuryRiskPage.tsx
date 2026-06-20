@@ -1,30 +1,35 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CaretDown } from '@phosphor-icons/react';
 import PageBanner from '../../components/dashboard/PageBanner';
 import Spinner from '../../components/ui/Spinner';
 import PlayerAvatar from '../../components/ui/PlayerAvatar';
 import ClubLogo from '../../components/ui/ClubLogo';
-import { injuriesService } from '../../services/injuries.service';
+import { injuriesService, type InjuryPrediction } from '../../services/injuries.service';
 
 const INJURY_STATS = [
   { value: 532, suffix: '', label: 'Players tracked' },
-  { value: 87,  suffix: '%', label: 'Accuracy' },
+  { value: 67,  suffix: '%', label: 'AUC' },
   { value: 20,  suffix: '', label: 'PL Clubs' },
   { value: 11,  suffix: '', label: 'Positions mapped' },
 ];
 
 const E = [0.16, 1, 0.3, 1] as const;
 
-type RiskLevel = 'High' | 'Medium' | 'Low' | 'Fit';
+type RiskLevel = 'High' | 'Low';
 
-interface PitchPlayer {
+interface SquadPlayer {
   id: number;
   name: string; shortName: string;
   club: string; position: string;
-  risk: RiskLevel; riskPct: number;
+  risk: RiskLevel; rankScore: number;
+  minutesPlayed: number;
   bodyPart: string; returnDate: string;
-  pitchX: number; pitchY: number;
   imageKey: string;
+}
+
+interface PitchPlayer extends SquadPlayer {
+  pitchX: number; pitchY: number;
 }
 
 const PITCH_SLOTS = [
@@ -41,16 +46,22 @@ const PITCH_SLOTS = [
   { position: 'RW', pitchX: 73, pitchY: 78 },
 ];
 
-const riskGlow:  Record<RiskLevel, string> = { High: '#939A9E', Medium: '#5A8FA8', Low: '#1A65D3', Fit: '#1A65D3' };
-const riskBg:    Record<RiskLevel, string> = { High: 'rgba(26,101,211,0.06)', Medium: 'rgba(26,101,211,0.10)', Low: 'rgba(26,101,211,0.15)', Fit: 'rgba(26,101,211,0.15)' };
-const riskLabel: Record<RiskLevel, string> = { High: 'High Risk', Medium: 'Medium Risk', Low: 'Low Risk', Fit: 'Fit' };
+// Group pitch slots by broad position so a player lands in a slot matching their real position_group.
+const SLOTS_BY_GROUP: Record<string, typeof PITCH_SLOTS> = {
+  GK: PITCH_SLOTS.filter(s => s.position === 'GK'),
+  DF: PITCH_SLOTS.filter(s => s.position === 'RB' || s.position === 'CB' || s.position === 'LB'),
+  MF: PITCH_SLOTS.filter(s => s.position === 'DM' || s.position === 'CM'),
+  FW: PITCH_SLOTS.filter(s => s.position === 'LW' || s.position === 'ST' || s.position === 'RW'),
+};
 
-const riskRgb: Record<RiskLevel, string> = { High: '26,101,211', Medium: '26,101,211', Low: '26,101,211', Fit: '26,101,211' };
+const riskGlow:  Record<RiskLevel, string> = { High: '#939A9E', Low: '#1A65D3' };
+const riskBg:    Record<RiskLevel, string> = { High: 'rgba(26,101,211,0.06)', Low: 'rgba(26,101,211,0.15)' };
+const riskLabel: Record<RiskLevel, string> = { High: 'High Risk', Low: 'Low Risk' };
+
+const riskRgb: Record<RiskLevel, string> = { High: '26,101,211', Low: '26,101,211' };
 const riskGlassOpacity: Record<RiskLevel, [number, number, number]> = {
-  High:   [0.10, 0.06, 0.08],
-  Medium: [0.16, 0.10, 0.13],
-  Low:    [0.22, 0.14, 0.18],
-  Fit:    [0.22, 0.14, 0.18],
+  High: [0.10, 0.06, 0.08],
+  Low:  [0.22, 0.14, 0.18],
 };
 
 const toX = (px: number) => ((18 + (px / 100) * 764) / 800) * 100;
@@ -83,7 +94,7 @@ function PlayerNode({ p, onHover, isHovered, isMobile }: { p: PitchPlayer; onHov
         cursor: 'pointer',
       }}
     >
-      {p.risk !== 'Fit' && (
+      {p.risk === 'High' && (
         <motion.div
           animate={{ scale: [1, 1.7, 1], opacity: [0.55, 0, 0.55] }}
           transition={{ duration: 2.4, repeat: Infinity, ease: 'easeOut' }}
@@ -134,13 +145,12 @@ function PlayerNode({ p, onHover, isHovered, isMobile }: { p: PitchPlayer; onHov
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#F2F2F2', lineHeight: 1.2 }}>{p.name}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: '#939A9E' }}>
                   <ClubLogo club={p.club.toLowerCase()} size={12} />
-                  <span>{p.position} · {p.club}</span>
+                  <span>{p.position} · {p.club} · {p.minutesPlayed}'</span>
                 </div>
               </div>
             </div>
-            <div style={{ background: riskBg[p.risk], border: `1px solid ${glow}35`, borderRadius: 8, padding: '8px 10px', marginBottom: 10 }}>
-              <div style={{ fontSize: 11, color: glow, fontWeight: 700 }}>{riskLabel[p.risk]}</div>
-              <div style={{ fontSize: 22, fontWeight: 900, color: '#F2F2F2', lineHeight: 1 }}>{p.riskPct}%</div>
+            <div style={{ background: riskBg[p.risk], border: `1px solid ${glow}35`, borderRadius: 8, padding: '10px', marginBottom: 10, textAlign: 'center' }}>
+              <div style={{ fontSize: 14, color: glow, fontWeight: 800, letterSpacing: '0.04em' }}>{riskLabel[p.risk]}</div>
             </div>
             {p.bodyPart !== '—'
               ? <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
@@ -156,7 +166,7 @@ function PlayerNode({ p, onHover, isHovered, isMobile }: { p: PitchPlayer; onHov
   );
 }
 
-function PlayerCard({ p, rank, onHover, isHovered }: { p: PitchPlayer; rank: number; onHover: (id: number | null) => void; isHovered: boolean }) {
+function PlayerCard({ p, rank, onHover, isHovered }: { p: SquadPlayer; rank: number; onHover: (id: number | null) => void; isHovered: boolean }) {
   const glow = riskGlow[p.risk];
   const rgb  = riskRgb[p.risk];
   const [op0, op1, op2] = riskGlassOpacity[p.risk];
@@ -220,7 +230,7 @@ function PlayerCard({ p, rank, onHover, isHovered }: { p: PitchPlayer; rank: num
       }}>{riskLabel[p.risk]}</div>
 
       <div style={{ position: 'relative', marginTop: 10 }}>
-        {p.risk !== 'Fit' && (
+        {p.risk === 'High' && (
           <motion.div
             animate={{ scale: [1, 1.55, 1], opacity: [0.5, 0, 0.5] }}
             transition={{ duration: 2.4, repeat: Infinity, ease: 'easeOut' }}
@@ -261,30 +271,35 @@ function PlayerCard({ p, rank, onHover, isHovered }: { p: PitchPlayer; rank: num
 
       <div>
         <div style={{
-          fontSize: 36, fontWeight: 900, color: '#F2F2F2',
-          lineHeight: 1, letterSpacing: '-0.02em',
+          fontSize: 19, fontWeight: 900, color: glow,
+          lineHeight: 1, letterSpacing: '-0.01em', textTransform: 'uppercase',
           textShadow: `0 0 20px ${glow}80`,
         }}>
-          {p.riskPct}<span style={{ fontSize: 15, fontWeight: 700, opacity: 0.8 }}>%</span>
+          {riskLabel[p.risk]}
         </div>
-        <div style={{ fontSize: 8, color: '#939A9E', letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 2 }}>Injury Risk</div>
-      </div>
-
-      <div style={{ width: '100%', height: 2, background: 'rgba(255,255,255,0.1)', borderRadius: 999, overflow: 'hidden', marginTop: 2 }}>
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${p.riskPct}%` }}
-          transition={{ duration: 0.9, ease: E, delay: rank * 0.05 + 0.25 }}
-          style={{ height: '100%', background: `linear-gradient(90deg, rgba(255,255,255,0.9), ${glow})`, borderRadius: 999 }}
-        />
+        <div style={{ fontSize: 8, color: '#939A9E', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 2 }}>
+          {p.risk === 'High' ? 'Top 15% by model score' : 'Bottom 85% by model score'}
+        </div>
       </div>
     </motion.div>
   );
 }
 
+const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function formatMatchDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  return `${d} ${MONTH_ABBR[m - 1]} ${y}`;
+}
+
 export default function InjuryRiskPage() {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
-  const [pitchPlayers, setPitchPlayers] = useState<PitchPlayer[]>([]);
+  const [allRows, setAllRows] = useState<InjuryPrediction[]>([]);
+  const [selectedTeam, setSelectedTeam] = useState('Arsenal');
+  const [teamPickerOpen, setTeamPickerOpen] = useState(false);
+  const teamPickerRef = useRef<HTMLDivElement>(null);
+  const [dateIdx, setDateIdx] = useState(0);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const datePickerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 640);
@@ -296,46 +311,150 @@ export default function InjuryRiskPage() {
   }, []);
 
   useEffect(() => {
-    injuriesService.getPredictions(200)
-      .then(data => {
-        const byPlayer = new Map<string, typeof data[0]>();
-        for (const row of data) {
-          const existing = byPlayer.get(row.player_name);
-          if (!existing || row.match_date > existing.match_date) byPlayer.set(row.player_name, row);
-        }
-        const sorted = [...byPlayer.values()].sort(
-          (a, b) => injuriesService.riskPct(b) - injuriesService.riskPct(a)
-        ).slice(0, 11);
+    const handler = (e: MouseEvent) => {
+      if (teamPickerRef.current && !teamPickerRef.current.contains(e.target as Node)) {
+        setTeamPickerOpen(false);
+      }
+      if (datePickerRef.current && !datePickerRef.current.contains(e.target as Node)) {
+        setDatePickerOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
-        const mapped: PitchPlayer[] = sorted.map((p, i) => {
-          const slot = PITCH_SLOTS[i] ?? PITCH_SLOTS[10];
-          const riskPct = injuriesService.riskPct(p);
-          const risk = injuriesService.riskLevel(p);
-          const shortName = p.player_name.split(' ').slice(-1)[0];
-          return {
-            id: i + 1,
-            name: p.player_name,
-            shortName,
-            club: p.team,
-            position: slot.position,
-            risk,
-            riskPct,
-            bodyPart: p.muscle_injury_history === '1' ? 'Muscle' : p.hamstring_history === '1' ? 'Hamstring' : '—',
-            returnDate: '—',
-            pitchX: slot.pitchX,
-            pitchY: slot.pitchY,
-            imageKey: p.player_name.toLowerCase(),
-          };
-        });
-        setPitchPlayers(mapped);
-      })
+  useEffect(() => {
+    // Fetch every row once (~11k, one per player per match date across the season) and
+    // filter client-side per team/date selection.
+    injuriesService.getPredictions()
+      .then(data => setAllRows(data))
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, []);
 
-  const cardPlayers = [...pitchPlayers].sort((a, b) => a.riskPct - b.riskPct);
-  const highCount   = pitchPlayers.filter(p => p.risk === 'High').length;
-  const medCount    = pitchPlayers.filter(p => p.risk === 'Medium').length;
+  const allTeams = useMemo(() => [...new Set(allRows.map(r => r.team))].sort(), [allRows]);
+
+  // Reference gameweek calendar: every PL team plays exactly 38 matches, one per gameweek, so
+  // whichever team has the most complete date coverage gives a reliable GW1..GW38 sequence.
+  // A few teams (e.g. Leicester) have data gaps, so their dates are nearest-matched against
+  // this reference instead of trusting their own (incomplete) chronological index.
+  const gwReferenceDates = useMemo(() => {
+    const byTeam = new Map<string, Set<string>>();
+    for (const r of allRows) {
+      if (!byTeam.has(r.team)) byTeam.set(r.team, new Set());
+      byTeam.get(r.team)!.add(r.match_date);
+    }
+    let best: string[] = [];
+    for (const dates of byTeam.values()) {
+      if (dates.size > best.length) best = [...dates].sort();
+    }
+    return best;
+  }, [allRows]);
+
+  const gameweekFor = (date: string): number | null => {
+    if (!gwReferenceDates.length || !date) return null;
+    const target = new Date(date).getTime();
+    let bestIdx = 0, bestDiff = Infinity;
+    gwReferenceDates.forEach((d, i) => {
+      const diff = Math.abs(new Date(d).getTime() - target);
+      if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
+    });
+    return bestIdx + 1;
+  };
+
+  // Snapshot dates are scoped to the selected team — different teams' fixtures fall on different
+  // exact calendar days (Fri/Sat/Sun/Mon), so the picker only ever shows dates that team actually has.
+  const teamDates = useMemo(
+    () => [...new Set(allRows.filter(r => r.team === selectedTeam).map(r => r.match_date))].sort(),
+    [allRows, selectedTeam]
+  );
+
+  useEffect(() => { setDateIdx(0); }, [selectedTeam]);
+
+  const selectedDate = teamDates[dateIdx] ?? '';
+
+  // Matchday squads run 14-16 players but the pitch only has 11 slots. Within each position group,
+  // rank by actual minutes played in that specific match — there's no explicit starter flag in the
+  // data, but minutes_played_this_match is a direct, real signal (≈90 = started, fewer = came off
+  // the bench) rather than an arbitrary cutoff. Top N per group (matching slot capacity) start;
+  // the rest are real substitutes for that match, not a display-only split.
+  const { startingXI, substitutes } = useMemo(() => {
+    const players = allRows.filter(r => r.team === selectedTeam && r.match_date === selectedDate);
+
+    // Unrecognized position_group values (likely an abbreviated raw position code the
+    // classifier's substring check didn't catch -- e.g. real wingers/defenders showing as
+    // "Unknown") go to a backfill pool instead of being force-defaulted into MF, which would
+    // starve the real DF/FW slots. The backfill pool also catches genuine MF overflow, so any
+    // empty pitch slot gets the next-highest-minutes real starter regardless of their group.
+    const byGroup: Record<string, InjuryPrediction[]> = { GK: [], DF: [], MF: [], FW: [] };
+    const unclassified: InjuryPrediction[] = [];
+    players.forEach(p => {
+      if (p.position_group === 'GK' || p.position_group === 'DF' || p.position_group === 'MF' || p.position_group === 'FW') {
+        byGroup[p.position_group].push(p);
+      } else {
+        unclassified.push(p);
+      }
+    });
+
+    const xi: PitchPlayer[] = [];
+    const overflow: InjuryPrediction[] = [];
+    const toBase = (p: InjuryPrediction, group: string, idCounter: number): SquadPlayer => {
+      const shortName = p.player_name.split(' ').slice(-1)[0];
+      const bodyPart = Number(p.muscle_injury_history) === 1 ? 'Muscle' : Number(p.hamstring_history) === 1 ? 'Hamstring' : '—';
+      return {
+        id: idCounter, name: p.player_name, shortName, club: p.team,
+        position: group, risk: injuriesService.riskLevel(p), rankScore: injuriesService.rankScore(p),
+        minutesPlayed: Number(p.minutes_played_this_match) || 0,
+        bodyPart, returnDate: '—', imageKey: p.player_name.toLowerCase(),
+      };
+    };
+
+    let idCounter = 0;
+    (['GK', 'DF', 'MF', 'FW'] as const).forEach(group => {
+      const sorted = [...byGroup[group]].sort(
+        (a, b) => (Number(b.minutes_played_this_match) || 0) - (Number(a.minutes_played_this_match) || 0)
+      );
+      const slots = SLOTS_BY_GROUP[group];
+
+      sorted.forEach((p, idx) => {
+        idCounter++;
+        const slot = slots[idx];
+        if (slot) {
+          xi.push({ ...toBase(p, group, idCounter), position: slot.position, pitchX: slot.pitchX, pitchY: slot.pitchY });
+        } else {
+          overflow.push(p);
+        }
+      });
+    });
+
+    // Backfill any empty pitch slots (real DF/FW shortfall, or Unknown-tagged real starters)
+    // with the highest-minutes remaining players -- never promote someone who didn't actually
+    // play, so the pitch shows fewer than 11 only when the team genuinely has that few rows.
+    const emptySlots = Object.values(SLOTS_BY_GROUP).flat().length - xi.length;
+    const backfillPool = [...unclassified, ...overflow]
+      .filter(p => (Number(p.minutes_played_this_match) || 0) > 0)
+      .sort((a, b) => (Number(b.minutes_played_this_match) || 0) - (Number(a.minutes_played_this_match) || 0));
+    const emptySlotObjs = PITCH_SLOTS.filter(s => !xi.some(x => x.pitchX === s.pitchX && x.pitchY === s.pitchY));
+
+    for (let i = 0; i < Math.min(emptySlots, backfillPool.length); i++) {
+      idCounter++;
+      const p = backfillPool[i];
+      const slot = emptySlotObjs[i];
+      xi.push({ ...toBase(p, slot.position, idCounter), position: slot.position, pitchX: slot.pitchX, pitchY: slot.pitchY });
+    }
+
+    const usedNames = new Set(xi.map(p => p.name));
+    const subs = [...unclassified, ...overflow]
+      .filter(p => !usedNames.has(p.player_name))
+      .map((p, i) => toBase(p, p.position_group || 'MF', 1000 + i));
+    subs.sort((a, b) => b.minutesPlayed - a.minutesPlayed);
+    return { startingXI: xi, substitutes: subs };
+  }, [allRows, selectedTeam, selectedDate]);
+
+  const allSquadPlayers = [...startingXI, ...substitutes];
+  const cardPlayers = [...allSquadPlayers].sort((a, b) => b.rankScore - a.rankScore);
+  const highCount   = allSquadPlayers.filter(p => p.risk === 'High').length;
+  const lowCount    = allSquadPlayers.filter(p => p.risk === 'Low').length;
 
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -358,21 +477,175 @@ export default function InjuryRiskPage() {
         description="Real-time squad fitness radar — powered by historical injury patterns and workload data"
         stats={[
           { value: String(highCount), label: 'High Risk' },
-          { value: String(medCount),  label: 'Monitoring' },
-          { value: '87%',             label: 'Accuracy' },
+          { value: String(lowCount),  label: 'Low Risk' },
+          { value: '67%',             label: 'AUC' },
         ]}
         badge="Live Monitoring"
       />
 
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
 
-        <div style={{ marginTop: 28 }}>
+        <div style={{ marginTop: 28, display: 'flex', gap: 28, flexWrap: 'wrap' }}>
+          <div>
+            <span style={{ fontSize: 9, fontWeight: 800, color: '#939A9E', letterSpacing: '0.2em', textTransform: 'uppercase', display: 'block', marginBottom: 10 }}>Select Team</span>
+            <div ref={teamPickerRef} style={{ position: 'relative', display: 'inline-block' }}>
+              <button
+                onClick={() => setTeamPickerOpen(o => !o)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 16px', borderRadius: 999,
+                  background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(26,101,211,0.45)',
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}
+              >
+                <ClubLogo club={selectedTeam.toLowerCase()} size={20} />
+                <span style={{ fontSize: 13, fontWeight: 800, color: '#F2F2F2' }}>{selectedTeam}</span>
+                <CaretDown size={12} color="#939A9E" style={{ transform: teamPickerOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: '200ms' }} />
+              </button>
+
+              <AnimatePresence>
+                {teamPickerOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                    transition={{ duration: 0.18, ease: E }}
+                    style={{
+                      position: 'absolute', top: 'calc(100% + 10px)', left: 0,
+                      background: 'rgba(12,12,12,0.97)',
+                      backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: 16, padding: 8,
+                      boxShadow: '0 16px 48px rgba(0,0,0,0.6)',
+                      zIndex: 200, maxHeight: 320, overflowY: 'auto',
+                      display: 'flex', flexDirection: 'column', gap: 2,
+                      minWidth: 220,
+                    }}
+                  >
+                    {allTeams.map(team => {
+                      const isActive = team === selectedTeam;
+                      return (
+                        <button
+                          key={team}
+                          onClick={() => { setSelectedTeam(team); setTeamPickerOpen(false); }}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 10,
+                            padding: '8px 12px', borderRadius: 10, border: 'none',
+                            background: isActive ? 'rgba(26,101,211,0.16)' : 'transparent',
+                            color: isActive ? '#1A65D3' : '#F2F2F2',
+                            cursor: 'pointer', fontSize: 13, fontWeight: isActive ? 800 : 600,
+                            textAlign: 'left', fontFamily: 'inherit', transition: '120ms',
+                          }}
+                          onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.06)'; }}
+                          onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                        >
+                          <ClubLogo club={team.toLowerCase()} size={18} />
+                          {team}
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {teamDates.length > 0 && (
+            <div>
+              <span style={{ fontSize: 9, fontWeight: 800, color: '#939A9E', letterSpacing: '0.2em', textTransform: 'uppercase', display: 'block', marginBottom: 10 }}>Gameweek</span>
+              <div ref={datePickerRef} style={{ position: 'relative', display: 'inline-block' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 0, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(26,101,211,0.45)', borderRadius: 999, padding: '3px 4px' }}>
+                  <button
+                    onClick={() => setDateIdx(i => Math.max(0, i - 1))}
+                    disabled={dateIdx <= 0}
+                    style={{
+                      width: 28, height: 28, borderRadius: 999, border: 'none',
+                      background: 'transparent', color: dateIdx <= 0 ? 'rgba(255,255,255,0.15)' : '#939A9E',
+                      cursor: dateIdx <= 0 ? 'not-allowed' : 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 14, fontWeight: 700,
+                    }}
+                  >‹</button>
+
+                  <button
+                    onClick={() => setDatePickerOpen(o => !o)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 12px', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                  >
+                    <span style={{ fontSize: 13, fontWeight: 800, color: '#F2F2F2' }}>
+                      {selectedDate ? `GW${gameweekFor(selectedDate)} · ${formatMatchDate(selectedDate)}` : '—'}
+                    </span>
+                    {dateIdx === 0 && <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', color: '#1A65D3', textTransform: 'uppercase', background: 'rgba(26,101,211,0.15)', border: '1px solid rgba(26,101,211,0.3)', borderRadius: 999, padding: '1px 6px' }}>Start</span>}
+                    {dateIdx === teamDates.length - 1 && teamDates.length > 1 && <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', color: '#939A9E', textTransform: 'uppercase', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 999, padding: '1px 6px' }}>Final</span>}
+                    <CaretDown size={10} color="rgba(255,255,255,0.3)" style={{ transform: datePickerOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: '200ms' }} />
+                  </button>
+
+                  <button
+                    onClick={() => setDateIdx(i => Math.min(teamDates.length - 1, i + 1))}
+                    disabled={dateIdx >= teamDates.length - 1}
+                    style={{
+                      width: 28, height: 28, borderRadius: 999, border: 'none',
+                      background: 'transparent', color: dateIdx >= teamDates.length - 1 ? 'rgba(255,255,255,0.15)' : '#939A9E',
+                      cursor: dateIdx >= teamDates.length - 1 ? 'not-allowed' : 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 14, fontWeight: 700,
+                    }}
+                  >›</button>
+                </div>
+
+                <AnimatePresence>
+                  {datePickerOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                      transition={{ duration: 0.18, ease: E }}
+                      style={{
+                        position: 'absolute', top: 'calc(100% + 10px)', left: 0,
+                        background: 'rgba(12,12,12,0.97)',
+                        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: 16, padding: 8,
+                        boxShadow: '0 16px 48px rgba(0,0,0,0.6)',
+                        zIndex: 200, maxHeight: 320, overflowY: 'auto',
+                        display: 'flex', flexDirection: 'column', gap: 2,
+                        minWidth: 180,
+                      }}
+                    >
+                      {teamDates.map((d, i) => {
+                        const isActive = i === dateIdx;
+                        return (
+                          <button
+                            key={d}
+                            onClick={() => { setDateIdx(i); setDatePickerOpen(false); }}
+                            style={{
+                              padding: '8px 12px', borderRadius: 10, border: 'none',
+                              background: isActive ? 'rgba(26,101,211,0.16)' : 'transparent',
+                              color: isActive ? '#1A65D3' : '#F2F2F2',
+                              cursor: 'pointer', fontSize: 13, fontWeight: isActive ? 800 : 600,
+                              textAlign: 'left', fontFamily: 'inherit', transition: '120ms',
+                            }}
+                            onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.06)'; }}
+                            onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                          >
+                            GW{gameweekFor(d)} · {formatMatchDate(d)}
+                          </button>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginTop: 24 }}>
 
           <div className="injury-section-header" style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
             <span style={{ fontSize: 9, fontWeight: 800, color: '#939A9E', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Formation View</span>
             <div className="injury-divider" style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
             <div className="injury-legend-items" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              {(['High', 'Medium', 'Low', 'Fit'] as RiskLevel[]).map(r => (
+              {(['High', 'Low'] as RiskLevel[]).map(r => (
                 <div key={r} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: riskGlow[r], boxShadow: `0 0 5px ${riskGlow[r]}` }} />
                   <span style={{ fontSize: 10, color: '#939A9E', fontWeight: 600 }}>{riskLabel[r]}</span>
@@ -546,7 +819,7 @@ export default function InjuryRiskPage() {
               </g>
             </svg>
 
-            {pitchPlayers.map(p => (
+            {startingXI.map(p => (
               <PlayerNode key={p.id} p={p} onHover={setHoveredId} isHovered={hoveredId === p.id} isMobile={isMobile} />
             ))}
 
@@ -556,6 +829,36 @@ export default function InjuryRiskPage() {
               fontWeight: 800, letterSpacing: '0.22em', textTransform: 'uppercase',
             }}>4 · 3 · 3</div>
           </motion.div>
+
+          {substitutes.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <div style={{ fontSize: 9, fontWeight: 800, color: '#939A9E', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>
+                Substitutes · {substitutes.length}
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {substitutes.map(p => {
+                  const glow = riskGlow[p.risk];
+                  return (
+                    <div
+                      key={p.id}
+                      onMouseEnter={() => setHoveredId(p.id)}
+                      onMouseLeave={() => setHoveredId(null)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px 6px 6px',
+                        borderRadius: 999, background: hoveredId === p.id ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${glow}35`, cursor: 'pointer', transition: '150ms',
+                      }}
+                    >
+                      <PlayerAvatar name={p.name} size={28} style={{ borderRadius: '50%', border: `1.5px solid ${glow}` }} />
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#F2F2F2' }}>{p.shortName}</span>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: '#939A9E' }}>{p.position} · {p.minutesPlayed}'</span>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: glow, flexShrink: 0 }} />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         <div style={{ marginTop: 36 }}>
@@ -592,8 +895,8 @@ export default function InjuryRiskPage() {
             }}
           >
             <span style={{ fontSize: 9, fontWeight: 800, color: '#939A9E', letterSpacing: '0.18em', textTransform: 'uppercase' }}>Squad Overview</span>
-            {(['High', 'Medium', 'Low', 'Fit'] as RiskLevel[]).map(r => {
-              const count = pitchPlayers.filter(p => p.risk === r).length;
+            {(['High', 'Low'] as RiskLevel[]).map(r => {
+              const count = allSquadPlayers.filter(p => p.risk === r).length;
               return (
                 <div key={r} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ width: 7, height: 7, borderRadius: '50%', background: riskGlow[r], boxShadow: `0 0 5px ${riskGlow[r]}` }} />

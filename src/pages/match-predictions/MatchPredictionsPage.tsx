@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CaretDown, ArrowRight, Lightning, MagnifyingGlass } from '@phosphor-icons/react';
+import { CaretDown, ArrowRight, MagnifyingGlass } from '@phosphor-icons/react';
 import PageBanner from '../../components/dashboard/PageBanner';
 import { DBtn, EASE } from '../../components/dashboard/DS';
 import ClubLogo from '../../components/ui/ClubLogo';
@@ -16,17 +16,42 @@ interface Match {
   pick: string;
   homeProb: number; drawProb: number; awayProb: number;
   confidence: Confidence; confidencePct: number;
-  reason: string;
   keyFact: string;
-  gameweek: number;
+  gameweek: number | null;
 }
+
+// 2024/25 Premier League — Matchweek 1 (16–19 Aug 2024), the actual fixtures played.
+// Hardcoded because the live fixtures lookup needs FOOTBALL_DATA_API_KEY set in backend/.env;
+// without it gwMap stays empty and every prediction falls back to the same gameweek.
+const GW1_FIXTURES: { home: string; away: string; date: string }[] = [
+  { home: 'Manchester United', away: 'Fulham',         date: 'Fri 16 Aug 2024' },
+  { home: 'Ipswich',           away: 'Liverpool',       date: 'Sat 17 Aug 2024' },
+  { home: 'Arsenal',           away: 'Wolves',          date: 'Sat 17 Aug 2024' },
+  { home: 'Everton',           away: 'Brighton',        date: 'Sat 17 Aug 2024' },
+  { home: 'Newcastle',         away: 'Southampton',     date: 'Sat 17 Aug 2024' },
+  { home: "Nott'm Forest",     away: 'Bournemouth',     date: 'Sat 17 Aug 2024' },
+  { home: 'West Ham',          away: 'Aston Villa',     date: 'Sat 17 Aug 2024' },
+  { home: 'Brentford',         away: 'Crystal Palace',  date: 'Sat 17 Aug 2024' },
+  { home: 'Chelsea',           away: 'Manchester City', date: 'Sun 18 Aug 2024' },
+  { home: 'Leicester',         away: 'Tottenham',       date: 'Mon 19 Aug 2024' },
+];
+
+const GW1_MAP: Record<string, number> = {};
+const GW1_ORDER: Record<string, number> = {};
+const GW1_DATE: Record<string, string> = {};
+GW1_FIXTURES.forEach((f, i) => {
+  const key = `${f.home}_${f.away}`;
+  GW1_MAP[key] = 1;
+  GW1_ORDER[key] = i;
+  GW1_DATE[key] = f.date;
+});
 
 function mapPrediction(
   p: MatchPrediction,
   idx: number,
   gwMap: Record<string, number>,
-  currentGW: number,
 ): Match {
+  const key = `${p.home_team}_${p.away_team}`;
   const homeProb = Math.round(parseFloat(p.home_win_pct));
   const drawProb = Math.round(parseFloat(p.draw_pct));
   const awayProb = Math.round(parseFloat(p.away_win_pct));
@@ -36,12 +61,13 @@ function mapPrediction(
   return {
     id: idx + 1,
     home: p.home_team, away: p.away_team,
-    league: 'Premier League', time: '—',
+    league: 'Premier League', time: GW1_DATE[key] ?? '—',
     pick, homeProb, drawProb, awayProb,
     confidence, confidencePct: maxProb,
-    reason: `xG home: ${p.xg_home} · xG away: ${p.xg_away}. Model predicts ${p.pred_home}–${p.pred_away}.`,
     keyFact: `Draw probability: ${Math.round(parseFloat(p.dc_draw_prob) * 100)}%`,
-    gameweek: gwMap[`${p.home_team}_${p.away_team}`] ?? currentGW,
+    // Real gameweek if known (GW1 hardcoded, or live fixtures API if configured) — otherwise
+    // unknown, so it never falsely appears under a gameweek it wasn't actually played in.
+    gameweek: gwMap[key] ?? null,
   };
 }
 
@@ -276,14 +302,6 @@ function DetailPanel({ selected }: { selected: Match }) {
         ))}
       </div>
 
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-          <Lightning size={11} color="#1A65D3" weight="fill" />
-          <p style={{ fontSize: 9, color: '#1A65D3', letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 700, margin: 0 }}>AI Reasoning</p>
-        </div>
-        <p style={{ fontSize: 13, color: '#939A9E', lineHeight: 1.65, margin: 0 }}>{selected.reason}</p>
-      </div>
-
       <div style={{ padding: '13px 20px', background: 'rgba(26,101,211,0.04)' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9 }}>
           <span style={{ width: 3, height: 3, borderRadius: '50%', background: '#1A65D3', marginTop: 5, flexShrink: 0, display: 'inline-block' }} />
@@ -304,8 +322,10 @@ const MATCH_STATS = [
 const FALLBACK_GW = 1;
 
 export default function MatchPredictionsPage() {
-  const [gwMap, setGwMap] = useState<Record<string, number>>({});
-  const [currentGW, setCurrentGW] = useState(FALLBACK_GW);
+  // GW1 is real, hardcoded data — always present as the floor. The live fixtures API
+  // (needs FOOTBALL_DATA_API_KEY) extends/overrides it with the rest of the season when configured.
+  const [gwMap, setGwMap] = useState<Record<string, number>>(GW1_MAP);
+  const [currentGW] = useState(FALLBACK_GW);
   const [minGW] = useState(1);
   const [maxGW, setMaxGW] = useState(38);
   const [gameweek, setGameweek] = useState(FALLBACK_GW);
@@ -332,25 +352,24 @@ export default function MatchPredictionsPage() {
   useEffect(() => {
     fixturesService.getPL()
       .then(pl => {
-        setGwMap(pl.gwMap);
-        setCurrentGW(pl.currentGW);
+        setGwMap({ ...GW1_MAP, ...pl.gwMap });
         setMaxGW(pl.maxGW);
-        setGameweek(pl.currentGW);
       })
-      .catch(() => { /* fixtures API unavailable — fall back to gwMap={} */ });
+      .catch(() => { /* fixtures API unavailable — GW1_MAP already covers matchweek 1 */ });
   }, []);
 
   useEffect(() => {
     matchesService.getAllPredictions()
       .then(data => {
-        const mapped = data.map((p, i) => mapPrediction(p, i, gwMap, currentGW));
+        const mapped = data.map((p, i) => mapPrediction(p, i, gwMap));
+        mapped.sort((a, b) => (GW1_ORDER[`${a.home}_${a.away}`] ?? 99) - (GW1_ORDER[`${b.home}_${b.away}`] ?? 99));
         setMatches(mapped);
-        setSelected(mapped[0] ?? null);
+        setSelected(mapped.find(m => m.gameweek === FALLBACK_GW) ?? mapped[0] ?? null);
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gwMap, currentGW]);
+  }, [gwMap]);
 
   const toggleGroup = (conf: Confidence) => {
     setExpandedGroups(prev => {
@@ -641,7 +660,11 @@ export default function MatchPredictionsPage() {
 
           {!loading && filtered.length === 0 && (
             <div style={{ textAlign: 'center', padding: '40px 0', color: '#939A9E', fontSize: 13 }}>
-              {selectedTeam ? `No fixtures found for ${selectedTeam}` : `No fixtures match "${search}"`}
+              {selectedTeam
+                ? `No fixtures found for ${selectedTeam} in GW${gameweek}`
+                : search
+                  ? `No fixtures match "${search}"`
+                  : `Fixture data for GW${gameweek} isn't loaded yet — only Matchweek 1 is available without a live fixtures feed.`}
             </div>
           )}
 

@@ -6,9 +6,10 @@ export interface InjuryPrediction {
   team: string;
   position_group: string;
   injury_probability: string;
-  chance_of_playing: string;
+  risk_tier: string;
   predicted_high_risk: string;
   currently_injured: string;
+  chance_of_playing: string;
   fpl_status_injured: string;
   fpl_status_doubtful: string;
   age: string;
@@ -16,15 +17,13 @@ export interface InjuryPrediction {
   hamstring_history: string;
   injuries_last_6m: string;
   injuries_last_12m: string;
-  total_days_missed: string;
   season: string;
+  minutes_played_this_match: number;
 }
 
 export const injuriesService = {
-  async getPredictions(limit = 100): Promise<InjuryPrediction[]> {
-    const { data } = await api.get<{ items: InjuryPrediction[] }>('/api/injuries/predictions', {
-      params: { limit },
-    });
+  async getPredictions(): Promise<InjuryPrediction[]> {
+    const { data } = await api.get<{ items: InjuryPrediction[] }>('/api/injuries/predictions');
     return data.items ?? [];
   },
 
@@ -35,15 +34,15 @@ export const injuriesService = {
     return data.items ?? [];
   },
 
-  riskPct(p: InjuryPrediction): number {
-    return Math.round(parseFloat(p.injury_probability) * 100);
+  // Internal ranking score only — the model's raw probability isn't calibrated (no Platt/isotonic
+  // step, and scale_pos_weight inflates it), so it's never shown to the user as a literal percentage.
+  // Validated signal is the binary risk_tier (top 15% by score = High Risk, 11.4% actual rate
+  // vs 5.2% for Low Risk — see injury_prediction/README.md).
+  rankScore(p: InjuryPrediction): number {
+    return parseFloat(p.injury_probability) || 0;
   },
 
-  riskLevel(p: InjuryPrediction): 'High' | 'Medium' | 'Low' | 'Fit' {
-    const pct = injuriesService.riskPct(p);
-    if (pct >= 65) return 'High';
-    if (pct >= 35) return 'Medium';
-    if (pct >= 15) return 'Low';
-    return 'Fit';
+  riskLevel(p: InjuryPrediction): 'High' | 'Low' {
+    return p.risk_tier === 'High Risk' ? 'High' : 'Low';
   },
 };

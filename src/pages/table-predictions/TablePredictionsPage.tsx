@@ -8,45 +8,60 @@ const TABLE_STATS = [
   { value: 20,  suffix: '', label: 'Teams' },
   { value: 10,  suffix: 'K', label: 'Simulations' },
   { value: 38,  suffix: '', label: 'Matchdays' },
-  { value: 87,  suffix: '%', label: 'Accuracy' },
+  { value: 53.4, suffix: '%', label: 'Accuracy' },
 ];
 import ClubLogo from '../../components/ui/ClubLogo';
-import { matchesService, type StandingsRow } from '../../services/matches.service';
+import { matchesService, type StandingsRow, type PredictedStandingsRow, type SeasonStats } from '../../services/matches.service';
 
 const E = [0.16, 1, 0.3, 1] as const;
-
-type Form = 'W' | 'D' | 'L';
 
 interface ZoneTeam {
   pos: number; name: string; pts: number; played: number;
   won: number; drawn: number; lost: number;
-  form: Form[]; titlePct: number; uclPct: number; europaPct: number; relegPct: number;
+  last5: { w: number; d: number; l: number } | null;
+  titlePct: number; uclPct: number; relegPct: number;
   trajectory: 'up' | 'stable' | 'down';
 }
 
-function mapStandingsRow(r: StandingsRow, idx: number): ZoneTeam {
+function mapStandingsRow(
+  r: StandingsRow, idx: number,
+  probByTeam: Map<string, PredictedStandingsRow>,
+  seasonByTeam: Map<string, SeasonStats>,
+  last5ByTeam: Map<string, SeasonStats>,
+): ZoneTeam {
   const pts = Math.round(r.Predicted_Pts ?? r.Actual_Pts ?? 0);
   const diff = r.Diff ?? 0;
+  const prob = probByTeam.get(r.Team);
+  const season = seasonByTeam.get(r.Team);
+  const last5 = last5ByTeam.get(r.Team);
   return {
     pos: r.Predicted_Pos ?? idx + 1,
     name: r.Team,
     pts,
-    played: 38,
-    won: 0, drawn: 0, lost: 0,
-    form: [],
-    titlePct: idx === 0 ? 35 : idx === 1 ? 22 : 0,
-    uclPct: idx < 4 ? Math.max(0, 95 - idx * 15) : 0,
-    europaPct: idx < 7 ? Math.max(0, 80 - idx * 10) : 0,
-    relegPct: idx >= 17 ? Math.min(99, (idx - 16) * 30) : 0,
+    played: season?.Matches ?? 0,
+    won: season?.Wins ?? 0, drawn: season?.Draws ?? 0, lost: season?.Losses ?? 0,
+    last5: last5 ? { w: last5.Wins, d: last5.Draws, l: last5.Losses } : null,
+    titlePct: prob?.['Win Probability (%)'] ?? 0,
+    uclPct: prob?.['Top 4 Prob (%)'] ?? 0,
+    relegPct: prob?.['Relegation Prob (%)'] ?? 0,
     trajectory: diff > 2 ? 'up' : diff < -2 ? 'down' : 'stable',
   };
 }
-
-const formColor: Record<Form, string> = { W: '#1A65D3', D: 'rgba(255,255,255,0.3)', L: '#939A9E' };
 const TrajectoryIcon = ({ t }: { t: 'up' | 'stable' | 'down' }) =>
   t === 'up' ? <TrendingUp size={11} color="#1A65D3" /> :
   t === 'down' ? <TrendingDown size={11} color="#939A9E" /> :
   <Minus size={11} color="rgba(255,255,255,0.3)" />;
+
+// Real last-5 aggregate from match-output-analyst-last5 -- no chronological order is stored,
+// so this shows a W/D/L count instead of a fabricated ordered form strip.
+function Last5Badge({ last5 }: { last5: { w: number; d: number; l: number } | null }) {
+  if (!last5) return <span style={{ fontSize: 10, color: '#939A9E' }}>—</span>;
+  return (
+    <span style={{ fontSize: 10, fontWeight: 700, color: '#939A9E', whiteSpace: 'nowrap' }}>
+      L5 <span style={{ color: '#1A65D3' }}>{last5.w}W</span> {last5.d}D {last5.l}L
+    </span>
+  );
+}
 
 export default function TablePredictionsPage() {
   const [selectedTeam, setSelectedTeam] = useState<ZoneTeam | null>(null);
@@ -55,10 +70,18 @@ export default function TablePredictionsPage() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    matchesService.getStandingsComparison()
-      .then(data => {
-        const sorted = [...data].sort((a, b) => (a.Predicted_Pos ?? 99) - (b.Predicted_Pos ?? 99));
-        setTeams(sorted.map(mapStandingsRow));
+    Promise.all([
+      matchesService.getStandingsComparison(),
+      matchesService.getPredictedStandings(),
+      matchesService.getSeasonStats(),
+      matchesService.getLast5Stats(),
+    ])
+      .then(([comparison, predicted, season, last5]) => {
+        const probByTeam = new Map(predicted.map(p => [p.Team, p]));
+        const seasonByTeam = new Map(season.map(s => [s.Team, s]));
+        const last5ByTeam = new Map(last5.map(s => [s.Team, s]));
+        const sorted = [...comparison].sort((a, b) => (a.Predicted_Pos ?? 99) - (b.Predicted_Pos ?? 99));
+        setTeams(sorted.map((r, i) => mapStandingsRow(r, i, probByTeam, seasonByTeam, last5ByTeam)));
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
@@ -89,11 +112,11 @@ export default function TablePredictionsPage() {
         eyebrow="Analytics"
         title="Table"
         titleAccent="Predictions"
-        description="Monte Carlo season simulation across 10,000 runs — zone probabilities updated weekly"
+        description="Monte Carlo season simulation across 2,000 runs"
         stats={[
           { value: '20',  label: 'Teams' },
-          { value: '10K', label: 'Simulations' },
-          { value: '87%', label: 'Accuracy' },
+          { value: '2K',  label: 'Simulations' },
+          { value: '53.4%', label: 'Accuracy' },
         ]}
       />
 
@@ -148,11 +171,7 @@ export default function TablePredictionsPage() {
                     <span style={{ fontSize: 11, color: '#939A9E', fontWeight: 700, textAlign: 'center' }}>{team.pos}</span>
                     <ClubLogo club={team.name} size={22} />
                     <span style={{ fontSize: 13, fontWeight: 600, color: '#F2F2F2' }}>{team.name}</span>
-                    <div style={{ display: 'flex', gap: 3 }}>
-                      {team.form.map((f, fi) => (
-                        <span key={fi} style={{ width: 16, height: 16, borderRadius: '50%', background: `${formColor[f]}22`, border: `1px solid ${formColor[f]}60`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: formColor[f] }}>{f}</span>
-                      ))}
-                    </div>
+                    <Last5Badge last5={team.last5} />
                     <TrajectoryIcon t={team.trajectory} />
                     <span style={{ fontSize: 12, color: '#939A9E', textAlign: 'right' }}>P{team.played}</span>
                     <span style={{ fontSize: 16, fontWeight: 900, color: '#F2F2F2', textAlign: 'right' }}>{team.pts} <span style={{ fontSize: 10, color: '#939A9E', fontWeight: 600 }}>pts</span></span>
@@ -189,11 +208,7 @@ export default function TablePredictionsPage() {
                   <span style={{ fontSize: 11, color: '#939A9E', fontWeight: 700, textAlign: 'center' }}>{team.pos}</span>
                   <ClubLogo club={team.name} size={22} />
                   <span style={{ fontSize: 13, fontWeight: 600, color: '#F2F2F2' }}>{team.name}</span>
-                  <div style={{ display: 'flex', gap: 3 }}>
-                    {team.form.map((f, fi) => (
-                      <span key={fi} style={{ width: 16, height: 16, borderRadius: '50%', background: `${formColor[f]}22`, border: `1px solid ${formColor[f]}60`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: formColor[f] }}>{f}</span>
-                    ))}
-                  </div>
+                  <Last5Badge last5={team.last5} />
                   <TrajectoryIcon t={team.trajectory} />
                   <span style={{ fontSize: 12, color: '#939A9E', textAlign: 'right' }}>P{team.played}</span>
                   <span style={{ fontSize: 16, fontWeight: 900, color: '#F2F2F2', textAlign: 'right' }}>{team.pts} <span style={{ fontSize: 10, fontWeight: 600 }}>pts</span></span>
@@ -226,8 +241,7 @@ export default function TablePredictionsPage() {
                 <div style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
                   {[
                     { label: 'Title Probability',    value: selectedTeam.titlePct,  color: '#1A65D3', icon: <Trophy size={11} color="#1A65D3" /> },
-                    { label: 'UCL Qualification',    value: selectedTeam.uclPct,    color: '#1A65D3', icon: null },
-                    { label: 'Europa League',         value: selectedTeam.europaPct, color: '#5A8FA8', icon: null },
+                    { label: 'Top 4 (UCL)',          value: selectedTeam.uclPct,    color: '#1A65D3', icon: null },
                     { label: 'Relegation Risk',       value: selectedTeam.relegPct,  color: '#939A9E', icon: null },
                   ].map(m => (
                     <div key={m.label}>
@@ -236,7 +250,7 @@ export default function TablePredictionsPage() {
                           {m.icon}
                           <span style={{ fontSize: 11, color: '#939A9E', fontWeight: 500 }}>{m.label}</span>
                         </div>
-                        <span style={{ fontSize: 16, fontWeight: 900, color: m.color }}>{m.value}%</span>
+                        <span style={{ fontSize: 16, fontWeight: 900, color: m.color }}>{m.value.toFixed(1)}%</span>
                       </div>
                       <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 99, overflow: 'hidden' }}>
                         <motion.div
