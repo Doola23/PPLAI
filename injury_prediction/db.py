@@ -8,7 +8,7 @@ import boto3
 import pandas as pd
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'), encoding='utf-8-sig')
 logger = logging.getLogger(__name__)
 
 # Injury module table names

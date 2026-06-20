@@ -307,11 +307,15 @@ def get_features(player_name_norm: str, match_date: pd.Timestamp,
     # ── FPL API SIGNALS ────────────────────────────────────────────
     fpl_row = fpl_api_lookup.get(player_name_norm)
     if fpl_row is not None and match_date.year >= 2024:
-        features['chance_of_playing']   = fpl_row.get('chance_of_playing_next_round', 100) or 100
+        # DynamoDB returns this field inconsistently typed (str/float/None/'') across rows,
+        # which makes the column dtype='object' and breaks XGBoost — coerce to float explicitly.
+        # `or 100` would also wrongly turn a real 0% chance into 100%, so use pd.to_numeric instead.
+        _cop = pd.to_numeric(fpl_row.get('chance_of_playing_next_round'), errors='coerce')
+        features['chance_of_playing']   = float(_cop) if pd.notna(_cop) else 100.0
         features['fpl_status_injured']  = int(str(fpl_row.get('status', 'a')) in ['i', 'u'])
         features['fpl_status_doubtful'] = int(str(fpl_row.get('status', 'a')) == 'd')
     else:
-        features['chance_of_playing']   = 100
+        features['chance_of_playing']   = 100.0
         features['fpl_status_injured']  = 0
         features['fpl_status_doubtful'] = 0
 

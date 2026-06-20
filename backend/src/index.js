@@ -14,6 +14,7 @@ const eloRouter        = require('./routes/elo');
 const goalkeepersRouter = require('./routes/goalkeepers');
 const teamReportsRouter  = require('./routes/teamReports');
 const playerStatsRouter  = require('./routes/playerStats');
+const playerPredictionsRouter = require('./routes/playerPredictions');
 const authRouter        = require('./routes/auth');
 const fixturesRouter    = require('./routes/fixtures');
 const { router: adminRouter } = require('./routes/admin');
@@ -54,6 +55,7 @@ app.use('/api/elo',          eloRouter);
 app.use('/api/goalkeepers',  goalkeepersRouter);
 app.use('/api/team-reports',  teamReportsRouter);
 app.use('/api/player-stats', playerStatsRouter);
+app.use('/api/player-predictions', playerPredictionsRouter);
 app.use('/api/fixtures',    fixturesRouter);
 app.use('/api/admin',       adminRouter);
 

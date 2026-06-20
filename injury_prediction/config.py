@@ -1,10 +1,16 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'), encoding='utf-8-sig')
 
 # ── FILE PATHS ─────────────────────────────────────────────────
 # Main data loaded from DynamoDB — see db.py
 # FBref data still loaded from local CSV files (not in database)
-OUTPUT_FILE = r'C:\Users\DELL\Documents\data\injury_predictions.csv'
-FBREF_DIR   = r'C:\Users\DELL\Documents\player_ratings'
+OUTPUT_FILE = os.getenv(
+    'INJURY_OUTPUT_FILE',
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'outputs', 'injury_predictions.csv'),
+)
+FBREF_DIR = os.getenv('FBREF_DIR', r'C:\Users\DELL\Documents\player_ratings')
 
 # ── MODEL CONSTANTS ────────────────────────────────────────────
 MIN_PRECISION = 0.12

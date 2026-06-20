@@ -4,10 +4,43 @@ const { docClient } = require('../db');
 
 const router = Router();
 
+// Each row now carries ~93 raw ML feature columns. A single un-projected Scan hits DynamoDB's
+// 1MB-per-page cap after only a few hundred rows, silently truncating the result. Project down
+// to just the fields the UI needs and paginate fully so all ~11k rows come back.
+const PREDICTION_FIELDS = [
+  'player_name', 'match_date', 'team', 'position_group',
+  'injury_probability', 'risk_tier', 'predicted_high_risk',
+  'currently_injured', 'chance_of_playing',
+  'fpl_status_injured', 'fpl_status_doubtful',
+  'age', 'muscle_injury_history', 'hamstring_history',
+  'injuries_last_6m', 'injuries_last_12m', 'season',
+  'minutes_played_this_match',
+];
+
+async function scanAllPredictions() {
+  const names = {};
+  PREDICTION_FIELDS.forEach((f, i) => { names[`#f${i}`] = f; });
+  const projectionExpression = PREDICTION_FIELDS.map((_, i) => `#f${i}`).join(', ');
+  const items = [];
+  let params = {
+    TableName: 'injuries-predictions',
+    ProjectionExpression: projectionExpression,
+    ExpressionAttributeNames: names,
+  };
+  while (params) {
+    const result = await docClient.send(new ScanCommand(params));
+    items.push(...(result.Items || []));
+    params = result.LastEvaluatedKey
+      ? { ...params, ExclusiveStartKey: result.LastEvaluatedKey }
+      : null;
+  }
+  return items;
+}
+
 // GET /api/injuries/predictions?playerName=Haaland
 router.get('/predictions', async (req, res) => {
   try {
-    const { playerName, matchDate, limit = 50 } = req.query;
+    const { playerName, matchDate } = req.query;
 
     if (playerName && matchDate) {
       const { GetCommand } = require('@aws-sdk/lib-dynamodb');
@@ -28,11 +61,8 @@ router.get('/predictions', async (req, res) => {
       return res.json({ items: data.Items, count: data.Count });
     }
 
-    const data = await docClient.send(new ScanCommand({
-      TableName: 'injuries-predictions',
-      Limit: parseInt(limit),
-    }));
-    res.json({ items: data.Items, count: data.Count });
+    const items = await scanAllPredictions();
+    res.json({ items, count: items.length });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
