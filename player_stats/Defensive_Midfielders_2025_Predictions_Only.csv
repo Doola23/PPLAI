@@ -1,67 +1,49 @@
-Player,Team,Age,Position,Role,2025 Predicted Minutes,2025 Predicted Assists,2025 Predicted Assists per 90,2025 Predicted Progressive Passes,2025 Predicted Progressive Passes per 90,2025 Predicted Key Passes,2025 Predicted Key Passes per 90,2025 Predicted Tackles + Interceptions,2025 Predicted Tackles + Interceptions per 90,Analysis & Trend
-Amadou Onana,Aston Villa,23,MF,DM,1827,,,,,,,79.5,79.5,"At 23, still in development years with room to grow. Defensive contribution improving. ↑ Minutes dropped recently — injury or form concern."
-Andreas Pereira,Fulham,28,MF,DM,2259,,,,,,,45.9,45.9,"At 28, in prime years but may begin to slow. Defensive contribution improving. ↑ Minutes dropped recently — injury or form concern."
-Bernardo Silva,Manchester City,30,MF,DM,2493,,,,,,,67.6,67.6,"At 30, in prime years but may begin to slow. Defensively consistent. →"
-Boubacar Kamara,Aston Villa,25,MF,DM,1359,,,,,,,50.7,50.7,"At 25, entering peak years. Defensively consistent. →"
-Carlos Baleba,Brighton,20,MF,DM,2205,,,,,,,99.3,99.3,"At 20, still in development years with room to grow. Defensively consistent. → Playing more minutes each season."
-Declan Rice,Arsenal,25,MF,DM,2898,,,,,,,114.0,114.0,"At 25, entering peak years. Defensive contribution declining. ↓"
-Emile Smith Rowe,Fulham,24,MF,DM,1548,,,,,,,35.3,35.3,"At 24, entering peak years. Defensive contribution improving. ↑"
-Flynn Downes,Southampton,25,MF,DM,1539,,,,,,,49.5,49.5,"At 25, entering peak years. Defensive contribution improving. ↑ Playing more minutes each season."
-Harry Winks,Leicester City,28,MF,DM,1206,,,,,,,38.8,38.8,"At 28, in prime years but may begin to slow. Defensive contribution declining. ↓ Playing more minutes each season."
-James Ward-Prowse,West Ham → Nott'ham Forest,30,MF,DM,2115,,,,,,,62.0,62.0,"At 30, in prime years but may begin to slow. Defensively consistent. → Minutes dropped recently — injury or form concern."
-Joe Willock,Newcastle Utd,25,MF,DM,1431,,,,,,,44.4,44.4,"At 25, entering peak years. Defensive contribution improving. ↑ Minutes dropped recently — injury or form concern."
-Joelinton,Newcastle Utd,28,MF,DM,1620,,,,,,,61.9,61.9,"At 28, in prime years but may begin to slow. Defensive contribution declining. ↓ Playing more minutes each season."
-Kalvin Phillips,Ipswich Town,29,MF,DM,1377,,,,,,,62.5,62.5,"At 29, in prime years but may begin to slow. Defensive contribution declining. ↓"
-Kobbie Mainoo,Manchester Utd,19,MF,DM,1665,,,,,,,59.4,59.4,"At 19, still in development years with room to grow. Defensive contribution improving. ↑"
-Lewis Cook,Bournemouth,27,MF,DM,2691,,,,,,,101.3,101.3,"At 27, entering peak years. Defensive contribution declining. ↓"
-Mario Lemina,Wolves,31,MF,DM,1647,,,,,,,66.7,66.7,"At 31, experience is key but decline is possible. Defensive contribution improving. ↑ Minutes dropped recently — injury or form concern."
-Mason Mount,Manchester Utd,25,MF,DM,774,,,,,,,26.2,26.2,"At 25, entering peak years. Defensive contribution declining. ↓"
-Oliver Skipp,Leicester City,24,MF,DM,1224,,,,,,,44.0,44.0,"At 24, entering peak years. Defensively consistent. →"
-Orel Mangala,Everton,26,MF,DM,1170,,,,,,,40.5,40.5,"At 26, entering peak years. Defensive contribution declining. ↓"
-Pape Matar Sarr,Tottenham,22,MF,DM,1970,,,,,,,59.3,59.3,"At 22, still in development years with room to grow. Defensive contribution improving. ↑"
-Ryan Gravenberch,Liverpool,22,MF,DM,1962,,,,,,,68.2,68.2,"At 22, still in development years with room to grow. Defensive contribution improving. ↑ Playing more minutes each season."
-Ryan Yates,Nott'ham Forest,27,MF,DM,1719,,,,,,,61.2,61.2,"At 27, entering peak years. Defensive contribution declining. ↓"
-Sander Berge,Fulham,26,MF,DM,1917,,,,,,,60.0,60.0,"At 26, entering peak years. Defensively consistent. → Minutes dropped recently — injury or form concern."
-Sean Longstaff,Newcastle Utd,27,MF,DM,1674,,,,,,,52.5,52.5,"At 27, entering peak years. Defensive contribution improving. ↑ Minutes dropped recently — injury or form concern."
-Tyler Adams,Bournemouth,25,MF,DM,1584,,,,,,,74.1,74.1,"At 25, entering peak years. Defensively consistent. →"
-Vitaly Janelt,Brentford,26,MF,DM,2250,,,,,,,88.5,88.5,"At 26, entering peak years. Defensive contribution declining. ↓ Minutes dropped recently — injury or form concern."
-Wilfred Ndidi,Leicester City,28,MF,DM,1665,,,,,,,79.3,79.3,"At 28, in prime years but may begin to slow. Defensive contribution declining. ↓ Playing more minutes each season."
-Will Hughes,Crystal Palace,29,MF,DM,1818,,,,,,,72.5,72.5,"At 29, in prime years but may begin to slow. Defensively consistent. →"
-Yehor Yarmoliuk,Brentford,20,MF,DM,1368,,,,,,,46.5,46.5,"At 20, still in development years with room to grow. Defensive contribution improving. ↑ Playing more minutes each season."
-Youri Tielemans,Aston Villa,27,MF,DM,2178,,,,,,,72.0,72.0,"At 27, entering peak years. Defensively consistent. → Playing more minutes each season."
-Yves Bissouma,Tottenham,28,MF,DM,1431,,,,,,,65.0,65.0,"At 28, in prime years but may begin to slow. Defensive contribution declining. ↓ Minutes dropped recently — injury or form concern."
-Abdoulaye Doucoure,Everton,31,MF,DM,2564,,,,,,,58.0,58.0,Prediction based on 2024 performance baseline.
-Boubakary Soumare,Leicester City,25,MF,DM,2171,,,,,,,64.0,64.0,Prediction based on 2024 performance baseline.
-Carlos Soler,West Ham,27,MF,DM,1409,,,,,,,24.0,24.0,Prediction based on 2024 performance baseline.
-Cheick Doucoure,Crystal Palace,24,MF,DM,452,,,,,,,27.0,27.0,Prediction based on 2024 performance baseline.
-Christian Norgaard,Brentford,30,MF,DM,2819,,,,,,,128.0,128.0,Prediction based on 2024 performance baseline.
-Conor Chaplin,Ipswich Town,27,MF,DM,857,,,,,,,19.0,19.0,Prediction based on 2024 performance baseline.
-Daichi Kamada,Crystal Palace,28,MF,DM,1563,,,,,,,65.0,65.0,Prediction based on 2024 performance baseline.
-Diego Gomez,Brighton,21,MF,DM,516,,,,,,,29.0,29.0,Prediction based on 2024 performance baseline.
-Edson Alvarez,West Ham,27,MF,DM,1772,,,,,,,68.0,68.0,Prediction based on 2024 performance baseline.
-Georginio Rutter,Brighton,22,MF,DM,1655,,,,,,,49.0,49.0,Prediction based on 2024 performance baseline.
-Guido Rodriguez,West Ham,30,MF,DM,1149,,,,,,,49.0,49.0,Prediction based on 2024 performance baseline.
-Hwang Hee-chan,Wolves,28,MF,DM,661,,,,,,,8.0,8.0,Prediction based on 2024 performance baseline.
-Jack Taylor,Ipswich Town,26,MF,DM,860,,,,,,,29.0,29.0,Prediction based on 2024 performance baseline.
-Jens Cajuste,Ipswich Town,25,MF,DM,1959,,,,,,,72.0,72.0,Prediction based on 2024 performance baseline.
-John McGinn,Aston Villa,30,MF,DM,2223,,,,,,,47.0,47.0,Prediction based on 2024 performance baseline.
-Justin Devenny,Crystal Palace,21,MF,DM,507,,,,,,,17.0,17.0,Prediction based on 2024 performance baseline.
-Lesley Ugochukwu,Southampton,20,MF,DM,1655,,,,,,,64.0,64.0,Prediction based on 2024 performance baseline.
-Lucas Bergvall,Tottenham,18,MF,DM,1212,,,,,,,63.0,63.0,Prediction based on 2024 performance baseline.
-Lucas Paqueta,West Ham,27,MF,DM,2380,,,,,,,84.0,84.0,Prediction based on 2024 performance baseline.
-Manuel Ugarte,Manchester Utd,23,MF,DM,1784,,,,,,,104.0,104.0,Prediction based on 2024 performance baseline.
-Marshall Munetsi,Wolves,28,MF,DM,1078,,,,,,,30.0,30.0,Prediction based on 2024 performance baseline.
-Mateus Fernandes,Southampton,20,MF,DM,2909,,,,,,,117.0,117.0,Prediction based on 2024 performance baseline.
-Matt O'Riley,Brighton,24,MF,DM,938,,,,,,,29.0,29.0,Prediction based on 2024 performance baseline.
-Mikel Merino,Arsenal,28,MF,DM,1586,,,,,,,61.0,61.0,Prediction based on 2024 performance baseline.
-Nathan Broadhead,Ipswich Town,26,MF,DM,702,,,,,,,13.0,13.0,Prediction based on 2024 performance baseline.
-Nicolas Dominguez,Nott'ham Forest,26,MF,DM,1963,,,,,,,115.0,115.0,Prediction based on 2024 performance baseline.
-Nicolas Gonzalez,Manchester City,22,MF,DM,760,,,,,,,24.0,24.0,Prediction based on 2024 performance baseline.
-Omari Hutchinson,Ipswich Town,21,MF,DM,2583,,,,,,,43.0,43.0,Prediction based on 2024 performance baseline.
-Romeo Lavia,Chelsea,20,MF,DM,797,,,,,,,38.0,38.0,Prediction based on 2024 performance baseline.
-Sam Morsy,Ipswich Town,33,MF,DM,2750,,,,,,,97.0,97.0,Prediction based on 2024 performance baseline.
-Sandro Tonali,Newcastle Utd,24,MF,DM,2630,,,,,,,85.0,85.0,Prediction based on 2024 performance baseline.
-Sasa Lukic,Fulham,28,MF,DM,2344,,,,,,,96.0,96.0,Prediction based on 2024 performance baseline.
-Tomas Soucek,West Ham,29,MF,DM,2567,,,,,,,66.0,66.0,Prediction based on 2024 performance baseline.
-William Smallbone,Southampton,24,MF,DM,690,,,,,,,22.0,22.0,Prediction based on 2024 performance baseline.
-Yasin Ayari,Brighton,21,MF,DM,1964,,,,,,,79.0,79.0,Prediction based on 2024 performance baseline.
+Player,Team,Age,Position,Role,2025 Predicted Minutes,2025 Predicted Tackles+Interceptions,2025 Predicted Ball Recoveries,2025 Predicted Pass Completion %,2025 Predicted Progressive Passes,2025 Predicted Tackles+Interceptions per 90,2025 Predicted Ball Recoveries per 90,2025 Predicted Progressive Passes per 90,Analysis & Trend
+Abdoulaye Doucoure,Everton,31,MF,DM,2232,54.7,130.7,79.018,70.8,2.207,5.269,2.854,Limited data available for trend analysis.
+Amadou Onana,Aston Villa,23,MF,DM,1835,79.4,103.5,87.817,84.9,3.893,5.074,4.164,"At 23, still in development years with room to grow. Defensive contribution improving season on season. Minutes dropped recently - injury or form concern."
+Boubacar Kamara,Aston Villa,25,MF,DM,1683,67.9,91.0,88.221,84.9,3.631,4.865,4.538,"At 25, entering peak years. Defensive contribution has been consistent."
+Carlos Baleba,Brighton,20,MF,DM,2340,104.1,163.0,87.167,115.4,4.002,6.268,4.439,"At 20, still in development years with room to grow. Defensive contribution has been consistent. Playing more minutes each season."
+Carlos Soler,West Ham,27,MF,DM,1368,35.4,72.0,83.851,54.9,2.329,4.737,3.61,Limited data available for trend analysis.
+Cheick Doucoure,Crystal Palace,24,MF,DM,810,46.7,54.9,85.47,37.5,5.188,6.105,4.171,Limited data available for trend analysis.
+Conor Chaplin,Ipswich Town,27,MF,DM,954,23.0,49.1,69.735,35.6,2.171,4.634,3.359,Limited data available for trend analysis.
+Daichi Kamada,Crystal Palace,28,MF,DM,1377,50.6,81.1,77.85,82.1,3.305,5.303,5.366,Limited data available for trend analysis.
+Diego Gomez,Brighton,21,MF,DM,891,44.1,56.2,82.545,45.2,4.454,5.675,4.561,Limited data available for trend analysis.
+Edson Alvarez,West Ham,27,MF,DM,1620,74.6,95.1,82.952,77.5,4.143,5.282,4.306,Limited data available for trend analysis.
+Flynn Downes,Southampton,25,MF,DM,1790,66.6,98.0,87.103,67.4,3.35,4.925,3.391,"At 25, entering peak years. Defensive contribution improving season on season. Playing more minutes each season."
+Hwang Hee-chan,Wolves,28,MF,DM,792,20.5,39.6,79.098,29.4,2.333,4.499,3.342,Limited data available for trend analysis.
+Idrissa Gana Gueye,Everton,35,MF,DM,2610,129.2,173.7,87.481,131.5,4.456,5.988,4.535,"At 35, experience is key but decline is possible. Defensive contribution improving season on season. Playing more minutes each season."
+Jack Taylor,Ipswich Town,26,MF,DM,1007,42.2,60.3,83.294,49.8,3.775,5.388,4.454,Limited data available for trend analysis.
+Jens Cajuste,Ipswich Town,25,MF,DM,1737,69.2,101.7,80.591,56.9,3.583,5.267,2.946,Limited data available for trend analysis.
+Joelinton,Newcastle Utd,28,MF,DM,2070,77.9,113.4,83.033,102.0,3.388,4.932,4.435,"At 28, in prime years but may begin to slow. Defensive contribution has declined recently. Playing more minutes each season."
+Justin Devenny,Crystal Palace,21,MF,DM,819,28.8,43.3,71.848,33.0,3.162,4.756,3.621,Limited data available for trend analysis.
+Kalvin Phillips,Ipswich Town,29,MF,DM,1431,58.9,90.0,78.726,68.8,3.705,5.661,4.328,"At 29, in prime years but may begin to slow. Defensive contribution has declined recently."
+Kobbie Mainoo,Manchester Utd,19,MF,DM,1719,59.6,91.7,86.636,79.3,3.119,4.801,4.15,"At 19, still in development years with room to grow. Defensive contribution improving season on season."
+Lesley Ugochukwu,Southampton,20,MF,DM,1584,64.8,93.7,86.111,60.0,3.681,5.324,3.409,Limited data available for trend analysis.
+Lewis Cook,Bournemouth,27,DF,DM,2637,,,80.161,,,,,"At 27, entering peak years. Defensive contribution has declined recently."
+Lucas Bergvall,Tottenham,18,MF,DM,1278,61.3,81.0,86.143,56.6,4.314,5.701,3.986,Limited data available for trend analysis.
+Mario Lemina,Wolves,31,DF,DM,1674,,,82.499,,,,,"At 31, experience is key but decline is possible. Defensive contribution improving season on season. Minutes dropped recently - injury or form concern."
+Marshall Munetsi,Wolves,28,MF,DM,1143,37.9,59.8,69.28,41.5,2.988,4.707,3.264,Limited data available for trend analysis.
+Mateus Fernandes,Southampton,20,MF,DM,2565,112.8,156.0,83.321,148.0,3.959,5.474,5.193,Limited data available for trend analysis.
+Nathan Broadhead,Ipswich Town,26,MF,DM,837,16.2,38.9,75.894,26.0,1.737,4.184,2.791,Limited data available for trend analysis.
+Nicolas Dominguez,Nott'ham Forest,26,MF,DM,1745,91.5,103.5,85.496,83.3,4.719,5.336,4.296,Limited data available for trend analysis.
+Nicolas Gonzalez,Manchester City,22,MF,DM,990,39.3,57.2,87.865,57.4,3.569,5.2,5.217,Limited data available for trend analysis.
+Oliver Skipp,Leicester City,24,MF,DM,1170,34.9,58.5,85.522,48.3,2.685,4.5,3.718,"At 24, entering peak years. Defensive contribution has been consistent."
+Omari Hutchinson,Ipswich Town,21,MF,DM,2268,43.5,112.6,76.172,81.7,1.728,4.467,3.242,Limited data available for trend analysis.
+Orel Mangala,Everton,26,MF,DM,1386,45.7,73.2,86.995,49.8,2.966,4.75,3.231,"At 26, entering peak years. Defensive contribution has declined recently."
+Pape Matar Sarr,Tottenham,22,MF,DM,1953,77.1,113.3,88.993,99.2,3.553,5.222,4.57,"At 22, still in development years with room to grow. Defensive contribution improving season on season."
+Romeo Lavia,Chelsea,20,MF,DM,1026,44.2,62.4,87.194,44.2,3.879,5.47,3.88,Limited data available for trend analysis.
+Ryan Gravenberch,Liverpool,22,MF,DM,2565,118.2,167.0,88.242,142.7,4.148,5.859,5.007,"At 22, still in development years with room to grow. Defensive contribution improving season on season. Playing more minutes each season."
+Ryan Yates,Nott'ham Forest,27,MF,DM,1917,81.0,108.8,81.909,67.5,3.801,5.11,3.171,"At 27, entering peak years. Defensive contribution has declined recently."
+Sam Morsy,Ipswich Town,33,MF,DM,2421,97.6,147.9,85.648,110.5,3.628,5.499,4.109,Limited data available for trend analysis.
+Sander Berge,Fulham,26,MF,DM,2133,68.6,120.0,88.966,106.9,2.895,5.063,4.511,"At 26, entering peak years. Defensive contribution has been consistent. Minutes dropped recently - injury or form concern."
+Sandro Tonali,Newcastle Utd,24,MF,DM,2277,80.4,142.2,86.264,114.7,3.177,5.622,4.535,Limited data available for trend analysis.
+Sasa Lukic,Fulham,28,MF,DM,2007,79.2,115.4,84.874,89.3,3.551,5.175,4.004,Limited data available for trend analysis.
+Sean Longstaff,Newcastle Utd,27,MF,DM,1431,44.6,67.4,83.735,72.6,2.806,4.238,4.563,"At 27, entering peak years. Defensive contribution improving season on season. Minutes dropped recently - injury or form concern."
+Tyler Adams,Bournemouth,25,MF,DM,1890,87.8,124.2,83.285,84.7,4.18,5.913,4.035,"At 25, entering peak years. Defensive contribution has been consistent."
+Vitaly Janelt,Brentford,26,MF,DM,2250,71.0,117.8,82.807,95.5,2.838,4.711,3.822,"At 26, entering peak years. Defensive contribution has declined recently. Minutes dropped recently - injury or form concern."
+Wilfred Ndidi,Leicester City,28,MF,DM,2061,93.9,126.4,81.01,85.8,4.1,5.52,3.748,"At 28, in prime years but may begin to slow. Defensive contribution has declined recently. Playing more minutes each season."
+Will Hughes,Crystal Palace,29,MF,DM,1835,69.9,106.5,79.442,84.9,3.429,5.222,4.163,"At 29, in prime years but may begin to slow. Defensive contribution has been consistent."
+William Smallbone,Southampton,24,MF,DM,917,30.1,53.6,76.14,40.1,2.951,5.258,3.937,Limited data available for trend analysis.
+Yasin Ayari,Brighton,21,MF,DM,1764,74.8,102.1,83.059,77.3,3.816,5.208,3.945,Limited data available for trend analysis.
+Yehor Yarmoliuk,Brentford,20,MF,DM,1368,63.2,93.8,86.779,68.7,4.157,6.171,4.52,"At 20, still in development years with room to grow. Defensive contribution improving season on season. Playing more minutes each season."
+Yves Bissouma,Tottenham,28,MF,DM,1530,70.4,91.8,89.539,88.6,4.143,5.401,5.209,"At 28, in prime years but may begin to slow. Defensive contribution has declined recently. Minutes dropped recently - injury or form concern."

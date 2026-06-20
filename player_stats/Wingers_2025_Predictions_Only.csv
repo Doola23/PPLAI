@@ -1,65 +1,59 @@
-Player,Team,Age,Position,Role,2025 Predicted Minutes,2025 Predicted Goals,2025 Goals (Low Estimate),2025 Goals (High Estimate),2025 Predicted Assists,2025 Predicted xG,2025 Predicted Shots,2025 Predicted Goals per 90,2025 Predicted Assists per 90,2025 Predicted xG per 90,2025 Predicted Shots per 90,Analysis & Trend
-Jorgen Strand Larsen,Wolves,24,FW,W,2587,14.0,,,4.0,10.3,54.0,14.0,4.0,10.3,54.0,Prediction based on 2024 performance baseline.
-Liam Delap,Ipswich Town,21,FW,W,2593,12.0,,,2.0,9.3,66.0,12.0,2.0,9.3,66.0,Prediction based on 2024 performance baseline.
-Bryan Mbeumo,Brentford,25,FW,W,2718,11.7,8.2,15.2,7.0,11.4,74.4,11.7,7.0,11.4,74.4,"At 25, entering peak years. Goal rate improving season on season. ↑ Playing more minutes each season."
-Jarrod Bowen,West Ham,28,FW,W,2817,11.6,8.1,15.1,6.3,10.6,77.9,11.6,6.3,10.6,77.9,"At 28, in prime years but may begin to slow. Goal rate has declined recently. ↓"
-Jamie Vardy,Leicester City,37,FW,W,1809,9.5,6.0,13.0,2.8,9.4,43.3,9.5,2.8,9.4,43.3,"At 37, experience is key but decline is possible. Goal rate improving season on season. ↑ Playing more minutes each season."
-Brennan Johnson,Tottenham,23,FW,W,2133,9.4,5.9,12.9,4.9,10.2,57.2,9.4,4.9,10.2,57.2,"At 23, still in development years with room to grow. Goal rate improving season on season. ↑"
-Iliman Ndiaye,Everton,24,FW,W,2430,9.0,,,0.0,6.2,35.0,9.0,0.0,6.2,35.0,Prediction based on 2024 performance baseline.
-Gabriel Martinelli,Arsenal,23,FW,W,2187,8.8,5.3,12.3,5.7,8.2,62.6,8.8,5.7,8.2,62.6,"At 23, still in development years with room to grow. Goal rate has been consistent. →"
-Anthony Gordon,Newcastle Utd,23,FW,W,2115,8.2,4.7,11.7,5.2,8.1,58.0,8.2,5.2,8.1,58.0,"At 23, still in development years with room to grow. Goal rate has declined recently. ↓ Minutes dropped recently — injury or form concern."
-Leandro Trossard,Arsenal,30,FW,W,1700,8.2,4.7,11.7,4.7,6.9,46.8,8.2,4.7,6.9,46.8,"At 30, in prime years but may begin to slow. Goal rate has declined recently. ↓ Playing more minutes each season."
-Morgan Rogers,Aston Villa,22,FW,W,3114,8.0,,,10.0,6.6,55.0,8.0,10.0,6.6,55.0,Prediction based on 2024 performance baseline.
-Chris Wood,Nott'ham Forest,33,FW,W,1917,7.6,4.1,11.1,1.9,8.5,47.4,7.6,1.9,8.5,47.4,"At 33, experience is key but decline is possible. Goal rate has declined recently. ↓ Playing more minutes each season."
-Anthony Elanga,Nott'ham Forest,22,FW,W,2214,7.2,3.7,10.7,4.3,6.6,54.8,7.2,4.3,6.6,54.8,"At 22, still in development years with room to grow. Goal rate has been consistent. →"
-Son Heung-min,Tottenham,32,FW,W,2110,7.0,,,9.0,7.2,55.0,7.0,9.0,7.2,55.0,Prediction based on 2024 performance baseline.
-Jacob Murphy,Newcastle Utd,29,FW,W,1953,6.6,3.1,10.1,5.7,4.8,45.8,6.6,5.7,4.8,45.8,"At 29, in prime years but may begin to slow. Goal rate improving season on season. ↑ Playing more minutes each season."
-Mohammed Kudus,West Ham,24,FW,W,1962,6.6,3.1,10.1,3.4,5.9,53.5,6.6,3.4,5.9,53.5,"At 24, entering peak years. Goal rate has declined recently. ↓"
-Marcus Rashford,Manchester Utd → Aston Villa,27,FW,W,1503,6.5,3.0,10.0,2.6,6.4,42.0,6.5,2.6,6.4,42.0,"At 27, entering peak years. Goal rate improving season on season. ↑ Minutes dropped recently — injury or form concern."
-Kaoru Mitoma,Brighton,27,FW,W,1962,6.4,2.9,9.9,4.2,6.5,50.4,6.4,4.2,6.5,50.4,"At 27, entering peak years. Goal rate improving season on season. ↑ Playing more minutes each season."
-Callum Hudson-Odoi,Nott'ham Forest,24,FW,W,1610,6.2,2.7,9.7,3.7,4.5,39.8,6.2,3.7,4.5,39.8,"At 24, entering peak years. Goal rate has declined recently. ↓"
-Jack Harrison,Everton,28,FW,W,2151,6.1,2.6,9.6,4.9,4.9,40.8,6.1,4.9,4.9,40.8,"At 28, in prime years but may begin to slow. Goal rate has declined recently. ↓"
-Ismaila Sarr,Crystal Palace,26,FW,W,2331,6.1,2.6,9.6,3.9,6.2,53.5,6.1,3.9,6.2,53.5,"At 26, entering peak years. Goal rate has been consistent. → Playing more minutes each season."
-Yankuba Minteh,Brighton,20,FW,W,1837,6.0,,,4.0,4.1,34.0,6.0,4.0,4.1,34.0,Prediction based on 2024 performance baseline.
-Keane Lewis-Potter,Brentford,23,FW,W,1925,5.6,2.1,9.1,2.9,7.3,55.5,5.6,2.9,7.3,55.5,"At 23, still in development years with room to grow. Goal rate has declined recently. ↓ Playing more minutes each season."
-Pedro Neto,Chelsea,24,FW,W,1935,5.6,2.1,9.1,5.1,5.5,49.9,5.6,5.1,5.5,49.9,"At 24, entering peak years. Goal rate has been consistent. → Playing more minutes each season."
-Alex Iwobi,Fulham,28,FW,W,2367,5.5,2.0,9.0,5.6,5.2,51.6,5.5,5.6,5.2,51.6,"At 28, in prime years but may begin to slow. Goal rate improving season on season. ↑ Playing more minutes each season."
-Jeremy Doku,Manchester City,22,FW,W,1629,5.0,1.5,8.5,3.4,4.2,46.6,5.0,3.4,4.2,46.6,"At 22, still in development years with room to grow. Goal rate has been consistent. →"
-Jadon Sancho,Chelsea,24,FW,W,1494,4.8,1.3,8.3,3.0,3.9,30.6,4.8,3.0,3.9,30.6,"At 24, entering peak years. Goal rate has declined recently. ↓"
-Marcus Tavernier,Bournemouth,25,FW,W,1620,4.8,1.3,8.3,2.9,4.0,40.8,4.8,2.9,4.0,40.8,"At 25, entering peak years. Goal rate has been consistent. →"
-Leon Bailey,Aston Villa,27,FW,W,1251,4.7,1.2,8.2,2.3,4.0,35.1,4.7,2.3,4.0,35.1,"At 27, entering peak years. Goal rate has declined recently. ↓ Minutes dropped recently — injury or form concern."
-Adam Armstrong,Southampton,27,FW,W,1350,4.6,1.1,8.1,2.1,4.3,33.4,4.6,2.1,4.3,33.4,"At 27, entering peak years. Goal rate has been consistent. →"
-Kamaldeen Sulemana,Southampton,22,FW,W,1485,4.3,0.8,7.8,2.3,3.9,36.5,4.3,2.3,3.9,36.5,"At 22, still in development years with room to grow. Goal rate has declined recently. ↓"
-Cameron Archer,Southampton,23,FW,W,1647,4.3,0.8,7.8,2.0,6.4,37.7,4.3,2.0,6.4,37.7,"At 23, still in development years with room to grow. Goal rate has declined recently. ↓"
-Raheem Sterling,Arsenal,30,FW,W,954,4.1,0.6,7.6,2.3,3.7,25.2,4.1,2.3,3.7,25.2,"At 30, in prime years but may begin to slow. Goal rate has declined recently. ↓ Minutes dropped recently — injury or form concern."
-Stephy Mavididi,Leicester City,26,FW,W,1614,4.0,,,1.0,1.8,26.0,4.0,1.0,1.8,26.0,Prediction based on 2024 performance baseline.
-Sammie Szmodics,Ipswich Town,29,FW,W,992,4.0,,,0.0,3.4,21.0,4.0,0.0,3.4,21.0,Prediction based on 2024 performance baseline.
-Rasmus Hojlund,Manchester Utd,21,FW,W,2004,4.0,,,0.0,5.3,32.0,4.0,0.0,5.3,32.0,Prediction based on 2024 performance baseline.
-Jacob Ramsey,Aston Villa,23,FW,W,1610,4.0,0.5,7.5,2.8,4.2,37.4,4.0,2.8,4.2,37.4,"At 23, still in development years with room to grow. Goal rate has declined recently. ↓ Playing more minutes each season."
-Ethan Nwaneri,Arsenal,17,FW,W,895,4.0,,,2.0,1.2,24.0,4.0,2.0,1.2,24.0,Prediction based on 2024 performance baseline.
-Michail Antonio,West Ham,34,FW,W,1206,3.9,0.4,7.4,1.5,4.8,28.2,3.9,1.5,4.8,28.2,"At 34, experience is key but decline is possible. Goal rate has declined recently. ↓ Minutes dropped recently — injury or form concern."
-Facundo Buonanotte,Leicester City,20,FW,W,1494,3.9,0.4,7.4,3.0,3.6,33.5,3.9,3.0,3.6,33.5,"At 20, still in development years with room to grow. Goal rate improving season on season. ↑"
-Patson Daka,Leicester City,26,FW,W,972,3.9,0.4,7.4,2.2,4.0,27.0,3.9,2.2,4.0,27.0,"At 26, entering peak years. Goal rate has declined recently. ↓ Minutes dropped recently — injury or form concern."
-Jordan Ayew,Leicester City → Crystal Palace,33,FW,W,1935,3.8,0.3,7.3,3.6,3.9,39.7,3.8,3.6,3.9,39.7,"At 33, experience is key but decline is possible. Goal rate improving season on season. ↑ Minutes dropped recently — injury or form concern."
-Jack Grealish,Manchester City,29,FW,W,1179,3.7,0.2,7.2,2.7,3.2,27.1,3.7,2.7,3.2,27.1,"At 29, in prime years but may begin to slow. Goal rate has declined recently. ↓"
-Kevin Schade,Brentford,23,FW,W,1475,3.5,0.0,7.0,3.0,4.0,33.7,3.5,3.0,4.0,33.7,"At 23, still in development years with room to grow. Goal rate improving season on season. ↑ Playing more minutes each season."
-Jota Silva,Nott'ham Forest,25,FW,W,853,3.0,,,1.0,2.1,23.0,3.0,1.0,2.1,23.0,Prediction based on 2024 performance baseline.
-George Hirst,Ipswich Town,25,FW,W,661,3.0,,,1.0,2.1,14.0,3.0,1.0,2.1,14.0,Prediction based on 2024 performance baseline.
-Niclas Fullkrug,West Ham,31,FW,W,790,3.0,,,2.0,2.2,16.0,3.0,2.0,2.2,16.0,Prediction based on 2024 performance baseline.
-Joshua Zirkzee,Manchester Utd,23,FW,W,1402,3.0,,,1.0,4.8,28.0,3.0,1.0,4.8,28.0,Prediction based on 2024 performance baseline.
-Timo Werner,Tottenham,28,FW,W,720,2.7,0.0,6.2,1.5,3.5,20.3,2.7,1.5,3.5,20.3,"At 28, in prime years but may begin to slow. Goal rate has declined recently. ↓"
-Crysencio Summerville,West Ham,23,FW,W,1188,2.6,0.0,6.1,1.9,2.8,26.9,2.6,1.9,2.8,26.9,"At 23, still in development years with room to grow. Goal rate has declined recently. ↓ Minutes dropped recently — injury or form concern."
-Ryan Sessegnon,Fulham,24,FW,W,1044,2.6,0.0,6.1,1.9,2.6,22.1,2.6,1.9,2.6,22.1,"At 24, entering peak years. Goal rate improving season on season. ↑"
-Mathys Tel,Tottenham,19,FW,W,911,2.0,,,1.0,3.0,22.0,2.0,1.0,3.0,22.0,Prediction based on 2024 performance baseline.
-Tyler Dibling,Southampton,18,FW,W,1874,2.0,,,0.0,2.5,28.0,2.0,0.0,2.5,28.0,Prediction based on 2024 performance baseline.
-Adama Traore,Fulham,28,FW,W,1772,2.0,,,7.0,4.0,39.0,2.0,7.0,4.0,39.0,Prediction based on 2024 performance baseline.
-David Brooks,Bournemouth,27,FW,W,960,2.0,,,0.0,2.5,25.0,2.0,0.0,2.5,25.0,Prediction based on 2024 performance baseline.
-Jaden Philogene Bidace,Aston Villa → Ipswich Town,22,FW,W,806,2.0,,,0.0,2.5,19.0,2.0,0.0,2.5,19.0,Prediction based on 2024 performance baseline.
-Reiss Nelson,Fulham → Arsenal,25,FW,W,756,1.8,0.0,5.3,1.2,2.0,16.4,1.8,1.2,2.0,16.4,"At 25, entering peak years. Goal rate has been consistent. →"
-Kasey McAteer,Leicester City,23,FW,W,852,1.0,,,1.0,1.0,13.0,1.0,1.0,1.0,13.0,Prediction based on 2024 performance baseline.
-Wilson Odobert,Tottenham,20,FW,W,850,1.0,,,0.0,1.6,13.0,1.0,0.0,1.6,13.0,Prediction based on 2024 performance baseline.
-Bobby De Cordova-Reid,Leicester City,31,FW,W,744,1.0,,,2.0,0.8,7.0,1.0,2.0,0.8,7.0,Prediction based on 2024 performance baseline.
-Jesper Lindstrom,Everton,24,FW,W,1239,0.0,,,1.0,2.1,28.0,0.0,1.0,2.1,28.0,Prediction based on 2024 performance baseline.
-Jack Clarke,Ipswich Town,24,FW,W,1181,0.0,,,4.0,1.2,17.0,0.0,4.0,1.2,17.0,Prediction based on 2024 performance baseline.
-Abdul Fatawu Issahaku,Leicester City,20,FW,W,579,0.0,,,2.0,0.4,13.0,0.0,2.0,0.4,13.0,Prediction based on 2024 performance baseline.
-Wes Burns,Ipswich Town,30,FW,W,926,0.0,,,1.0,0.5,7.0,0.0,1.0,0.5,7.0,Prediction based on 2024 performance baseline.
+Player,Team,Age,Position,Role,2025 Predicted Minutes,2025 Predicted Goals,2025 Predicted xG,2025 Predicted Shots,2025 Predicted Assists,2025 Predicted Goals per 90,2025 Predicted xG per 90,2025 Predicted Shots per 90,2025 Predicted Assists per 90,2025 Goals (Low Estimate),2025 Goals (High Estimate),Analysis & Trend
+Abdul Fatawu Issahaku,Leicester City,20,FW,W,891,2.6,2.7,22.6,2.1,0.265,0.269,2.278,0.208,0.0,6.6,Limited data available for trend analysis.
+Adam Armstrong,Southampton,27,FW,W,1323,3.2,3.5,31.7,2.0,0.216,0.239,2.156,0.136,0.0,7.2,"At 27, entering peak years. Goal rate has been consistent."
+Adama Traore,Fulham,28,FW,W,1655,5.2,4.6,33.4,3.4,0.283,0.252,1.814,0.187,1.2,9.2,Limited data available for trend analysis.
+Alex Iwobi,Fulham,28,FW,W,2637,7.2,5.6,60.6,7.3,0.247,0.19,2.068,0.25,3.2,11.2,"At 28, in prime years but may begin to slow. Goal rate improving season on season. Playing more minutes each season."
+Anthony Elanga,Nott'ham Forest,22,FW,W,2286,8.1,6.5,51.2,5.1,0.318,0.257,2.014,0.202,4.1,12.1,"At 22, still in development years with room to grow. Goal rate has been consistent."
+Anthony Gordon,Newcastle Utd,23,FW,W,2151,9.4,7.6,52.9,4.7,0.395,0.318,2.214,0.197,5.4,13.4,"At 23, still in development years with room to grow. Goal rate has declined recently. Minutes dropped recently - injury or form concern."
+Bobby De Cordova-Reid,Leicester City,31,FW,W,846,2.1,2.1,17.1,1.7,0.224,0.228,1.814,0.182,0.0,6.1,Limited data available for trend analysis.
+Brennan Johnson,Tottenham,23,FW,W,2088,10.0,10.4,55.3,4.5,0.433,0.447,2.385,0.193,6.0,14.0,"At 23, still in development years with room to grow. Goal rate improving season on season."
+Bryan Mbeumo,Brentford,25,FW,W,2943,15.7,12.9,79.5,8.3,0.48,0.394,2.43,0.254,11.7,19.7,"At 25, entering peak years. Goal rate improving season on season. Playing more minutes each season."
+Callum Hudson-Odoi,Nott'ham Forest,24,FW,W,1908,4.4,3.8,42.1,2.9,0.206,0.178,1.988,0.136,0.4,8.4,"At 24, entering peak years. Goal rate has declined recently."
+Cameron Archer,Southampton,23,FW,W,1548,4.6,6.8,37.6,2.4,0.266,0.398,2.188,0.137,0.6,8.6,"At 23, still in development years with room to grow. Goal rate has declined recently."
+Crysencio Summerville,West Ham,23,FW,W,1161,2.9,3.4,25.9,2.1,0.227,0.26,2.007,0.165,0.0,6.9,"At 23, still in development years with room to grow. Goal rate has declined recently. Minutes dropped recently - injury or form concern."
+David Brooks,Bournemouth,27,FW,W,1206,3.4,3.1,29.1,2.4,0.257,0.233,2.17,0.18,0.0,7.4,"At 27, entering peak years. Goal rate has been consistent. Playing more minutes each season."
+Ethan Nwaneri,Arsenal,17,FW,W,1017,2.8,3.0,27.0,1.4,0.252,0.264,2.387,0.127,0.0,6.9,Limited data available for trend analysis.
+Facundo Buonanotte,Leicester City,20,FW,W,1557,4.3,3.1,39.0,2.9,0.246,0.182,2.254,0.165,0.3,8.3,"At 20, still in development years with room to grow. Goal rate improving season on season."
+Gabriel Martinelli,Arsenal,23,FW,W,2151,7.8,7.8,57.2,5.2,0.328,0.326,2.395,0.219,3.8,11.8,"At 23, still in development years with room to grow. Goal rate has been consistent."
+Iliman Ndiaye,Everton,24,FW,W,1998,3.6,3.9,41.8,3.1,0.16,0.176,1.885,0.138,0.0,7.6,Limited data available for trend analysis.
+Ismaila Sarr,Crystal Palace,26,MF,W,2394,4.7,6.2,,4.8,0.178,0.233,,0.18,2.8,6.6,"At 26, entering peak years. Goal rate has been consistent. Playing more minutes each season."
+Jack Clarke,Ipswich Town,24,FW,W,1269,2.9,2.7,26.6,2.7,0.208,0.19,1.889,0.189,0.0,6.9,Limited data available for trend analysis.
+Jack Grealish,Manchester City,29,FW,W,1107,2.4,2.6,23.6,2.3,0.193,0.213,1.918,0.184,0.0,6.4,"At 29, in prime years but may begin to slow. Goal rate has declined recently."
+Jack Harrison,Everton,28,FW,W,2052,4.4,5.3,43.1,3.8,0.191,0.232,1.889,0.166,0.4,8.4,"At 28, in prime years but may begin to slow. Goal rate has declined recently."
+Jacob Murphy,Newcastle Utd,29,FW,W,1998,8.2,5.4,46.0,5.4,0.368,0.244,2.07,0.243,4.2,12.2,"At 29, in prime years but may begin to slow. Goal rate improving season on season. Playing more minutes each season."
+Jacob Ramsey,Aston Villa,23,FW,W,1655,3.5,3.9,36.4,3.3,0.189,0.21,1.979,0.177,0.0,7.5,"At 23, still in development years with room to grow. Goal rate has declined recently. Playing more minutes each season."
+Jaden Philogene Bidace,Aston Villa → Ipswich Town,22,FW,W,972,2.2,3.1,25.9,1.7,0.201,0.29,2.396,0.159,0.0,6.2,Limited data available for trend analysis.
+Jadon Sancho,Chelsea,24,FW,W,1728,4.8,4.0,35.8,4.4,0.248,0.206,1.866,0.231,0.8,8.8,"At 24, entering peak years. Goal rate has declined recently."
+Jarrod Bowen,West Ham,28,FW,W,2826,13.3,10.3,79.5,7.8,0.424,0.327,2.532,0.25,9.3,17.3,"At 28, in prime years but may begin to slow. Goal rate has declined recently."
+Jeremy Doku,Manchester City,22,FW,W,1593,4.3,3.5,36.8,4.8,0.245,0.199,2.081,0.272,0.3,8.3,"At 22, still in development years with room to grow. Goal rate has been consistent."
+Jesper Lindstrom,Everton,24,FW,W,1296,3.3,3.0,30.7,2.4,0.23,0.205,2.133,0.167,0.0,7.3,Limited data available for trend analysis.
+Jordan Ayew,Leicester City → Crystal Palace,33,FW,W,1998,3.8,3.6,44.3,3.0,0.171,0.161,1.995,0.133,0.0,7.8,"At 33, experience is key but decline is possible. Goal rate improving season on season. Minutes dropped recently - injury or form concern."
+Joshua Zirkzee,Manchester Utd,23,FW,W,1305,4.9,4.9,33.0,2.0,0.337,0.337,2.279,0.141,0.9,8.9,Limited data available for trend analysis.
+Jota Silva,Nott'ham Forest,25,FW,W,1080,3.1,3.5,29.2,2.2,0.257,0.29,2.432,0.181,0.0,7.1,Limited data available for trend analysis.
+Kamaldeen Sulemana,Southampton,22,FW,W,1368,4.3,4.1,33.6,2.6,0.284,0.273,2.213,0.171,0.3,8.3,"At 22, still in development years with room to grow. Goal rate has declined recently."
+Kaoru Mitoma,Brighton,27,FW,W,2178,6.7,7.6,49.7,4.9,0.276,0.314,2.055,0.202,2.7,10.7,"At 27, entering peak years. Goal rate improving season on season. Playing more minutes each season."
+Kasey McAteer,Leicester City,23,FW,W,972,1.6,2.3,21.0,1.9,0.147,0.216,1.948,0.18,0.0,5.6,Limited data available for trend analysis.
+Keane Lewis-Potter,Brentford,23,DF,W,2601,,,,,,,,,,,"At 23, still in development years with room to grow. Goal rate has declined recently. Playing more minutes each season."
+Leandro Trossard,Arsenal,30,FW,W,2151,9.2,8.0,60.9,5.4,0.384,0.336,2.55,0.227,5.2,13.2,"At 30, in prime years but may begin to slow. Goal rate has declined recently. Playing more minutes each season."
+Leon Bailey,Aston Villa,27,FW,W,1557,4.4,3.8,39.8,3.5,0.253,0.219,2.302,0.201,0.4,8.4,"At 27, entering peak years. Goal rate has declined recently. Minutes dropped recently - injury or form concern."
+Marcus Rashford,Manchester Utd → Aston Villa,27,FW,W,1655,7.0,7.6,47.7,3.6,0.382,0.413,2.596,0.196,3.0,11.0,"At 27, entering peak years. Goal rate improving season on season. Minutes dropped recently - injury or form concern."
+Mathys Tel,Tottenham,19,FW,W,1035,2.8,3.2,26.4,1.8,0.24,0.28,2.299,0.159,0.0,6.8,Limited data available for trend analysis.
+Michail Antonio,West Ham,34,FW,W,1188,3.9,4.1,30.1,1.6,0.292,0.314,2.284,0.119,0.0,7.8,"At 34, experience is key but decline is possible. Goal rate has declined recently. Minutes dropped recently - injury or form concern."
+Mohammed Kudus,West Ham,24,FW,W,2367,5.5,7.5,68.9,3.5,0.211,0.284,2.62,0.133,1.6,9.6,"At 24, entering peak years. Goal rate has declined recently."
+Morgan Rogers,Aston Villa,22,FW,W,2385,11.9,8.5,59.5,4.8,0.449,0.319,2.247,0.183,7.9,15.9,"At 22, still in development years with room to grow. Goal rate has declined recently. Playing more minutes each season."
+Niclas Fullkrug,West Ham,31,FW,W,909,2.8,3.4,20.4,1.5,0.278,0.338,2.016,0.151,0.0,6.8,Limited data available for trend analysis.
+Patson Daka,Leicester City,26,FW,W,1089,5.1,4.7,28.9,2.1,0.424,0.39,2.391,0.177,1.1,9.1,"At 26, entering peak years. Goal rate has declined recently. Minutes dropped recently - injury or form concern."
+Pedro Neto,Chelsea,24,FW,W,1854,5.4,4.9,49.8,5.1,0.26,0.239,2.416,0.248,1.4,9.4,"At 24, entering peak years. Goal rate has been consistent. Playing more minutes each season."
+Raheem Sterling,Arsenal,30,FW,W,1089,3.4,3.5,26.9,2.5,0.278,0.289,2.22,0.209,0.0,7.4,"At 30, in prime years but may begin to slow. Goal rate has declined recently. Minutes dropped recently - injury or form concern."
+Rasmus Hojlund,Manchester Utd,21,FW,W,1683,4.1,6.6,37.4,2.1,0.22,0.352,1.999,0.11,0.1,8.1,Limited data available for trend analysis.
+Reiss Nelson,Fulham → Arsenal,25,FW,W,837,2.5,2.4,19.6,1.9,0.266,0.253,2.109,0.201,0.0,6.5,"At 25, entering peak years. Goal rate has been consistent."
+Ryan Sessegnon,Fulham,24,FW,W,1053,4.4,3.6,28.0,2.3,0.372,0.309,2.396,0.198,0.3,8.3,"At 24, entering peak years. Goal rate improving season on season."
+Sammie Szmodics,Ipswich Town,29,FW,W,1026,2.1,2.9,24.4,1.5,0.182,0.254,2.141,0.129,0.0,6.1,Limited data available for trend analysis.
+Savio,Manchester City,20,FW,W,1610,5.5,5.5,44.3,3.8,0.308,0.306,2.474,0.215,1.5,9.5,Limited data available for trend analysis.
+Son Heung-min,Tottenham,32,FW,W,1835,4.5,5.5,41.9,4.7,0.22,0.271,2.056,0.23,0.5,8.5,Limited data available for trend analysis.
+Stephy Mavididi,Leicester City,26,FW,W,1520,4.6,3.4,27.3,2.2,0.272,0.203,1.614,0.132,0.6,8.6,Limited data available for trend analysis.
+Timo Werner,Tottenham,28,FW,W,972,3.2,3.4,22.1,3.0,0.292,0.319,2.049,0.275,0.0,7.2,"At 28, in prime years but may begin to slow. Goal rate has declined recently."
+Tyler Dibling,Southampton,18,FW,W,1647,5.3,4.3,36.9,2.6,0.291,0.233,2.018,0.142,1.3,9.3,Limited data available for trend analysis.
+Wes Burns,Ipswich Town,30,FW,W,1062,2.4,3.0,21.6,2.1,0.204,0.25,1.829,0.176,0.0,6.4,Limited data available for trend analysis.
+Wilson Odobert,Tottenham,20,FW,W,1251,3.9,3.8,31.3,1.9,0.279,0.271,2.251,0.14,0.0,7.9,"At 20, still in development years with room to grow. Goal rate has been consistent. Minutes dropped recently - injury or form concern."
+Yankuba Minteh,Brighton,20,FW,W,1710,5.4,4.7,38.0,3.9,0.283,0.247,2.001,0.204,1.4,9.4,Limited data available for trend analysis.
