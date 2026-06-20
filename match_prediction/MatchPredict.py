@@ -32,19 +32,19 @@ TRAIN_SEASONS    = ["2017-18", "2018-19", "2019-20", "2020-21", "2021-22", "2022
 VALIDATION_SEASON = "2023-24"
 TEST_SEASON       = "2024-25"
 
-BASE_PATH       = r"C:\Users\jana\Desktop\jayjayokocha"
+BASE_PATH       = os.path.dirname(os.path.abspath(__file__))
 
-CSV_FOLDER      = BASE_PATH + r"\premierleaguedata"
-XG_FILE_MAIN    = BASE_PATH + r"\xg\premier_league_xg_data_2015-2024.csv"
-XG_FILE_1415    = BASE_PATH + r"\xg\premier_league_2014-15.csv"
-XG_FILE_2425    = BASE_PATH + r"\xg\premier_league_2024-25.csv"
-INJURY_FILE     = BASE_PATH + r"\data\injuries.csv"
-PLAYERS_FILE    = BASE_PATH + r"\data\players.csv"
-LINEUPS_FILE    = BASE_PATH + r"\data\pl_lineups.csv"
-VALUATIONS_FILE = BASE_PATH + r"\data\pl_players_valuations.csv"
-MANAGERS_FILE   = BASE_PATH + r"\data\pl_managers.csv"
-OUTFIELD_STATS_FILE = BASE_PATH + r"\data\2024_PL.csv"
-GK_STATS_FILE       = BASE_PATH + r"\data\GK_2024_PL.csv"
+CSV_FOLDER      = os.path.join(BASE_PATH, "premierleaguedata")
+XG_FILE_MAIN    = os.path.join(BASE_PATH, "xg", "premier_league_xg_data_2015-2024.csv")
+XG_FILE_1415    = os.path.join(BASE_PATH, "xg", "premier_league_2014-15.csv")
+XG_FILE_2425    = os.path.join(BASE_PATH, "xg", "premier_league_2024-25.csv")
+INJURY_FILE     = os.path.join(BASE_PATH, "data", "injuries.csv")
+PLAYERS_FILE    = os.path.join(BASE_PATH, "data", "players.csv")
+LINEUPS_FILE    = os.path.join(BASE_PATH, "data", "pl_lineups.csv")
+VALUATIONS_FILE = os.path.join(BASE_PATH, "data", "pl_players_valuations.csv")
+MANAGERS_FILE   = os.path.join(BASE_PATH, "data", "pl_managers.csv")
+OUTFIELD_STATS_FILE = os.path.join(BASE_PATH, "data", "2024_PL.csv")
+GK_STATS_FILE       = os.path.join(BASE_PATH, "data", "GK_2024_PL.csv")
 # Team name mapping — standardises names across all data sources
 TEAM_NAME_MAP = {
     'Man United': 'Manchester United', 'Man Utd': 'Manchester United',
