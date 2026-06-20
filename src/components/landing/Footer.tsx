@@ -43,12 +43,18 @@ const NAV_COLS = [
   },
 ];
 
-const SUGGESTIONS = [
-  'How does PLAI help with opposition analysis?',
-  'Can my physio team use the injury risk data?',
-  'How do I build a scout shortlist for the manager?',
-  'How quickly can the whole coaching staff get started?',
-];
+const SUGGESTION_ANSWERS: Record<string, string> = {
+  'How does PLAI help with opposition analysis?':
+    'Match Predictions gives you win/draw/loss probabilities per fixture, validated at 53.4% average accuracy across three full seasons of walk-forward testing. ScoutLab\'s club reports add a tactical breakdown of any team in the database — there isn\'t a dedicated "opposition dashboard" yet, but these two together cover most of that workflow today.',
+  'Can my physio team use the injury risk data?':
+    'Yes — the Injury Risk page is open to anyone with platform access, showing a validated High/Low risk tier per player (AUC 0.672, 69.3% sensitivity on held-out data). One real limitation worth knowing: the model doesn\'t use GPS or biomechanical tracking data, so it\'s based on workload, age, and injury-history features, not movement data.',
+  'How do I build a scout shortlist for the manager?':
+    'Star any player in ScoutLab\'s search results or report view to add them to your Shortlist — it persists across sessions and has its own dedicated view so you can review and present the full list later.',
+  'How quickly can the whole coaching staff get started?':
+    'Standard and Plus are single-seat plans. Ultra includes 5-seat team collaboration if multiple staff need access under one subscription. There\'s no fixed onboarding timeline yet — reach out to the team directly and we\'ll work through it with you.',
+};
+
+const SUGGESTIONS = Object.keys(SUGGESTION_ANSWERS);
 
 export default function Footer() {
   const navigate = useNavigate();
@@ -71,7 +77,10 @@ export default function Footer() {
     setResponse('');
     setTimeout(() => {
       setLoading(false);
-      setResponse(`PLAI uses a multi-model AI ensemble trained on 12M+ match datapoints across the Premier League. For "${text}" — get started to explore the full platform.`);
+      // This is a static suggestion list, not a live AI integration -- only answer the
+      // questions we actually have a real, verified answer for. Anything else gets an
+      // honest "ask the team" response instead of a fabricated one.
+      setResponse(SUGGESTION_ANSWERS[text] ?? `That's a good question for the team directly — visit Support or contact us and we'll get you a real answer for "${text}".`);
     }, 1200);
   };
 

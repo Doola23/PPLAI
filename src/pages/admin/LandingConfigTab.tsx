@@ -175,7 +175,7 @@ export default function LandingConfigTab() {
         const teams = [...new Set(d.flatMap(m => [m.home_team, m.away_team]))].sort();
         setMatchOptions(teams);
       }),
-      injuriesService.getPredictions(200).then((d: InjuryPrediction[]) => {
+      injuriesService.getPredictions().then((d: InjuryPrediction[]) => {
         setInjuryOptions([...new Set(d.map(p => p.player_name))].sort());
       }),
       playerStatsService.getAll({ limit: 500 }).then((d: PlayerStat[]) => {

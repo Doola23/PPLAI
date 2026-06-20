@@ -58,27 +58,27 @@ const CATEGORIES = [
 const FAQS = [
   {
     q: 'How accurate are the match predictions?',
-    a: 'PLAI achieves 87.2% accuracy across two full Premier League seasons. Predictions update in real time as lineups, form data, and injury reports change — typically within 90 minutes of confirmed team news.',
+    a: 'Validated with walk-forward cross-validation across three full Premier League seasons (2022-24): 53.4% average test accuracy, with the strongest of the three seasons reaching 58.1%. Predictions are generated from the latest available season data — there is no live, real-time update feed yet.',
   },
   {
-    q: 'How far in advance does injury risk data refresh?',
-    a: 'Biomechanical stress scores and workload flags update daily. The system flags elevated risk on average 12–14 days before symptoms present, giving your medical staff actionable lead time.',
+    q: 'How does the injury risk model work, and how accurate is it?',
+    a: 'The model scores AUC 0.672 with 69.3% sensitivity on held-out data, using workload, age, and injury-history features. It does not currently use GPS or biomechanical tracking data — that’s a real ceiling on how much further accuracy can improve without richer input data. Risk is shown as a validated binary High/Low tier, not a precise percentage.',
   },
   {
     q: 'Can I export scout search results to our existing scouting software?',
-    a: 'Yes. All scout search results export to CSV or JSON via the dashboard. Clubs on the API plan can pipe results directly into their BI tools using our REST or GraphQL endpoint.',
+    a: 'Not yet — there is no CSV/JSON export or API endpoint for scout search results in the product today. API access is listed as an Ultra-plan feature; if you need this now, contact us directly and we can scope it for your club.',
   },
   {
     q: 'What leagues does PLAI cover?',
-    a: 'Full coverage across the Premier League (all 20 clubs, 500+ players). Bundesliga, La Liga, Serie A, and Ligue 1 are in beta. International squads and the Championship are on the roadmap for Q3.',
+    a: 'Five leagues today: Premier League, Serie A, La Liga, Bundesliga, and Ligue 1 — 2,168 tracked players across all five, not a Premier-League-only product with others in beta.',
   },
   {
     q: 'How many user seats are included per subscription?',
-    a: 'Starter includes 3 seats, Professional includes 10 seats, and Ultra is unlimited. Seats can be assigned to roles: Analyst, Coach, Scout, Physio, or Viewer.',
+    a: 'Standard and Plus are single-seat plans. Ultra includes 5-seat team collaboration, for clubs that need multiple staff accessing the platform under one subscription.',
   },
   {
     q: 'Is there an onboarding service for new clubs?',
-    a: 'Yes — every new club receives a dedicated onboarding call, a custom data migration plan, and 30 days of priority support from a PLAI analyst familiar with your squad.',
+    a: 'Reach out to the team directly to discuss onboarding for your club — this is handled case by case rather than through a fixed, automated process right now.',
   },
 ];
 

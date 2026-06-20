@@ -23,15 +23,11 @@ function shortName(full: string) {
   return `${parts[0][0]}. ${parts.slice(1).join(' ')}`;
 }
 
-function riskColor(pct: number) {
-  if (pct >= 65) return '#ef4444';
-  if (pct >= 35) return '#f59e0b';
-  return '#22c55e';
+function riskColor(level: 'High' | 'Low') {
+  return level === 'High' ? '#1A65D3' : '#939A9E';
 }
-function riskLabel(pct: number) {
-  if (pct >= 65) return 'HIGH';
-  if (pct >= 35) return 'MED';
-  return 'LOW';
+function riskLabel(level: 'High' | 'Low') {
+  return level === 'High' ? 'HIGH' : 'LOW';
 }
 
 
@@ -82,9 +78,9 @@ function InjuryPreview({ players }: { players: InjuryPrediction[] }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {rows.map((p, i) => {
-        const pct = injuriesService.riskPct(p);
-        const color = riskColor(pct);
-        const label = riskLabel(pct);
+        const level = injuriesService.riskLevel(p);
+        const color = riskColor(level);
+        const label = riskLabel(level);
         const name = shortName(p.player_name);
         return (
           <motion.div key={i}
@@ -104,7 +100,7 @@ function InjuryPreview({ players }: { players: InjuryPrediction[] }) {
                 <span style={{ fontSize: 11, fontWeight: 700, color }}>{label}</span>
               </div>
               <div style={{ height: 4, background: 'rgba(255,255,255,0.07)', borderRadius: 999, overflow: 'hidden' }}>
-                <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }}
+                <motion.div initial={{ width: 0 }} animate={{ width: level === 'High' ? '85%' : '35%' }}
                   transition={{ delay: 0.3 + i * 0.07, duration: 0.9, ease: E }}
                   style={{ height: '100%', borderRadius: 999, background: color }} />
               </div>
@@ -243,9 +239,9 @@ export default function FeatureTeaser() {
       const pinned = cfg.injuryPlayers
         .map(name => allInjuries.find(p => p.player_name === name))
         .filter(Boolean) as InjuryPrediction[];
-      setInjuries(pinned.length ? pinned : [...allInjuries].sort((a, b) => injuriesService.riskPct(b) - injuriesService.riskPct(a)).slice(0, 4));
+      setInjuries(pinned.length ? pinned : [...allInjuries].sort((a, b) => injuriesService.rankScore(b) - injuriesService.rankScore(a)).slice(0, 4));
     } else {
-      setInjuries([...allInjuries].sort((a, b) => injuriesService.riskPct(b) - injuriesService.riskPct(a)).slice(0, 4));
+      setInjuries([...allInjuries].sort((a, b) => injuriesService.rankScore(b) - injuriesService.rankScore(a)).slice(0, 4));
     }
 
     if (cfg.analyticsPlayer) {
@@ -283,7 +279,7 @@ export default function FeatureTeaser() {
 
     const fetch = () => Promise.allSettled([
       matchesService.getAllPredictions().then(d => { allMatches = d; }),
-      injuriesService.getPredictions(100).then(d => { allInjuries = d; }),
+      injuriesService.getPredictions().then(d => { allInjuries = d; }),
       playerStatsService.getAll({ limit: 500 }).then(d => { allStats = d; }),
       scoutingService.getCurrent({ limit: 100 }).then(d => { allScouts = d; }),
       matchesService.getPredictedStandings().then(d => { allStandings = d; }),
@@ -462,12 +458,12 @@ function StaticMatchPreview() {
 function StaticInjuryPreview() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      {[
-        { name: 'M. Salah', club: 'liverpool', risk: 22 },
-        { name: 'O. Marmoush', club: 'manchester city', risk: 18 },
-        { name: 'B. Saka', club: 'arsenal', risk: 54 },
-        { name: 'E. Haaland', club: 'manchester city', risk: 78 },
-      ].map((p, i) => (
+      {([
+        { name: 'M. Salah', club: 'liverpool', risk: 'Low' as const },
+        { name: 'O. Marmoush', club: 'manchester city', risk: 'Low' as const },
+        { name: 'B. Saka', club: 'arsenal', risk: 'High' as const },
+        { name: 'E. Haaland', club: 'manchester city', risk: 'High' as const },
+      ]).map((p, i) => (
         <motion.div key={i} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.07, duration: 0.4, ease: E }} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <PlayerAvatar name={p.name} size={36} />
           <div style={{ flex: 1 }}>
@@ -476,7 +472,7 @@ function StaticInjuryPreview() {
               <span style={{ fontSize: 11, fontWeight: 700, color: riskColor(p.risk) }}>{riskLabel(p.risk)}</span>
             </div>
             <div style={{ height: 4, background: 'rgba(255,255,255,0.07)', borderRadius: 999, overflow: 'hidden' }}>
-              <motion.div initial={{ width: 0 }} animate={{ width: `${p.risk}%` }} transition={{ delay: 0.3 + i * 0.07, duration: 0.9, ease: E }} style={{ height: '100%', borderRadius: 999, background: riskColor(p.risk) }} />
+              <motion.div initial={{ width: 0 }} animate={{ width: p.risk === 'High' ? '85%' : '35%' }} transition={{ delay: 0.3 + i * 0.07, duration: 0.9, ease: E }} style={{ height: '100%', borderRadius: 999, background: riskColor(p.risk) }} />
             </div>
           </div>
         </motion.div>

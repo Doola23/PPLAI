@@ -15,9 +15,9 @@ import { useAuth } from '../../hooks/useAuth';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-const riskColor:  Record<string, string> = { High: '#1A65D3', Medium: '#5A8FA8', Low: '#939A9E' };
-const riskBorder: Record<string, string> = { High: 'rgba(26,101,211,0.3)', Medium: 'rgba(90,143,168,0.3)', Low: 'rgba(147,154,158,0.3)' };
-const riskBg:     Record<string, string> = { High: 'rgba(26,101,211,0.12)', Medium: 'rgba(90,143,168,0.12)', Low: 'rgba(147,154,158,0.12)' };
+const riskColor:  Record<string, string> = { High: '#1A65D3', Low: '#939A9E' };
+const riskBorder: Record<string, string> = { High: 'rgba(26,101,211,0.3)', Low: 'rgba(147,154,158,0.3)' };
+const riskBg:     Record<string, string> = { High: 'rgba(26,101,211,0.12)', Low: 'rgba(147,154,158,0.12)' };
 const confColor:  Record<string, string> = { High: '#1A65D3', Med: '#5A8FA8', Low: '#939A9E' };
 const confBorder: Record<string, string> = { High: 'rgba(26,101,211,0.3)', Med: 'rgba(90,143,168,0.3)', Low: 'rgba(147,154,158,0.3)' };
 const confBg:     Record<string, string> = { High: 'rgba(26,101,211,0.12)', Med: 'rgba(90,143,168,0.12)', Low: 'rgba(147,154,158,0.12)' };
@@ -105,7 +105,7 @@ export default function DashboardPage() {
       })
       .catch(() => {});
 
-    injuriesService.getPredictions(100)
+    injuriesService.getPredictions()
       .then(data => {
         const byPlayer = new Map<string, InjuryPrediction>();
         for (const row of data) {
@@ -117,7 +117,7 @@ export default function DashboardPage() {
           pool = pool.filter(p => p.team.toLowerCase().includes(favClub));
         }
         const sorted = pool
-          .sort((a, b) => injuriesService.riskPct(b) - injuriesService.riskPct(a))
+          .sort((a, b) => injuriesService.rankScore(b) - injuriesService.rankScore(a))
           .slice(0, 4);
         setInjuryPlayers(sorted);
       })
@@ -142,7 +142,7 @@ export default function DashboardPage() {
 
   const statCards = [
     { label: 'Match Predictions', value: matches.length ? String(matches.length) + '+' : '…', trend: 'Premier League fixtures', trendColor: '#1A65D3', icon: Target,     iconBg: 'rgba(26,101,211,0.18)', iconColor: '#1A65D3', path: '/match-predictions' },
-    { label: 'Avg Prediction Accuracy', value: '87%',  trend: '+2.1% this week', trendColor: '#1A65D3', icon: TrendingUp, iconBg: 'rgba(26,101,211,0.18)', iconColor: '#1A65D3', path: '/table-predictions' },
+    { label: 'Avg Prediction Accuracy', value: '53.4%',  trend: '3-season test average', trendColor: '#1A65D3', icon: TrendingUp, iconBg: 'rgba(26,101,211,0.18)', iconColor: '#1A65D3', path: '/table-predictions' },
     { label: 'Players Monitored', value: topPerformers.length ? '611' : '…', trend: '● Live PL data', trendColor: '#1A65D3', icon: Users, iconBg: 'rgba(26,101,211,0.18)', iconColor: '#1A65D3', path: '/player-stats' },
     { label: 'Injury Alerts',     value: highInjury ? String(highInjury) : '—', trend: highInjury ? `${highInjury} high risk flagged` : '—', trendColor: '#1A65D3', icon: Activity, iconBg: 'rgba(26,101,211,0.18)', iconColor: '#1A65D3', path: '/injury-risk' },
   ];
@@ -154,7 +154,7 @@ export default function DashboardPage() {
         title="DASHBOARD"
         stats={[
           { value: matches.length ? String(matches.length) + '+' : '…', label: 'Predictions' },
-          { value: '87%',   label: 'Accuracy'  },
+          { value: '53.4%', label: 'Accuracy'  },
           { value: '611',   label: 'Players'   },
         ]}
         badge="Live"
@@ -270,23 +270,16 @@ export default function DashboardPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {injuryPlayers.map(p => {
                   const risk = injuriesService.riskLevel(p);
-                  const pct  = injuriesService.riskPct(p);
                   return (
                     <div key={p.player_name} onClick={() => navigate('/injury-risk')} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px', cursor: 'pointer' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
                           <p style={{ color: '#F2F2F2', fontSize: 12, fontWeight: 700, margin: '0 0 2px' }}>{p.player_name}</p>
                           <p style={{ color: '#939A9E', fontSize: 10, margin: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
                             <ClubLogo club={p.team} size={14} />{p.team}
                           </p>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ background: riskBg[risk], border: `1px solid ${riskBorder[risk]}`, color: riskColor[risk], fontSize: 9, fontWeight: 700, padding: '3px 9px', borderRadius: 999, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{risk}</span>
-                          <span style={{ color: riskColor[risk], fontSize: 12, fontWeight: 900 }}>{pct}%</span>
-                        </div>
-                      </div>
-                      <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 6, height: 5 }}>
-                        <div style={{ width: `${pct}%`, height: '100%', background: riskColor[risk], borderRadius: 6 }} />
+                        <span style={{ background: riskBg[risk], border: `1px solid ${riskBorder[risk]}`, color: riskColor[risk], fontSize: 9, fontWeight: 700, padding: '3px 9px', borderRadius: 999, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{risk} Risk</span>
                       </div>
                     </div>
                   );
@@ -399,7 +392,7 @@ export default function DashboardPage() {
             <div>
               <div style={{ fontSize: 9, color: '#939A9E', textTransform: 'uppercase', letterSpacing: '0.26em', marginBottom: 4 }}>Monte Carlo Simulations</div>
               <h2 style={{ fontFamily: 'Miguer Sans, sans-serif', textTransform: 'uppercase', fontSize: 18, fontWeight: 700, color: '#F2F2F2', margin: '0 0 4px' }}>League Table Predictions</h2>
-              <p style={{ color: '#939A9E', fontSize: 12, margin: 0 }}>Season outcome probabilities — 10,000 simulations</p>
+              <p style={{ color: '#939A9E', fontSize: 12, margin: 0 }}>Season outcome probabilities — 2,000 simulations</p>
             </div>
             <DBtn variant="ghost" onClick={() => navigate('/table-predictions')}>Full Table</DBtn>
           </div>
