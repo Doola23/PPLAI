@@ -45,6 +45,7 @@ export interface ScoutPlayer {
   total_injuries: number;
   recent_injuries: number;
   total_days_missed: number;
+  recent_days_missed: number;
   goals_per90_zscore: number;
   assists_per90_zscore: number;
   npxg_per90_zscore: number;

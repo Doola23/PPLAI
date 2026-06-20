@@ -1,13 +1,16 @@
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   FileText, Download, Share2, Shield,
-  Activity, AlertTriangle, CheckCircle, Zap, ChevronLeft, Star,
+  Activity, AlertTriangle, CheckCircle, Zap, ChevronLeft, Star, Target,
 } from 'lucide-react';
 import PageHero from '../../components/dashboard/PageHero';
 import Flag from '../../components/ui/Flag';
 import ClubLogo from '../../components/ui/ClubLogo';
 import PlayerAvatar from '../../components/ui/PlayerAvatar';
+import api from '../../services/api';
+import type { ShotMap, MatchLogRow } from '../scout-results/ScoutResultsPage';
 
 const containerVariants = {
   hidden: {},
@@ -49,10 +52,104 @@ function StatHex({ label, value }: { label: string; value: string }) {
   );
 }
 
+const SHOT_COLOR: Record<string, string> = { G: '#1A65D3', S: '#939A9E', M: 'rgba(147,154,158,0.45)', B: '#2B4C5E', P: '#facc15' };
+const SHOT_LABEL: Record<string, string> = { G: 'Goal', S: 'Saved', M: 'Missed', B: 'Blocked', P: 'Post' };
+
+function ShotMapView({ shotMap, loading }: { shotMap: ShotMap | null; loading: boolean }) {
+  if (loading) return <p style={{ color: '#939A9E', fontSize: 12, margin: 0 }}>Loading shot map…</p>;
+  if (!shotMap || shotMap.sh.length === 0) return <p style={{ color: '#939A9E', fontSize: 12, margin: 0 }}>No shot data available for this player.</p>;
+
+  const shots = shotMap.sh;
+  const goals = shots.filter(s => s.r === 'G').length;
+  const totalXg = shots.reduce((a, s) => a + s.xg, 0);
+  const conversion = shots.length ? ((goals / shots.length) * 100).toFixed(1) : '0';
+
+  return (
+    <div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+        <StatHex label="Shots" value={String(shotMap.ts)} />
+        <StatHex label="Goals" value={String(goals)} />
+        <StatHex label="Conv %" value={conversion} />
+        <StatHex label="Total xG" value={totalXg.toFixed(1)} />
+      </div>
+
+      <div style={{
+        position: 'relative', width: '100%', height: 200, borderRadius: 10,
+        background: 'rgba(26,101,211,0.05)', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden',
+      }}>
+        {/* Goal mouth on the right edge -- shots are recorded as x closer to 1 = closer to goal */}
+        <div style={{ position: 'absolute', right: -2, top: '37%', height: '26%', width: 4, background: 'rgba(255,255,255,0.25)' }} />
+        {shots.map((s, i) => (
+          <div
+            key={i}
+            title={`${SHOT_LABEL[s.r] ?? s.r} · min ${s.m} · xG ${s.xg.toFixed(2)}`}
+            style={{
+              position: 'absolute',
+              left: `${Math.min(98, s.x * 100)}%`, top: `${Math.min(96, s.y * 100)}%`,
+              width: s.r === 'G' ? 9 : 6, height: s.r === 'G' ? 9 : 6,
+              borderRadius: '50%', background: SHOT_COLOR[s.r] ?? '#939A9E',
+              transform: 'translate(-50%, -50%)', cursor: 'default',
+            }}
+          />
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 14, marginTop: 10, flexWrap: 'wrap' }}>
+        {Object.entries(SHOT_LABEL).map(([k, l]) => (
+          <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: SHOT_COLOR[k], display: 'inline-block' }} />
+            <span style={{ fontSize: 10, color: '#939A9E' }}>{l}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MatchLogTable({ matchLog, loading, club }: { matchLog: MatchLogRow[] | null; loading: boolean; club: string }) {
+  if (loading) return <p style={{ color: '#939A9E', fontSize: 12, margin: 0 }}>Loading match log…</p>;
+  if (!matchLog || matchLog.length === 0) return <p style={{ color: '#939A9E', fontSize: 12, margin: 0 }}>No match log available for this player.</p>;
+
+  const rows = [...matchLog].sort((a, b) => b.d.localeCompare(a.d)).slice(0, 12);
+
+  return (
+    <div className="table-scroll-x">
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+        <thead>
+          <tr style={{ color: '#939A9E', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            {['Date', 'Opponent', 'Result', 'Min', 'G', 'A', 'Sh', 'KP', 'xG', 'xA'].map(h => (
+              <th key={h} style={{ padding: '6px 10px', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((m, i) => {
+            const opponent = m.ht.toLowerCase() === club.toLowerCase() ? `vs ${m.at}` : `@ ${m.ht}`;
+            return (
+              <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                <td style={{ padding: '7px 10px', color: '#939A9E', whiteSpace: 'nowrap' }}>{m.d}</td>
+                <td style={{ padding: '7px 10px', color: '#F2F2F2', whiteSpace: 'nowrap' }}>{opponent}</td>
+                <td style={{ padding: '7px 10px', color: m.r === 'W' ? '#1A65D3' : m.r === 'L' ? '#939A9E' : '#F2F2F2', fontWeight: 700 }}>{m.r}</td>
+                <td style={{ padding: '7px 10px', color: '#F2F2F2' }}>{m.t}</td>
+                <td style={{ padding: '7px 10px', color: '#F2F2F2' }}>{m.g}</td>
+                <td style={{ padding: '7px 10px', color: '#F2F2F2' }}>{m.a}</td>
+                <td style={{ padding: '7px 10px', color: '#F2F2F2' }}>{m.s}</td>
+                <td style={{ padding: '7px 10px', color: '#F2F2F2' }}>{m.kp}</td>
+                <td style={{ padding: '7px 10px', color: '#939A9E' }}>{m.xg.toFixed(2)}</td>
+                <td style={{ padding: '7px 10px', color: '#939A9E' }}>{m.xa.toFixed(2)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 type ResultPlayer = {
   name: string; position: string; club: string; nationality: string; age: number;
-  rating: number; xg: number; xa: number; apps: number; matchScore: number;
+  rating: number; xg: number; xa: number; apps: number;
   goals: number; assists: number; minutesPlayed: number;
+  recentInjuries?: number; recentDaysMissed?: number; playerId?: string | null;
 };
 
 function clamp10(v: number, max: number) {
@@ -67,7 +164,6 @@ function buildAttributes(p: ResultPlayer) {
     { label: 'xA/90',       value: clamp10(p.xa,       0.8) },
     { label: 'Appearances', value: clamp10(p.apps,     38)  },
     { label: 'Overall',     value: Math.min(10, p.rating)   },
-    { label: 'Match Score', value: p.matchScore / 10        },
   ];
 }
 
@@ -78,7 +174,7 @@ function buildStrengths(p: ResultPlayer): string[] {
   if (p.xg >= 0.5)        s.push(`High xG output — ${p.xg.toFixed(2)} per 90`);
   if (p.xa >= 0.3)        s.push(`Chance creator — ${p.xa.toFixed(2)} xA per 90`);
   if (p.apps >= 25)       s.push(`Consistent starter — ${p.apps} appearances`);
-  if (p.matchScore >= 80) s.push(`Elite scout match score (${p.matchScore}%)`);
+  if (p.rating >= 8)      s.push(`Elite season-long output (${p.rating.toFixed(1)}/10)`);
   if (s.length === 0)     s.push('Competitive profile across key metrics');
   return s.slice(0, 5);
 }
@@ -88,22 +184,48 @@ function buildWeaknesses(p: ResultPlayer): string[] {
   if (p.goals < 5)        w.push('Goal contribution below average for position');
   if (p.assists < 3)      w.push('Limited creative output — monitor assist rate');
   if (p.apps < 15)        w.push(`Limited appearances (${p.apps}) — fitness concern`);
-  if (p.matchScore < 60)  w.push(`Scout match score (${p.matchScore}%) needs improvement`);
+  if (p.rating < 5)       w.push(`Below-average season output (${p.rating.toFixed(1)}/10)`);
   if (w.length === 0)     w.push('No significant concerns identified at this stage');
   return w.slice(0, 3);
 }
 
 function recommendation(p: ResultPlayer): string {
-  if (p.matchScore >= 85) return 'Highly Recommended';
-  if (p.matchScore >= 70) return 'Recommended';
-  if (p.matchScore >= 55) return 'Monitor';
+  if (p.rating >= 8)   return 'Highly Recommended';
+  if (p.rating >= 6.5) return 'Recommended';
+  if (p.rating >= 5)   return 'Monitor';
   return 'Further Assessment';
 }
+
+function injuryRisk(p: ResultPlayer): string {
+  if ((p.recentInjuries ?? 0) >= 3 || (p.recentDaysMissed ?? 0) > 60) return 'Elevated';
+  if ((p.recentInjuries ?? 0) >= 1 || (p.recentDaysMissed ?? 0) > 14) return 'Monitor';
+  return 'Low';
+}
+
+type NavState = { player?: ResultPlayer };
 
 export default function ScoutReportPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const player = (location.state as { player?: ResultPlayer } | null)?.player ?? null;
+  const navState = (location.state as NavState | null) ?? {};
+  const player = navState.player ?? null;
+
+  const [shotMap, setShotMap] = useState<ShotMap | null>(null);
+  const [matchLog, setMatchLog] = useState<MatchLogRow[] | null>(null);
+  const [extrasLoading, setExtrasLoading] = useState(true);
+
+  useEffect(() => {
+    if (!player) return;
+    setExtrasLoading(true);
+    const name = encodeURIComponent(player.name);
+    Promise.all([
+      api.get(`/api/scouting/shot-maps/${name}`),
+      api.get(`/api/scouting/match-logs/${name}`),
+    ]).then(([sm, ml]) => {
+      setShotMap(sm.data?.items?.[0]?.shots ?? null);
+      setMatchLog(ml.data?.items?.[0]?.logs?.m ?? null);
+    }).catch(() => {}).finally(() => setExtrasLoading(false));
+  }, [player?.name]);
 
   if (!player) {
     return (
@@ -168,7 +290,7 @@ export default function ScoutReportPage() {
           <motion.div variants={cardVariants} style={{ background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 18, padding: '22px 24px' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1, minWidth: 0 }}>
-                <PlayerAvatar name={player.name} size={64} style={{ borderRadius: 16 }} />
+                <PlayerAvatar name={player.name} playerId={player.playerId ?? undefined} size={64} style={{ borderRadius: 16 }} />
                 <div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                     <h2 style={{ color: '#F2F2F2', fontWeight: 900, fontSize: 22, margin: 0 }}>{player.name}</h2>
@@ -182,9 +304,9 @@ export default function ScoutReportPage() {
               </div>
               <div className="layout-3col" style={{ gap: 16, flexShrink: 0 }}>
                 {[
-                  { label: 'Rating',      value: overallRating,           color: '#F2F2F2'    },
-                  { label: 'Match Score', value: `${player.matchScore}%`, color: '#1A65D3' },
-                  { label: 'Apps',        value: String(player.apps),     color: '#1A65D3' },
+                  { label: 'Rating',  value: overallRating,             color: '#F2F2F2' },
+                  { label: 'Apps',    value: String(player.apps),       color: '#1A65D3' },
+                  { label: 'Minutes', value: String(player.minutesPlayed), color: '#1A65D3' },
                 ].map(item => (
                   <div key={item.label} style={{ textAlign: 'center' }}>
                     <p style={{ color: item.color, fontWeight: 900, fontSize: 22, margin: 0 }}>{item.value}</p>
@@ -204,7 +326,7 @@ export default function ScoutReportPage() {
                 {player.goals > 0 ? ` Scored ${player.goals} goals` : ''}
                 {player.assists > 0 ? ` and provided ${player.assists} assists` : ''} across {player.apps} appearances this season.
                 {' '}xG of {player.xg.toFixed(2)} and xA of {player.xa.toFixed(2)} per 90 reflect a{' '}
-                {player.matchScore >= 75 ? 'high-impact' : player.matchScore >= 55 ? 'solid' : 'developing'} attacking profile.
+                {player.rating >= 7.5 ? 'high-impact' : player.rating >= 6 ? 'solid' : 'developing'} attacking profile.
                 {' '}{rec === 'Highly Recommended' ? 'Strongly recommended for immediate consideration.' : rec === 'Recommended' ? 'Recommended for further evaluation.' : 'Continue monitoring over the coming weeks.'}
               </p>
             </div>
@@ -278,9 +400,9 @@ export default function ScoutReportPage() {
 
         <motion.div variants={containerVariants} initial="hidden" animate="visible" className="layout-3col" style={{ gap: 20 }}>
           {[
-            { icon: Shield, label: 'Injury Risk',    value: player.matchScore >= 70 ? 'Low' : 'Monitor', sub: 'Based on load & history' },
-            { icon: Star,   label: 'Match Score',    value: `${player.matchScore}%`,                      sub: 'vs scouting criteria'    },
-            { icon: Zap,    label: 'Recommendation', value: rec,                                           sub: 'Scout assessment'        },
+            { icon: Shield, label: 'Injury Risk',    value: injuryRisk(player), sub: 'Based on recent injury history' },
+            { icon: Star,   label: 'Overall Rating', value: `${overallRating}/10`, sub: 'Season per-90 output blend'  },
+            { icon: Zap,    label: 'Recommendation', value: rec,                sub: 'Scout assessment'               },
           ].map(item => (
             <motion.div key={item.label} variants={cardVariants} style={{ background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 18, padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ width: 40, height: 40, borderRadius: 8, background: 'rgba(26,101,211,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -293,6 +415,28 @@ export default function ScoutReportPage() {
               </div>
             </motion.div>
           ))}
+        </motion.div>
+
+        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="layout-2col" style={{ gap: 20 }}>
+          <motion.div variants={cardVariants} style={{ background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 18, padding: '22px 24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(26,101,211,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Target size={15} color="#1A65D3" />
+              </div>
+              <h3 style={{ color: '#F2F2F2', fontWeight: 700, fontSize: 13, margin: 0 }}>Shot Map</h3>
+            </div>
+            <ShotMapView shotMap={shotMap} loading={extrasLoading} />
+          </motion.div>
+
+          <motion.div variants={cardVariants} style={{ background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 18, padding: '22px 24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(26,101,211,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Activity size={15} color="#1A65D3" />
+              </div>
+              <h3 style={{ color: '#F2F2F2', fontWeight: 700, fontSize: 13, margin: 0 }}>Match Log</h3>
+            </div>
+            <MatchLogTable matchLog={matchLog} loading={extrasLoading} club={player.club} />
+          </motion.div>
         </motion.div>
 
       </div>

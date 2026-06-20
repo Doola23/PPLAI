@@ -1,7 +1,7 @@
 import Spinner from '../../components/ui/Spinner';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Star, Eye, FileText, Zap } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star, FileText, Zap, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PageBanner from '../../components/dashboard/PageBanner';
 import { DBtn } from '../../components/dashboard/DS';
@@ -11,9 +11,28 @@ import PlayerAvatar from '../../components/ui/PlayerAvatar';
 import { scoutingService } from '../../services/scouting.service';
 
 const E = [0.16, 1, 0.3, 1] as const;
+const SHORTLIST_KEY = 'scoutlab_shortlist';
 
-type ResultPlayer = { id: number; name: string; position: string; club: string; nationality: string; age: number; rating: number; xg: number; xa: number; apps: number; matchScore: number; goals: number; assists: number; minutesPlayed: number };
+export type Shot = { m: number; xg: number; x: number; y: number; r: string; st: string; sit: string };
+export type ShotMap = { ts: number; g: number; tm: string; n: string; lg: string; sh: Shot[] };
+export type MatchLogRow = { ht: string; at: string; d: string; t: number; g: number; a: number; s: number; kp: number; xg: number; xa: number; r: string };
 
+type ResultPlayer = {
+  id: number; name: string; position: string; club: string; nationality: string; age: number;
+  rating: number; xg: number; xa: number; apps: number; goals: number; assists: number;
+  minutesPlayed: number; recentInjuries: number; recentDaysMissed: number; playerId: string | null;
+};
+
+// ScoutLab derives the same Transfermarkt numeric ID from img_url for its PlayerAvatar TM CDN
+// fallback -- match that exactly so the two flows show the same real photos, not just initials.
+function extractPlayerId(imgUrl?: string): string | null {
+  const m = (imgUrl ?? '').match(/\/images\/players\/(\d+)\.(png|jpg)$/);
+  return m ? m[1] : null;
+}
+
+function loadShortlist(): string[] {
+  try { return JSON.parse(localStorage.getItem(SHORTLIST_KEY) || '[]'); } catch { return []; }
+}
 
 function StatPill({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
   return (
@@ -31,13 +50,15 @@ function StatPill({ label, value, accent = false }: { label: string; value: stri
 export default function ScoutResultsPage() {
   const [idx, setIdx] = useState(0);
   const [allPlayers, setAllPlayers] = useState<ResultPlayer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [shortlist, setShortlist] = useState<string[]>(loadShortlist);
+  const [search, setSearch] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    scoutingService.getCurrent({ limit: 200 })
+    scoutingService.getCurrent({ limit: 1000 })
       .then(data => {
-        const sorted = [...data].sort((a, b) => scoutingService.rating(b) - scoutingService.rating(a));
-        const mapped: ResultPlayer[] = sorted.slice(0, 50).map((p, i) => ({
+        const mapped: ResultPlayer[] = data.map((p, i) => ({
           id: i + 1,
           name: p.Player ?? p.player_squad?.split('_')[0] ?? '—',
           position: p.Pos ?? '—',
@@ -48,21 +69,46 @@ export default function ScoutResultsPage() {
           xg: parseFloat((p.xG ?? 0).toString()),
           xa: parseFloat((p.xAG ?? 0).toString()),
           apps: Math.round(p['90s'] ?? 0),
-          matchScore: Math.round(scoutingService.rating(p) * 10),
           goals: p.Gls ?? 0,
           assists: p.Ast ?? 0,
           minutesPlayed: p.Min ?? 0,
+          recentInjuries: p.recent_injuries ?? 0,
+          recentDaysMissed: p.recent_days_missed ?? 0,
+          playerId: extractPlayerId(p.img_url),
         }));
         setAllPlayers(mapped);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  const player = allPlayers[idx];
-  const prev = () => setIdx(i => Math.max(0, i - 1));
-  const next = () => setIdx(i => Math.min(allPlayers.length - 1, i + 1));
+  const shortlisted = useMemo(
+    () => [...allPlayers].filter(p => shortlist.includes(p.name)).sort((a, b) => b.rating - a.rating),
+    [allPlayers, shortlist]
+  );
 
-  if (!player) {
+  const searchResults = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return [];
+    return allPlayers.filter(p => p.name.toLowerCase().includes(q)).slice(0, 30);
+  }, [search, allPlayers]);
+
+  const players = search.trim() ? searchResults : shortlisted;
+
+  useEffect(() => { setIdx(0); }, [search, shortlist.length]);
+
+  const safeIdx = Math.min(idx, Math.max(0, players.length - 1));
+  const player = players[safeIdx];
+
+  function toggleShortlist(name: string) {
+    setShortlist(prev => {
+      const next = prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name];
+      localStorage.setItem(SHORTLIST_KEY, JSON.stringify(next));
+      return next;
+    });
+  }
+
+  if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Spinner size={300} label="Scouting data" />
@@ -70,7 +116,10 @@ export default function ScoutResultsPage() {
     );
   }
 
-  const matchColor = '#1A65D3';
+  const totalGoals = players.reduce((s, p) => s + p.goals, 0);
+
+  const prev = () => setIdx(i => Math.max(0, i - 1));
+  const next = () => setIdx(i => Math.min(players.length - 1, i + 1));
 
   return (
     <div style={{ minHeight: '100vh', background: '#000000' }}>
@@ -79,31 +128,62 @@ export default function ScoutResultsPage() {
         title="Scout"
         titleAccent="Results"
         stats={[
-          { value: String(allPlayers.length), label: 'Matched' },
-          { value: '3',                        label: 'Shortlisted' },
-          { value: '8.4',                       label: 'Avg Rating' },
+          { value: String(allPlayers.length), label: 'Scouted'     },
+          { value: String(shortlist.length),  label: 'Shortlisted' },
+          { value: String(totalGoals),        label: 'Total Goals' },
         ]}
         badge="Live Results"
       />
 
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px 60px' }}>
 
+        <div style={{ position: 'relative', marginBottom: 20 }}>
+          <Search
+            size={16}
+            color="rgba(255,255,255,0.3)"
+            style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+          />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search any scouted player…"
+            style={{
+              width: '100%', padding: '11px 14px 11px 38px', borderRadius: 999,
+              border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
+              color: '#F2F2F2', fontSize: 13, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+            }}
+          />
+        </div>
+
+        {!search.trim() && shortlisted.length === 0 && (
+          <p style={{ fontSize: 12, color: '#939A9E', margin: '0 0 20px' }}>
+            No players shortlisted yet. Search for a player above, or star players from{' '}
+            <button onClick={() => navigate('/scout-search')} style={{ background: 'none', border: 'none', color: '#1A65D3', fontWeight: 700, cursor: 'pointer', fontSize: 12, padding: 0, fontFamily: 'inherit' }}>Scout Search</button>.
+          </p>
+        )}
+        {search.trim() && searchResults.length === 0 && (
+          <p style={{ fontSize: 12, color: '#939A9E', margin: '0 0 20px' }}>No players match "{search}".</p>
+        )}
+
+        {player && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <button
-              onClick={prev} disabled={idx === 0}
-              style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', cursor: idx === 0 ? 'not-allowed' : 'pointer', opacity: idx === 0 ? 0.3 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F2F2F2' }}
+              onClick={prev} disabled={safeIdx === 0}
+              style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', cursor: safeIdx === 0 ? 'not-allowed' : 'pointer', opacity: safeIdx === 0 ? 0.3 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F2F2F2' }}
             ><ChevronLeft size={16} /></button>
             <button
-              onClick={next} disabled={idx === allPlayers.length - 1}
-              style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', cursor: idx === allPlayers.length - 1 ? 'not-allowed' : 'pointer', opacity: idx === allPlayers.length - 1 ? 0.3 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F2F2F2' }}
+              onClick={next} disabled={safeIdx === players.length - 1}
+              style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', cursor: safeIdx === players.length - 1 ? 'not-allowed' : 'pointer', opacity: safeIdx === players.length - 1 ? 0.3 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F2F2F2' }}
             ><ChevronRight size={16} /></button>
           </div>
-          <span style={{ fontSize: 12, color: '#939A9E', fontWeight: 600 }}>{idx + 1} of {allPlayers.length}</span>
-          <DBtn variant="outline">Modify Filters</DBtn>
+          <span style={{ fontSize: 12, color: '#939A9E', fontWeight: 600 }}>{safeIdx + 1} of {players.length}</span>
+          <DBtn variant="outline" onClick={() => navigate('/scout-search')}>Find More Players</DBtn>
         </div>
+        )}
 
         <AnimatePresence mode="wait">
+          {player && (
           <motion.div
             key={player.id}
             initial={{ opacity: 0, x: 40, filter: 'blur(8px)' }}
@@ -126,10 +206,10 @@ export default function ScoutResultsPage() {
               position: 'relative', overflow: 'hidden',
             }}>
               <div style={{ position: 'absolute', top: 20, right: 20, background: '#1A65D3', color: '#F2F2F2', fontSize: 11, fontWeight: 900, padding: '4px 12px', borderRadius: 99, }}>
-                #{idx + 1}
+                #{safeIdx + 1}
               </div>
 
-              <PlayerAvatar name={player.name} size={88} style={{ borderRadius: 24, border: '2px solid rgba(26,101,211,0.3)' }} />
+              <PlayerAvatar name={player.name} playerId={player.playerId ?? undefined} size={88} style={{ borderRadius: 24, border: '2px solid rgba(26,101,211,0.3)' }} />
 
               <div>
                 <h2 style={{ fontFamily: 'Miguer Sans, sans-serif', fontSize: 28, fontWeight: 900, color: '#F2F2F2', margin: '0 0 6px', lineHeight: 1.1 }}>{player.name}</h2>
@@ -150,28 +230,25 @@ export default function ScoutResultsPage() {
                 </div>
               </div>
 
-              <div style={{ marginTop: 'auto' }}>
-                <p style={{ fontSize: 9, color: '#939A9E', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, marginBottom: 8 }}>Match Score</p>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 8 }}>
-                  <span style={{ fontSize: 48, fontWeight: 900, color: matchColor, lineHeight: 1 }}>{player.matchScore}</span>
-                  <span style={{ fontSize: 16, color: '#939A9E', fontWeight: 700 }}>%</span>
-                </div>
-                <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 99, overflow: 'hidden' }}>
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${player.matchScore}%` }}
-                    transition={{ duration: 0.7, ease: E }}
-                    style={{ height: '100%', background: matchColor, borderRadius: 99 }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <button onClick={() => navigate('/scout-report', { state: { player } })} style={{ width: '100%', height: 40, borderRadius: 999, background: '#1A65D3', color: '#F2F2F2', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 'auto' }}>
+                <button
+                  onClick={() => navigate('/scout-report', { state: { player } })}
+                  style={{ width: '100%', height: 40, borderRadius: 999, background: '#1A65D3', color: '#F2F2F2', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                >
                   <FileText size={13} /> Scout Report
                 </button>
-                <button style={{ width: '100%', height: 40, borderRadius: 999, background: 'transparent', color: '#939A9E', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                  <Star size={13} /> Shortlist
+                <button
+                  onClick={() => toggleShortlist(player.name)}
+                  style={{
+                    width: '100%', height: 40, borderRadius: 999, cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'inherit',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    background: shortlist.includes(player.name) ? 'rgba(250,204,21,0.12)' : 'transparent',
+                    color: shortlist.includes(player.name) ? '#facc15' : '#939A9E',
+                    border: `1px solid ${shortlist.includes(player.name) ? 'rgba(250,204,21,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                  }}
+                >
+                  <Star size={13} fill={shortlist.includes(player.name) ? '#facc15' : 'none'} />
+                  {shortlist.includes(player.name) ? 'Shortlisted' : 'Shortlist'}
                 </button>
               </div>
             </div>
@@ -180,8 +257,7 @@ export default function ScoutResultsPage() {
               <div>
                 <p style={{ fontSize: 9, color: '#939A9E', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, marginBottom: 14 }}>Season 2024/25</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  <StatPill label="Rating"  value={player.rating.toFixed(1)} accent />
-                  <StatPill label="Goals"   value={String(player.goals)} />
+                  <StatPill label="Goals"   value={String(player.goals)} accent />
                   <StatPill label="Assists" value={String(player.assists)} />
                   <StatPill label="Apps"    value={String(player.apps)} />
                   <StatPill label="Minutes" value={`${(player.minutesPlayed/1000).toFixed(1)}K`} />
@@ -219,37 +295,37 @@ export default function ScoutResultsPage() {
                   <span style={{ fontSize: 9, color: '#1A65D3', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' }}>PLAI Insight</span>
                 </div>
                 <p style={{ fontSize: 13, color: '#939A9E', lineHeight: 1.65, margin: 0 }}>
-                  {player.matchScore >= 90
-                    ? `Elite match. ${player.name} profiles align exceptionally well — top ${100 - player.matchScore + 4}% across all scouted criteria this season.`
-                    : player.matchScore >= 75
-                    ? `Strong candidate. ${player.name} meets ${player.matchScore}% of target criteria. Minor gaps in positional coverage worth monitoring.`
-                    : `Emerging profile. ${player.name} shows potential but currently matches ${player.matchScore}% of criteria. Monitor for next 4–6 weeks.`
-                  }
+                  {player.name} recorded {player.goals} goals and {player.assists} assists across {player.apps} appearances
+                  this season, with xG/90 of <strong style={{ color: '#1A65D3' }}>{player.xg.toFixed(2)}</strong> and
+                  xA/90 of <strong style={{ color: '#1A65D3' }}>{player.xa.toFixed(2)}</strong>.
                 </p>
               </div>
             </div>
           </motion.div>
+          )}
         </AnimatePresence>
 
+        {players.length > 0 && (
         <div style={{ marginTop: 20, display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
-          {allPlayers.map((p, i) => (
+          {players.map((p, i) => (
             <motion.button
               key={p.id}
               onClick={() => setIdx(i)}
               whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
               style={{
                 flexShrink: 0, width: 88, padding: '10px 12px', borderRadius: 14,
-                background: i === idx ? 'rgba(26,101,211,0.12)' : 'rgba(255,255,255,0.03)',
-                border: `1px solid ${i === idx ? 'rgba(26,101,211,0.4)' : 'rgba(255,255,255,0.06)'}`,
+                background: i === safeIdx ? 'rgba(26,101,211,0.12)' : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${i === safeIdx ? 'rgba(26,101,211,0.4)' : 'rgba(255,255,255,0.06)'}`,
                 cursor: 'pointer', textAlign: 'center', transition: 'all 160ms ease',
               }}
             >
-              <PlayerAvatar name={p.name} size={32} style={{ borderRadius: 10, margin: '0 auto 6px' }} />
-              <div style={{ fontSize: 10, fontWeight: 700, color: i === idx ? '#F2F2F2' : '#939A9E', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name.split(' ').pop()}</div>
-              <div style={{ fontSize: 9, color: i === idx ? '#1A65D3' : '#939A9E', fontWeight: 700, marginTop: 2 }}>{p.matchScore}%</div>
+              <PlayerAvatar name={p.name} playerId={p.playerId ?? undefined} size={32} style={{ borderRadius: 10, margin: '0 auto 6px' }} />
+              <div style={{ fontSize: 10, fontWeight: 700, color: i === safeIdx ? '#F2F2F2' : '#939A9E', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name.split(' ').pop()}</div>
+              <div style={{ fontSize: 9, color: i === safeIdx ? '#1A65D3' : '#939A9E', fontWeight: 700, marginTop: 2 }}>{p.goals}g {p.assists}a</div>
             </motion.button>
           ))}
         </div>
+        )}
       </div>
     </div>
   );

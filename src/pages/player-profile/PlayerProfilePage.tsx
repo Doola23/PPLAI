@@ -19,7 +19,7 @@ export interface PlayerData {
   name: string; firstName: string; lastName: string;
   position: string; club: string; clubDisplay: string;
   nationality: string; flag: string;
-  image: string; initials: string;
+  image: string; initials: string; playerId: string | null;
   age: string; height: string; foot: string; contract: string;
   overall: number; marketValue: string;
   seasonGoals: string; seasonAssists: string; xgPer90: string; minutesPlayed: string;
@@ -99,6 +99,7 @@ function statsToPlayerData(s: PlayerStat): PlayerData {
     flag: '',
     image: '',
     initials: parts.map(p => p[0]).slice(0, 2).join('').toUpperCase(),
+    playerId: null,
     age: String(age),
     height: '—',
     foot: '—',
@@ -128,7 +129,7 @@ function statsToPlayerData(s: PlayerStat): PlayerData {
 
 const FALLBACK: PlayerData = {
   name: '—', firstName: '—', lastName: '—', position: '—',
-  club: '—', clubDisplay: '—', nationality: '—', flag: '', image: '', initials: '—',
+  club: '—', clubDisplay: '—', nationality: '—', flag: '', image: '', initials: '—', playerId: null,
   age: '—', height: '—', foot: '—', contract: '—',
   overall: 0, marketValue: '—',
   seasonGoals: '0', seasonAssists: '0', xgPer90: '0.00', minutesPlayed: '0',
@@ -167,6 +168,7 @@ export default function PlayerProfilePage() {
               nationality: match.citizenship ?? '—',
               flag: '', image: '',
               initials: (match.Player ?? '').split(' ').map((p: string) => p[0]).slice(0, 2).join('').toUpperCase(),
+              playerId: (match.img_url ?? '').match(/\/images\/players\/(\d+)\.(png|jpg)$/)?.[1] ?? null,
               age: String(match.Age ?? '—'),
               height: match.height ?? '—',
               foot: match.foot ?? '—',
@@ -260,7 +262,7 @@ export default function PlayerProfilePage() {
                 {player.overall}
               </div>
 
-              <PlayerAvatar name={player.name} size={88} style={{ borderRadius: 24, border: '2px solid rgba(26,101,211,0.3)' }} />
+              <PlayerAvatar name={player.name} playerId={player.playerId ?? undefined} size={88} style={{ borderRadius: 24, border: '2px solid rgba(26,101,211,0.3)' }} />
 
               <div>
                 <h2 style={{ fontFamily: 'Miguer Sans, sans-serif', fontSize: 28, fontWeight: 900, color: '#F2F2F2', margin: '0 0 6px', lineHeight: 1.1 }}>{player.name}</h2>
@@ -371,7 +373,7 @@ export default function PlayerProfilePage() {
               </div>
 
               <div>
-                <p style={{ fontSize: 9, color: '#939A9E', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, marginBottom: 8 }}>Overall Score</p>
+                <p style={{ fontSize: 9, color: '#939A9E', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, marginBottom: 8 }}>Performance Rating</p>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 8 }}>
                   <span style={{ fontSize: 48, fontWeight: 900, color: matchColor, lineHeight: 1 }}>{matchScore}</span>
                   <span style={{ fontSize: 16, color: '#939A9E', fontWeight: 700 }}>/100</span>
@@ -384,6 +386,7 @@ export default function PlayerProfilePage() {
                     style={{ height: '100%', background: matchColor, borderRadius: 99 }}
                   />
                 </div>
+                <p style={{ fontSize: 10, color: '#939A9E', margin: '8px 0 0' }}>Blend of this season's per-90 output vs league average — not a comparison to any specific search.</p>
               </div>
 
               <div style={{ background: 'rgba(26,101,211,0.06)', border: '1px solid rgba(26,101,211,0.15)', borderRadius: 14, padding: '16px 18px', marginTop: 'auto' }}>
@@ -395,7 +398,7 @@ export default function PlayerProfilePage() {
                   {player.name} recorded {player.seasonGoals} goals and {player.seasonAssists} assists this season
                   with an xG/90 of <strong style={{ color: '#1A65D3' }}>{player.xgPer90}</strong> and
                   xA/90 of <strong style={{ color: '#1A65D3' }}>{player.heroXA}</strong>.
-                  Overall score: <strong style={{ color: '#1A65D3' }}>{player.overall}/100</strong>.
+                  Performance rating: <strong style={{ color: '#1A65D3' }}>{player.overall}/100</strong>.
                 </p>
               </div>
             </div>
