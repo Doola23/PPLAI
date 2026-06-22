@@ -1,11 +1,17 @@
 const { Router } = require('express');
 const { ScanCommand, GetCommand, QueryCommand } = require('@aws-sdk/lib-dynamodb');
 const { docClient } = require('../db');
+const { optionalAuth, blockRole } = require('../middleware/auth');
 
 const router = Router();
 
+// Match-level win/draw/loss predictions stay open to anonymous visitors (the public
+// landing page teaser needs them) but are blocked for logged-in fan accounts, to keep
+// this away from anything that reads as betting-odds access for casual users.
+const blockFans = [optionalAuth, blockRole('fan')];
+
 // GET /api/matches/predictions?homeTeam=Arsenal&awayTeam=Chelsea
-router.get('/predictions', async (req, res) => {
+router.get('/predictions', blockFans, async (req, res) => {
   try {
     const { homeTeam, awayTeam } = req.query;
 
@@ -35,7 +41,7 @@ router.get('/predictions', async (req, res) => {
 });
 
 // GET /api/matches/output/predictions
-router.get('/output/predictions', async (req, res) => {
+router.get('/output/predictions', blockFans, async (req, res) => {
   try {
     const data = await docClient.send(new ScanCommand({ TableName: 'match-output-predictions' }));
     res.json({ items: data.Items, count: data.Count });

@@ -333,7 +333,7 @@ export default function MatchPredictionsPage() {
   const gwPickerRef = useRef<HTMLDivElement>(null);
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<'offline' | 'locked' | null>(null);
   const [selected, setSelected] = useState<Match | null>(null);
   const [search, setSearch] = useState('');
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
@@ -366,7 +366,7 @@ export default function MatchPredictionsPage() {
         setMatches(mapped);
         setSelected(mapped.find(m => m.gameweek === FALLBACK_GW) ?? mapped[0] ?? null);
       })
-      .catch(() => setError(true))
+      .catch((err) => setError(err?.response?.status === 403 ? 'locked' : 'offline'))
       .finally(() => setLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gwMap]);
@@ -406,7 +406,7 @@ export default function MatchPredictionsPage() {
   if (error) return (
     <div style={{ minHeight: '100vh', background: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ color: '#939A9E', fontSize: 13, fontWeight: 600, letterSpacing: '0.1em' }}>
-        Backend offline — start the server to load predictions
+        {error === 'locked' ? 'Feature not available on this account' : 'Backend offline — start the server to load predictions'}
       </div>
     </div>
   );
