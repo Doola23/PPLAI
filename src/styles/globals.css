@@ -237,6 +237,32 @@ canvas {
 }
 .skip-link:focus { top: 16px; }
 
+/* ── PageBanner responsive collapse ── */
+@media (max-width: 768px) {
+  .page-banner-inner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 32px 20px 28px !important;
+    gap: 24px !important;
+  }
+  .page-banner-stats {
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    flex-wrap: wrap !important;
+    gap: 20px !important;
+  }
+}
+
+/* ── ScoutLab: restore focus rings overridden by inline outline:none ── */
+.scoutlab-root *:focus-visible {
+  outline: 2px solid #1A65D3 !important;
+  outline-offset: 2px !important;
+  border-radius: 4px;
+}
+.scoutlab-root button:focus-visible {
+  border-radius: 999px;
+}
+
 /* prefers-reduced-motion — disable all non-essential animations */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

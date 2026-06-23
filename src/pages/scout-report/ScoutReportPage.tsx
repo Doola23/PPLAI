@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  FileText, Download, Share2, Shield,
-  Activity, AlertTriangle, CheckCircle, Zap, ChevronLeft, Star, Target,
-} from 'lucide-react';
-import PageHero from '../../components/dashboard/PageHero';
+  FileText, DownloadSimple, ShareNetwork, Shield,
+  ChartLineUp, Warning, CheckCircle, Lightning, CaretLeft, Star, Crosshair,
+} from '@phosphor-icons/react';
+import PageBanner from '../../components/dashboard/PageBanner';
 import Flag from '../../components/ui/Flag';
 import ClubLogo from '../../components/ui/ClubLogo';
 import PlayerAvatar from '../../components/ui/PlayerAvatar';
@@ -232,7 +232,7 @@ export default function ScoutReportPage() {
       <div style={{ minHeight: '100vh', background: '#000', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
         <div style={{ color: '#939A9E', fontSize: 13, fontWeight: 600, letterSpacing: '0.1em' }}>No player selected — go back and click Scout Report</div>
         <button onClick={() => navigate('/scout-results')} style={{ borderRadius: 999, background: '#1A65D3', color: '#F2F2F2', border: 'none', padding: '8px 20px', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <ChevronLeft size={13} /> Back to Results
+          <CaretLeft size={13} /> Back to Results
         </button>
       </div>
     );
@@ -246,15 +246,17 @@ export default function ScoutReportPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#000000' }}>
-      <PageHero
+      <PageBanner
         eyebrow="Scouting"
-        title="SCOUT"
-        titleAccent="REPORT"
+        title="Scout"
+        titleAccent="Report"
+        description="Full AI-generated scouting report — attributes, strengths, shot map and match log"
         stats={[
           { value: overallRating,       label: 'Rating'   },
           { value: String(player.apps), label: 'Apps'     },
           { value: player.position,     label: 'Position' },
         ]}
+        badge="Scout Report"
       />
 
       <div style={{
@@ -273,13 +275,13 @@ export default function ScoutReportPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <button onClick={() => navigate('/scout-results')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#939A9E', fontSize: 11, fontWeight: 700, padding: '7px 14px', borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit' }}>
-            <ChevronLeft size={13} /> Back
+            <CaretLeft size={13} /> Back
           </button>
           <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#939A9E', fontSize: 11, fontWeight: 700, padding: '7px 14px', borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit' }}>
-            <Share2 size={13} /> Share
+            <ShareNetwork size={13} /> Share
           </button>
           <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#1A65D3', color: '#F2F2F2', fontSize: 11, fontWeight: 700, padding: '7px 14px', borderRadius: 999, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-            <Download size={13} /> Export PDF
+            <DownloadSimple size={13} /> Export PDF
           </button>
         </div>
       </div>
@@ -318,7 +320,7 @@ export default function ScoutReportPage() {
 
             <div style={{ marginTop: 20, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: '14px 16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <FileText size={13} color="#1A65D3" />
+                <FileText size={13} color="#1A65D3" weight="regular" />
                 <span style={{ fontSize: 10, fontWeight: 700, color: '#1A65D3', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Scout Summary</span>
               </div>
               <p style={{ color: '#939A9E', fontSize: 13, lineHeight: 1.6, margin: 0 }}>
@@ -352,7 +354,7 @@ export default function ScoutReportPage() {
           <motion.div variants={cardVariants} style={{ background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 18, padding: '22px 24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
               <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(26,101,211,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Activity size={15} color="#1A65D3" />
+                <ChartLineUp size={15} color="#1A65D3" />
               </div>
               <h3 style={{ color: '#F2F2F2', fontWeight: 700, fontSize: 13, margin: 0 }}>Attribute Ratings</h3>
             </div>
@@ -365,7 +367,7 @@ export default function ScoutReportPage() {
             <motion.div variants={cardVariants} style={{ background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 18, padding: '22px 24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
                 <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(26,101,211,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <CheckCircle size={15} color="#1A65D3" />
+                  <CheckCircle size={15} color="#1A65D3" weight="regular" />
                 </div>
                 <h3 style={{ color: '#F2F2F2', fontWeight: 700, fontSize: 13, margin: 0 }}>Strengths</h3>
               </div>
@@ -382,7 +384,7 @@ export default function ScoutReportPage() {
             <motion.div variants={cardVariants} style={{ background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 18, padding: '22px 24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
                 <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(26,101,211,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <AlertTriangle size={15} color="#1A65D3" />
+                  <Warning size={15} color="#1A65D3" />
                 </div>
                 <h3 style={{ color: '#F2F2F2', fontWeight: 700, fontSize: 13, margin: 0 }}>Areas to Watch</h3>
               </div>
@@ -400,9 +402,9 @@ export default function ScoutReportPage() {
 
         <motion.div variants={containerVariants} initial="hidden" animate="visible" className="layout-3col" style={{ gap: 20 }}>
           {[
-            { icon: Shield, label: 'Injury Risk',    value: injuryRisk(player), sub: 'Based on recent injury history' },
-            { icon: Star,   label: 'Overall Rating', value: `${overallRating}/10`, sub: 'Season per-90 output blend'  },
-            { icon: Zap,    label: 'Recommendation', value: rec,                sub: 'Scout assessment'               },
+            { icon: Shield,    label: 'Injury Risk',    value: injuryRisk(player), sub: 'Based on recent injury history' },
+            { icon: Star,      label: 'Overall Rating', value: `${overallRating}/10`, sub: 'Season per-90 output blend'  },
+            { icon: Lightning, label: 'Recommendation', value: rec,                sub: 'Scout assessment'               },
           ].map(item => (
             <motion.div key={item.label} variants={cardVariants} style={{ background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 18, padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ width: 40, height: 40, borderRadius: 8, background: 'rgba(26,101,211,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -421,7 +423,7 @@ export default function ScoutReportPage() {
           <motion.div variants={cardVariants} style={{ background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 18, padding: '22px 24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
               <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(26,101,211,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Target size={15} color="#1A65D3" />
+                <Crosshair size={15} color="#1A65D3" />
               </div>
               <h3 style={{ color: '#F2F2F2', fontWeight: 700, fontSize: 13, margin: 0 }}>Shot Map</h3>
             </div>
@@ -431,7 +433,7 @@ export default function ScoutReportPage() {
           <motion.div variants={cardVariants} style={{ background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 18, padding: '22px 24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
               <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(26,101,211,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Activity size={15} color="#1A65D3" />
+                <ChartLineUp size={15} color="#1A65D3" />
               </div>
               <h3 style={{ color: '#F2F2F2', fontWeight: 700, fontSize: 13, margin: 0 }}>Match Log</h3>
             </div>

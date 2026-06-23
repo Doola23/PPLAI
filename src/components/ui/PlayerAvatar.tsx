@@ -67,7 +67,7 @@ export default function PlayerAvatar({ name, playerId, size = 40, className = ''
         width={size}
         height={size}
         onError={handleError}
-        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }}
+        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 15%' }}
       />
     </div>
   );

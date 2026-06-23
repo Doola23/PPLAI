@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAuth } from '../../hooks/useAuth';
 
 function addRipple(e: React.MouseEvent<HTMLButtonElement>) {
   const btn = e.currentTarget;
@@ -19,6 +20,7 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 
 export default function CTASection() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [role, setRole]       = useState('Coach');
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLElement>(null);
@@ -76,7 +78,7 @@ export default function CTASection() {
         </motion.div>
 
         <motion.div {...fadeUp(0.56)} className="lcta2__btns" style={{ justifyContent: 'center' }}>
-          <button className="lbtn" onClick={() => navigate('/signup')}>Signup</button>
+          {!isAuthenticated && <button className="lbtn" onClick={() => navigate('/signup')}>Signup</button>}
           <button className="lbtn lbtn--outline" onClick={() => { navigate('/features'); window.scrollTo(0, 0); }}>Explore</button>
         </motion.div>
 

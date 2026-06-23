@@ -18,12 +18,6 @@ export default function PageBanner({ title, titleAccent, description, titleLayou
     <div style={{ position: 'relative', background: '#000000', overflow: 'hidden' }}>
 
       <div style={{
-        position: 'absolute', top: '-60%', left: '50%', transform: 'translateX(-50%)',
-        width: '70%', height: '280%', pointerEvents: 'none',
-        background: 'radial-gradient(ellipse at center, rgba(26,101,211,0.08) 0%, transparent 58%)',
-      }} />
-
-      <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         backgroundImage: `repeating-linear-gradient(
           -55deg,

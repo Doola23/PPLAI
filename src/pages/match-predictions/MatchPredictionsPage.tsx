@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CaretDown, ArrowRight, MagnifyingGlass } from '@phosphor-icons/react';
 import PageBanner from '../../components/dashboard/PageBanner';
 import { DBtn, EASE } from '../../components/dashboard/DS';
+import Spinner from '../../components/ui/Spinner';
 import ClubLogo from '../../components/ui/ClubLogo';
 import { matchesService, type MatchPrediction } from '../../services/matches.service';
 import { fixturesService } from '../../services/fixtures.service';
@@ -402,6 +403,12 @@ export default function MatchPredictionsPage() {
   ] satisfies { conf: Confidence; items: Match[] }[]).filter(g => g.items.length > 0);
 
   const highCount = matches.filter(m => m.confidence === 'High').length;
+
+  if (loading) return (
+    <div style={{ minHeight: '100dvh', background: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Spinner size={300} label="Loading predictions…" />
+    </div>
+  );
 
   if (error) return (
     <div style={{ minHeight: '100vh', background: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

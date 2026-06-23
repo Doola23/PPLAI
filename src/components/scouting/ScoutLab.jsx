@@ -1,8 +1,24 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { Star, SoccerBall, Sparkle, Wind, PaperPlaneTilt, ShieldChevron, Barbell, HandPalm, TrendUp, TrendDown, Warning, ChartBar, ChartLineUp, CalendarBlank, Crosshair, Scales, UsersThree, Brain, Heartbeat, GitDiff, Question, CaretDown, MagnifyingGlass, SlidersHorizontal } from "@phosphor-icons/react";
+
+// Phosphor icon for each attribute category (replaces former emoji)
+const CAT_ICON = {
+  "Attacking": SoccerBall,
+  "Creativity & Chance Creation": Sparkle,
+  "Ball Carrying & Pace": Wind,
+  "Passing & Distribution": PaperPlaneTilt,
+  "Defending & Pressing": ShieldChevron,
+  "Physical & Athletic": Barbell,
+  "Goalkeeping": HandPalm,
+};
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend } from "recharts";
 import api from "../../services/api";
 import PlayerAvatar from "../ui/PlayerAvatar";
+import ClubLogo from "../ui/ClubLogo";
+import Spinner from "../ui/Spinner";
+import logoSrc from "../../assets/logo.svg";
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -63,50 +79,50 @@ const POS = {
 
 // ─── ATTRIBUTES ───
 const ATTR_CATS = [
-  { cat: "Attacking", icon: "⚽", attrs: [
-    { k:"goals", l:"Goal Scoring", desc:"Goals & non-penalty xG per 90 — how dangerous is he in front of goal?", c:["goals_per90","npxg_per90","xG_per90","npxG_per90"],z:["goals_per90_zscore","npxg_per90_zscore","xG_per90_zscore","npxG_per90_zscore"],i:"⚽", thresholdLabel:"Min Goals/90", thresholdKey:"goals_per90"},
-    { k:"shots", l:"Shot Volume", desc:"Shots per 90 — does he get himself into shooting positions regularly?", c:["shots_per90"],z:["shots_per90_zscore"],i:"🎯", thresholdLabel:"Min Shots/90", thresholdKey:"shots_per90"},
-    { k:"xg_over", l:"Finishing Efficiency", desc:"Goals scored vs xG — is he a clinical finisher who beats the average?", c:["goals_per90"],z:[],i:"📈",custom:p=>{const g=+(p.goals||p.Gls||0),x=+(p.xG||p.npxG||0);return x>0?g-x:null;}, thresholdLabel:"Min Goals-xG", thresholdKey:"xg_over_raw"},
+  { cat: "Attacking", icon:"", attrs: [
+    { k:"goals", l:"Goal Scoring", desc:"Goals & non-penalty xG per 90 — how dangerous is he in front of goal?", c:["goals_per90","npxg_per90","xG_per90","npxG_per90"],z:["goals_per90_zscore","npxg_per90_zscore","xG_per90_zscore","npxG_per90_zscore"],i:"", thresholdLabel:"Min Goals/90", thresholdKey:"goals_per90"},
+    { k:"shots", l:"Shot Volume", desc:"Shots per 90 — does he get himself into shooting positions regularly?", c:["shots_per90"],z:["shots_per90_zscore"],i:"", thresholdLabel:"Min Shots/90", thresholdKey:"shots_per90"},
+    { k:"xg_over", l:"Finishing Efficiency", desc:"Goals scored vs xG — is he a clinical finisher who beats the average?", c:["goals_per90"],z:[],i:"",custom:p=>{const g=+(p.goals||p.Gls||0),x=+(p.xG||p.npxG||0);return x>0?g-x:null;}, thresholdLabel:"Min Goals-xG", thresholdKey:"xg_over_raw"},
   ]},
-  { cat: "Creativity & Chance Creation", icon: "🎨", attrs: [
-    { k:"assists", l:"Assists & Expected Assists", desc:"Assists and xA per 90 — direct goal contributions beyond scoring", c:["assists_per90","xag_per90","xA_per90"],z:["assists_per90_zscore","xag_per90_zscore","xA_per90_zscore"],i:"🅰️", thresholdLabel:"Min xA/90", thresholdKey:"xA_per90"},
-    { k:"key_passes", l:"Key Passes", desc:"Passes leading directly to a shot — creative output per 90", c:["key_passes_per90"],z:["key_passes_per90_zscore"],i:"🔑", thresholdLabel:"Min KP/90", thresholdKey:"key_passes_per90"},
-    { k:"sca", l:"Shot-Creating Actions", desc:"Actions leading to shots (passes, dribbles, fouls drawn) — broader creative output", c:["sca_per90","gca_per90"],z:["sca_per90_zscore"],i:"✨"},
-    { k:"xg_chain", l:"Goal Sequence Involvement", desc:"xG of all moves the player is involved in — total attacking contribution", c:["xGChain_per90"],z:[],i:"🔗"},
+  { cat: "Creativity & Chance Creation", icon:"", attrs: [
+    { k:"assists", l:"Assists & Expected Assists", desc:"Assists and xA per 90 — direct goal contributions beyond scoring", c:["assists_per90","xag_per90","xA_per90"],z:["assists_per90_zscore","xag_per90_zscore","xA_per90_zscore"],i:"", thresholdLabel:"Min xA/90", thresholdKey:"xA_per90"},
+    { k:"key_passes", l:"Key Passes", desc:"Passes leading directly to a shot — creative output per 90", c:["key_passes_per90"],z:["key_passes_per90_zscore"],i:"", thresholdLabel:"Min KP/90", thresholdKey:"key_passes_per90"},
+    { k:"sca", l:"Shot-Creating Actions", desc:"Actions leading to shots (passes, dribbles, fouls drawn) — broader creative output", c:["sca_per90","gca_per90"],z:["sca_per90_zscore"],i:""},
+    { k:"xg_chain", l:"Goal Sequence Involvement", desc:"xG of all moves the player is involved in — total attacking contribution", c:["xGChain_per90"],z:[],i:""},
   ]},
-  { cat: "Ball Carrying & Pace", icon: "💨", attrs: [
-    { k:"prog_carry", l:"Progressive Carrying", desc:"Carries that move the ball significantly towards goal — driving power", c:["prog_carries_per90"],z:["prog_carries_per90_zscore"],i:"📦"},
-    { k:"takeons", l:"Successful Dribbles", desc:"Completed take-ons per 90 — ability to beat defenders 1v1", c:["successful_takeons_per90"],z:["successful_takeons_per90_zscore"],i:"💨", thresholdLabel:"Min Take-ons/90", thresholdKey:"successful_takeons_per90"},
-    { k:"box_carry", l:"Carries into Penalty Area", desc:"Times the player carries the ball into the opposition box per 90", c:["carries_into_box_per90"],z:[],i:"📥"},
+  { cat: "Ball Carrying & Pace", icon:"", attrs: [
+    { k:"prog_carry", l:"Progressive Carrying", desc:"Carries that move the ball significantly towards goal — driving power", c:["prog_carries_per90"],z:["prog_carries_per90_zscore"],i:""},
+    { k:"takeons", l:"Successful Dribbles", desc:"Completed take-ons per 90 — ability to beat defenders 1v1", c:["successful_takeons_per90"],z:["successful_takeons_per90_zscore"],i:"", thresholdLabel:"Min Take-ons/90", thresholdKey:"successful_takeons_per90"},
+    { k:"box_carry", l:"Carries into Penalty Area", desc:"Times the player carries the ball into the opposition box per 90", c:["carries_into_box_per90"],z:[],i:""},
   ]},
-  { cat: "Passing & Distribution", icon: "📐", attrs: [
-    { k:"pass_pct", l:"Pass Accuracy", desc:"Pass completion % — technical quality and ability to keep possession", c:["pass_success_pct","pass_completion"],z:["pass_completion_zscore"],i:"✅", thresholdLabel:"Min Pass %", thresholdKey:"pass_success_pct"},
-    { k:"prog_pass", l:"Progressive Passing", desc:"Passes that advance play significantly towards goal. Available in 24/25 data.", c:["prog_passes_per90"],z:["prog_passes_per90_zscore"],i:"📐"},
-    { k:"box_pass", l:"Passes into the Box", desc:"Penetrating passes into the penalty area per 90. Available in 24/25 data.", c:["passes_into_box_per90","PPA"],z:[],i:"🎯"},
-    { k:"cross", l:"Crossing", desc:"Crosses per 90 — width and delivery from wide areas", c:["crosses_per90"],z:[],i:"↗️"},
+  { cat: "Passing & Distribution", icon:"", attrs: [
+    { k:"pass_pct", l:"Pass Accuracy", desc:"Pass completion % — technical quality and ability to keep possession", c:["pass_success_pct","pass_completion"],z:["pass_completion_zscore"],i:"", thresholdLabel:"Min Pass %", thresholdKey:"pass_success_pct"},
+    { k:"prog_pass", l:"Progressive Passing", desc:"Passes that advance play significantly towards goal. Available in 24/25 data.", c:["prog_passes_per90"],z:["prog_passes_per90_zscore"],i:""},
+    { k:"box_pass", l:"Passes into the Box", desc:"Penetrating passes into the penalty area per 90. Available in 24/25 data.", c:["passes_into_box_per90","PPA"],z:[],i:""},
+    { k:"cross", l:"Crossing", desc:"Crosses per 90 — width and delivery from wide areas", c:["crosses_per90"],z:[],i:""},
   ]},
-  { cat: "Defending & Pressing", icon: "🛡️", attrs: [
-    { k:"tackles", l:"Tackles Won", desc:"Successful tackles per 90 — ground-level defensive duels", c:["tackles_per90","tackles_won_per90"],z:["tackles_per90_zscore"],i:"🦶", thresholdLabel:"Min Tackles/90", thresholdKey:"tackles_per90"},
-    { k:"interceptions", l:"Interceptions", desc:"Interceptions per 90 — reading the game and cutting out passes", c:["interceptions_per90"],z:["interceptions_per90_zscore"],i:"🖐️", thresholdLabel:"Min Int/90", thresholdKey:"interceptions_per90"},
-    { k:"blocks", l:"Blocks & Clearances", desc:"Shot blocks and clearances per 90 — last-ditch defensive actions", c:["blocks_per90","clearances_per90"],z:[],i:"🧱"},
-    { k:"pressing", l:"Pressing Intensity", desc:"Pressures applied to opponents per 90 — work rate and high press suitability", c:["pressures_per90"],z:[],i:"⚡"},
+  { cat: "Defending & Pressing", icon:"", attrs: [
+    { k:"tackles", l:"Tackles Won", desc:"Successful tackles per 90 — ground-level defensive duels", c:["tackles_per90","tackles_won_per90"],z:["tackles_per90_zscore"],i:"", thresholdLabel:"Min Tackles/90", thresholdKey:"tackles_per90"},
+    { k:"interceptions", l:"Interceptions", desc:"Interceptions per 90 — reading the game and cutting out passes", c:["interceptions_per90"],z:["interceptions_per90_zscore"],i:"", thresholdLabel:"Min Int/90", thresholdKey:"interceptions_per90"},
+    { k:"blocks", l:"Blocks & Clearances", desc:"Shot blocks and clearances per 90 — last-ditch defensive actions", c:["blocks_per90","clearances_per90"],z:[],i:""},
+    { k:"pressing", l:"Pressing Intensity", desc:"Pressures applied to opponents per 90 — work rate and high press suitability", c:["pressures_per90"],z:[],i:""},
   ]},
-  { cat: "Physical & Athletic", icon: "🗼", attrs: [
-    { k:"aerial", l:"Aerial Dominance", desc:"Aerial duel win % and aerial duels won per game — heading ability and physical presence in the air", c:["aerial_won_pct","aerial_won_per_game","aerial_won_per90"],z:["aerial_won_pct_zscore"],i:"🗼", thresholdLabel:"Min Aerial Won/g", thresholdKey:"aerial_won_per_game"},
-    { k:"recovery", l:"Ball Recoveries", desc:"Balls won back per 90 — energy, work rate, hunting the ball", c:["recoveries_per90"],z:[],i:"♻️"},
-    { k:"buildup", l:"Off-Ball Buildup Contribution", desc:"xG buildup involvement — movement and positioning in buildup phases even without the ball", c:["xGBuildup_per90"],z:[],i:"🏗️"},
+  { cat: "Physical & Athletic", icon:"", attrs: [
+    { k:"aerial", l:"Aerial Dominance", desc:"Aerial duel win % and aerial duels won per game — heading ability and physical presence in the air", c:["aerial_won_pct","aerial_won_per_game","aerial_won_per90"],z:["aerial_won_pct_zscore"],i:"", thresholdLabel:"Min Aerial Won/g", thresholdKey:"aerial_won_per_game"},
+    { k:"recovery", l:"Ball Recoveries", desc:"Balls won back per 90 — energy, work rate, hunting the ball", c:["recoveries_per90"],z:[],i:""},
+    { k:"buildup", l:"Off-Ball Buildup Contribution", desc:"xG buildup involvement — movement and positioning in buildup phases even without the ball", c:["xGBuildup_per90"],z:[],i:""},
   ]},
-  { cat: "Goalkeeping", icon: "🧤", gkOnly: true, attrs: [
-    { k:"gk_saves", l:"Save Percentage", desc:"Saves divided by shots on target faced — core shot-stopping ability", c:["Save%","Saves"],z:[],i:"🧤", thresholdLabel:"Min Save %", thresholdKey:"Save%"},
-    { k:"gk_cs", l:"Clean Sheet %", desc:"Percentage of games keeping a clean sheet — defensive organisation and consistency", c:["CS%","CS"],z:[],i:"🔒", thresholdLabel:"Min CS%", thresholdKey:"CS%"},
-    { k:"gk_ga90", l:"Goals Against Per 90", desc:"Goals conceded per 90 minutes — lower is better for shot-stopping quality", c:["GA90"],z:[],i:"🚫", thresholdLabel:"Max GA/90", thresholdKey:"GA90"},
-    { k:"gk_dist", l:"Distribution Quality", desc:"Pass completion % and long ball accuracy — ability to play out from the back", c:["pass_completion"],z:[],i:"📐"},
-    { k:"gk_sweeper", l:"Sweeper-Keeper Activity", desc:"Ball recoveries and defensive actions outside the box — proactive GK in high lines", c:["recoveries_per90"],z:[],i:"🏃"},
+  { cat: "Goalkeeping", icon:"", gkOnly: true, attrs: [
+    { k:"gk_saves", l:"Save Percentage", desc:"Saves divided by shots on target faced — core shot-stopping ability", c:["Save%","Saves"],z:[],i:"", thresholdLabel:"Min Save %", thresholdKey:"Save%"},
+    { k:"gk_cs", l:"Clean Sheet %", desc:"Percentage of games keeping a clean sheet — defensive organisation and consistency", c:["CS%","CS"],z:[],i:"", thresholdLabel:"Min CS%", thresholdKey:"CS%"},
+    { k:"gk_ga90", l:"Goals Against Per 90", desc:"Goals conceded per 90 minutes — lower is better for shot-stopping quality", c:["GA90"],z:[],i:"", thresholdLabel:"Max GA/90", thresholdKey:"GA90"},
+    { k:"gk_dist", l:"Distribution Quality", desc:"Pass completion % and long ball accuracy — ability to play out from the back", c:["pass_completion"],z:[],i:""},
+    { k:"gk_sweeper", l:"Sweeper-Keeper Activity", desc:"Ball recoveries and defensive actions outside the box — proactive GK in high lines", c:["recoveries_per90"],z:[],i:""},
   ]},
 ];
 const ALL_A = ATTR_CATS.flatMap(g=>g.attrs);
 const PRI = {required:4,high:3,medium:2,low:1,none:0};
-const PRI_C = {required:"#f43f5e",high:"#22d3ee",medium:"#fbbf24",low:"#fb923c",none:"#475569"};
+const PRI_C = {required:"#1A65D3",high:"#4F82D6",medium:"#2B4C5E",low:"#6E7E8A",none:"#939A9E"};
 const PRI_LABELS = {required:"Required",high:"High",medium:"Medium",low:"Low",none:"None"};
 
 const BUDGET = [
@@ -146,8 +162,9 @@ const POS_PRESETS = {
 const gv = (p,cols,fn) => { if(fn){const r=fn(p);if(r!==null&&!isNaN(r))return r;} for(const c of cols){const v=p[c];if(v!==undefined&&v!==null&&v!==''&&!isNaN(v))return+v;} return null; };
 const pct = (v,arr) => { const s=arr.filter(x=>x!==null&&!isNaN(x)).sort((a,b)=>a-b); if(!s.length)return 50; const i=s.findIndex(x=>x>=v); return i<0?100:Math.round(i/s.length*100); };
 const rl = p => p>=95?"World Class":p>=90?"Elite":p>=75?"Very Good":p>=50?"Good":p>=25?"Average":"Below Avg";
-const rc = p => p>=90?"#22d3ee":p>=75?"#34d399":p>=50?"#fbbf24":p>=25?"#fb923c":"#f87171";
-const sc = s => s>=90?"#22d3ee":s>=80?"#34d399":s>=70?"#fbbf24":s>=60?"#fb923c":"#f87171";
+// Brand-only sequential ramp (high → low): Celtic Blue → Dark Slate → Spanish Gray
+const rc = p => p>=66?"#1A65D3":p>=33?"#2B4C5E":"#5B6166";
+const sc = s => s>=80?"#1A65D3":s>=65?"#2B4C5E":"#5B6166";
 const mv = p => { const v=+(p.market_value_eur||0); return v>0?`€${v>=1e6?(v/1e6).toFixed(0)+'M':(v/1e3).toFixed(0)+'K'}`:"N/A"; };
 const hasC = (d,cols) => d?.length>0&&cols.some(c=>d[0][c]!==undefined&&d[0][c]!==null&&d[0][c]!=='');
 
@@ -160,7 +177,7 @@ function calcInjuryRisk(p){
   s+=ti>=10?2:ti>=6?1:0;
   return s>=6?'High':s>=3?'Medium':'Low';
 }
-const IRK={High:{c:'#f43f5e',i:'🔴'},Medium:{c:'#eab308',i:'🟡'},Low:{c:'#22c55e',i:'🟢'}};
+const IRK={High:{c:'#1A65D3'},Medium:{c:'#6E7E8A'},Low:{c:'#939A9E'}};
 
 // ─── TRAJECTORY ───
 function calcTrajectory(cur,prev){
@@ -172,7 +189,7 @@ function calcTrajectory(cur,prev){
   const avg=ch.reduce((a,b)=>a+b,0)/ch.length;
   return avg>0.12?'Improving':avg<-0.12?'Declining':'Stable';
 }
-const TRJ={Improving:{c:'#22c55e',i:'↑'},Stable:{c:'#6b7280',i:'→'},Declining:{c:'#f43f5e',i:'↓'}};
+const TRJ={Improving:{c:'#1A65D3',i:'↑'},Stable:{c:'#939A9E',i:'→'},Declining:{c:'#2B4C5E',i:'↓'}};
 
 // ─── POTENTIAL ───
 function calcPotential(p, pg, trajectory){
@@ -194,7 +211,7 @@ function calcPotential(p, pg, trajectory){
   const tier=total>=80?'Elite Prospect':total>=65?'High Potential':total>=50?'Developing':null;
   return{score:total,tier};
 }
-const PTL={'Elite Prospect':{c:'#a855f7',i:'⚡'},'High Potential':{c:'#3b82f6',i:'🌱'},'Developing':{c:'#64748b',i:'📈'}};
+const PTL={'Elite Prospect':{c:'#1A65D3'},'High Potential':{c:'#2B4C5E'},'Developing':{c:'#939A9E'}};
 
 // ─── SCORING ───
 function score(player, req, all, refProf) {
@@ -323,71 +340,84 @@ const CLUB_META = {
 
 // ─── THEME ───
 const T = {
-  bg:"#000000",card:"#0D0D0D",card2:"#111111",border:"#1a2a3a",
+  bg:"#000000",card:"rgba(26,101,211,0.38)",card2:"rgba(26,101,211,0.52)",border:"rgba(255,255,255,0.08)",
   text:"#F2F2F2",dim:"#939A9E",accent:"#1A65D3",accent2:"#2B4C5E",
-  green:"#34d399",yellow:"#fbbf24",orange:"#fb923c",red:"#f87171",
-  font:"inherit",mono:"'JetBrains Mono','Fira Code',monospace",
+  green:"#1A65D3",yellow:"#939A9E",orange:"#939A9E",red:"#2B4C5E",
+  font:"inherit",mono:"inherit",
 };
 const C = {
-  card:{background:T.card,borderRadius:12,border:`1px solid ${T.border}`,padding:20,marginBottom:16},
-  label:{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'1.2px',color:T.dim,marginBottom:6,display:'block'},
-  input:{width:'100%',padding:'8px 12px',borderRadius:8,border:`1px solid ${T.border}`,background:T.bg,color:T.text,fontSize:13,fontFamily:T.font,boxSizing:'border-box',outline:'none'},
-  btn:(active,color=T.accent)=>({padding:'4px 12px',borderRadius:999,border:'none',cursor:'pointer',fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.5px',background:active?color:T.bg,color:active?'#F2F2F2':T.dim,transition:'all 0.15s'}),
-  tag:(color=T.accent)=>({display:'inline-flex',alignItems:'center',gap:4,padding:'3px 10px',borderRadius:999,fontSize:10,fontWeight:700,background:color+'18',color:color,letterSpacing:'0.5px'}),
+  card:{
+    position:'relative',
+    background:'linear-gradient(145deg, rgba(26,101,211,0.52) 0%, rgba(26,101,211,0.38) 100%)',
+    borderRadius:18,
+    border:'1px solid rgba(255,255,255,0.08)',
+    padding:20,
+    marginBottom:16,
+    backdropFilter:'blur(14px)',
+    WebkitBackdropFilter:'blur(14px)',
+    boxShadow:'0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07)',
+    overflow:'hidden',
+  },
+  label:{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'1.2px',color:T.dim,marginBottom:6,display:'block'},
+  input:{width:'100%',padding:'9px 16px',borderRadius:999,border:'1px solid rgba(255,255,255,0.12)',background:'rgba(0,0,0,0.35)',color:T.text,fontSize:13,fontFamily:T.font,boxSizing:'border-box',outline:'none'},
+  btn:(active,color=T.accent)=>({padding:'5px 14px',borderRadius:999,border:active?'none':'1px solid rgba(255,255,255,0.12)',cursor:'pointer',fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.5px',background:active?color:'rgba(255,255,255,0.06)',color:active?'#F2F2F2':T.dim,transition:'all 0.15s'}),
+  tag:(color=T.accent)=>({display:'inline-flex',alignItems:'center',gap:4,padding:'3px 10px',borderRadius:999,fontSize:11,fontWeight:700,background:color+'22',color:color==='#1A65D3'?'#F2F2F2':color,letterSpacing:'0.5px',border:`1px solid ${color}40`}),
 };
 
 
 // ─── UPLOAD ───
+const CACHE_KEY='scoutlab_primary_v2';
 function Upload({onLoad}){
   const[err,setErr]=useState(null);
   const[phase,setPhase]=useState('players');
   const fetchedRef=useRef(false);
+
   useEffect(()=>{
-    // StrictMode double-invokes effects in dev, which fired this fetch twice -- the second
-    // primary load's handleLoad() call reset the view back to club-select after the user had
-    // already picked a team. Guard so the fetch (and the view reset that follows it) only
-    // ever happens once per real mount.
+    // StrictMode double-invokes effects in dev — guard so fetch only fires once per real mount
     if(fetchedRef.current)return;
     fetchedRef.current=true;
+
+    // Try sessionStorage cache for instant return visits
+    try{
+      const raw=sessionStorage.getItem(CACHE_KEY);
+      if(raw){
+        const d=JSON.parse(raw);
+        if(d.current?.length&&d.meta){
+          onLoad(d);
+          // Still lazy-load extras in background
+          api.get('/api/scouting/extras').then(e=>onLoad(e.data)).catch(()=>{});
+          return;
+        }
+      }
+    }catch{}
+
     api.get('/api/scouting/primary')
       .then(res=>{
         const d=res.data;
         if(!d.current?.length||!d.meta){setErr('Scouting database is empty. Populate the scouting tables in DynamoDB first.');return;}
+        try{sessionStorage.setItem(CACHE_KEY,JSON.stringify(d));}catch{}
         onLoad(d);
-        // Lazy-load extras (shot maps + match logs) after primary is shown
         setPhase('extras');
         api.get('/api/scouting/extras').then(e=>onLoad(e.data)).catch(()=>{});
       })
       .catch(e=>setErr(e.response?.data?.error||e.message));
   },[]);
-  const PHASES={players:'Scanning player database...',extras:'Loading shot maps & match logs...'};
+
   if(err)return(
     <motion.div initial={{opacity:0}} animate={{opacity:1}} style={{minHeight:'60vh',display:'flex',alignItems:'center',justifyContent:'center',background:T.bg,position:'relative',overflow:'hidden'}}>
       <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',width:500,height:500,background:'radial-gradient(circle,rgba(247,87,87,0.06) 0%,transparent 70%)',pointerEvents:'none'}}/>
       <motion.div initial={{opacity:0,y:24}} animate={{opacity:1,y:0}} transition={{duration:0.6,ease:EASE}} style={{textAlign:'center',maxWidth:420,padding:32,background:T.card,borderRadius:16,border:'1px solid rgba(247,87,87,0.2)'}}>
-        <div style={{fontSize:32,marginBottom:12}}>⚠️</div>
+        <div style={{fontSize:32,marginBottom:12,color:T.red}}>!</div>
         <h2 style={{color:T.text,marginBottom:8}}>Scouting Data Unavailable</h2>
         <p style={{color:T.dim,fontSize:13,lineHeight:1.6}}>{err}</p>
       </motion.div>
     </motion.div>
   );
+
+  const PHASE_LABEL={players:'Scanning player database…',extras:'Loading match data…'};
   return(
-    <div style={{minHeight:'60vh',display:'flex',alignItems:'center',justifyContent:'center',background:T.bg,position:'relative',overflow:'hidden'}}>
-      <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',width:600,height:600,background:'radial-gradient(circle,rgba(26,101,211,0.1) 0%,transparent 65%)',pointerEvents:'none'}}/>
-      <div style={{textAlign:'center',position:'relative'}}>
-        <motion.div animate={{opacity:[0.4,1,0.4]}} transition={{duration:1.8,repeat:Infinity,ease:'easeInOut'}} style={{fontSize:11,fontWeight:800,letterSpacing:6,color:T.accent,marginBottom:20,textTransform:'uppercase'}}>ScoutLab</motion.div>
-        <AnimatePresence mode="wait">
-          <motion.p key={phase} initial={{opacity:0,y:4}} animate={{opacity:0.6,y:0}} exit={{opacity:0,y:-4}} transition={{duration:0.3}} style={{color:T.dim,fontSize:13,marginBottom:24}}>{PHASES[phase]}</motion.p>
-        </AnimatePresence>
-        <div style={{width:180,height:3,background:T.card2,borderRadius:2,margin:'0 auto 20px',overflow:'hidden'}}>
-          <motion.div animate={{x:['-100%','100%']}} transition={{duration:1.4,repeat:Infinity,ease:'easeInOut'}} style={{width:'60%',height:'100%',background:`linear-gradient(90deg,transparent,${T.accent},transparent)`,borderRadius:2}}/>
-        </div>
-        <div style={{display:'flex',gap:8,justifyContent:'center'}}>
-          {[0,1,2].map(i=>(
-            <motion.div key={i} animate={{scale:[1,1.5,1],opacity:[0.3,1,0.3]}} transition={{duration:0.9,repeat:Infinity,delay:i*0.22}} style={{width:6,height:6,borderRadius:'50%',background:T.accent}}/>
-          ))}
-        </div>
-      </div>
+    <div style={{minHeight:'100dvh',display:'flex',alignItems:'center',justifyContent:'center',background:T.bg}}>
+      <Spinner size={300} label={PHASE_LABEL[phase]}/>
     </div>
   );
 }
@@ -395,38 +425,108 @@ function Upload({onLoad}){
 // ─── CLUB SELECT ───
 function ClubSelect({teamReports,onSelect,onSkip}){
   const teams=Object.keys(CLUB_META);
+  const doSelect=(team)=>{
+    const meta=CLUB_META[team];
+    const rep=teamReports?.[team];
+    onSelect({team,...meta,formation:rep?.formation||meta.formation,style:rep?.style||meta.style,teamReport:rep});
+  };
   return(
-    <div style={{maxWidth:1000,margin:'0 auto',padding:20}}>
-      <motion.div initial={{opacity:0,y:20,filter:'blur(6px)'}} animate={{opacity:1,y:0,filter:'blur(0px)'}} transition={{duration:0.6,ease:EASE}} style={{marginBottom:28}}>
-        <div style={{fontSize:10,fontWeight:800,letterSpacing:4,color:T.accent,textTransform:'uppercase',marginBottom:6}}>ScoutLab</div>
-        <h1 style={{fontSize:22,fontWeight:800,color:T.text,margin:'0 0 6px'}}>Which club are you scouting for?</h1>
-        <p style={{color:T.dim,fontSize:12,margin:0}}>Select a club to see their 24/25 season report and recruitment needs</p>
+    <div style={{maxWidth:1120,margin:'0 auto',padding:'32px 24px',fontFamily:T.font}}>
+
+      {/* Header */}
+      <motion.div
+        initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} transition={{duration:0.5,ease:EASE}}
+        style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',marginBottom:28,flexWrap:'wrap',gap:14}}
+      >
+        <div>
+          <div style={{fontSize:9,fontWeight:800,letterSpacing:'0.32em',color:T.accent,textTransform:'uppercase',marginBottom:10}}>2024 / 25 Premier League</div>
+          <h2 style={{fontSize:26,fontWeight:900,color:T.text,margin:0,lineHeight:1.1,letterSpacing:'-0.01em'}}>Which club are you scouting for?</h2>
+          <p style={{color:T.dim,fontSize:12,margin:'6px 0 0',letterSpacing:'0.02em'}}>Select a club to load their season report and AI recruitment needs</p>
+        </div>
+        <motion.button
+          whileHover={{borderColor:'rgba(255,255,255,0.25)'}} whileTap={{scale:0.97}}
+          onClick={onSkip}
+          style={{padding:'10px 22px',borderRadius:999,border:`1px solid rgba(255,255,255,0.1)`,background:'transparent',color:T.dim,fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:'inherit',letterSpacing:'0.08em',textTransform:'uppercase',flexShrink:0,transition:'border-color 0.15s'}}
+        >Skip — No Club Context</motion.button>
       </motion.div>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(175px,1fr))',gap:10,marginBottom:20}}>
+
+      {/* 2-col row list */}
+      <motion.div
+        initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.4,delay:0.1}}
+        style={{display:'grid',gridTemplateColumns:'1fr 1fr',border:'1px solid rgba(255,255,255,0.07)',borderRadius:14,overflow:'hidden'}}
+        className="scoutlab-clubs-grid"
+      >
         {teams.map((team,i)=>{
           const meta=CLUB_META[team];
           const rep=teamReports?.[team];
+          const isRightCol=i%2===1;
+          const isLastRow=i>=teams.length-2;
           return(
             <motion.div
               key={team}
-              initial={{opacity:0,y:24,filter:'blur(4px)'}}
-              animate={{opacity:1,y:0,filter:'blur(0px)'}}
-              transition={{duration:0.45,ease:EASE,delay:i*0.025}}
-              whileHover={{y:-4,boxShadow:`0 12px 32px ${meta.color}22`,borderColor:`${meta.color}60`}}
-              onClick={()=>onSelect({team,...meta,formation:rep?.formation||meta.formation,style:rep?.style||meta.style,teamReport:rep})}
-              style={{padding:14,borderRadius:12,border:`1px solid ${T.border}`,cursor:'pointer',background:T.card,borderTop:`3px solid ${meta.color}`,position:'relative',overflow:'hidden',transition:'border-color 200ms ease'}}
+              className="club-row"
+              initial={{opacity:0}} animate={{opacity:1}}
+              transition={{duration:0.25,ease:EASE,delay:0.12+i*0.018}}
+              role="button" tabIndex={0} aria-label={`Scout for ${team}`}
+              onClick={()=>doSelect(team)}
+              onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();doSelect(team);}}}
+              style={{
+                display:'flex',alignItems:'center',gap:13,padding:'13px 18px',
+                cursor:'pointer',background:'transparent',
+                borderBottom:isLastRow?'none':'1px solid rgba(255,255,255,0.05)',
+                borderRight:isRightCol?'none':'1px solid rgba(255,255,255,0.05)',
+              }}
             >
-              <motion.div initial={{x:'-120%'}} whileHover={{x:'120%'}} transition={{duration:0.55,ease:'easeInOut'}} style={{position:'absolute',inset:0,pointerEvents:'none',background:'linear-gradient(110deg,transparent 30%,rgba(255,255,255,0.05) 50%,transparent 70%)'}}/>
-              <div style={{fontSize:13,fontWeight:800,color:T.text,marginBottom:3}}>{team}</div>
-              <div style={{fontSize:10,color:T.dim,marginBottom:6}}>{rep?.formation||meta.formation} · {rep?.style||meta.style}</div>
-              {rep&&<div style={{fontSize:10,color:T.dim,fontFamily:'monospace'}}>W{rep.w} D{rep.d} L{rep.l} · {rep.gf}GF {rep.ga}GA</div>}
+              {/* Left Celtic Blue accent bar */}
+              <div className="club-row-accent" style={{position:'absolute',left:0,top:'50%',transform:'translateY(-50%)',width:3,height:32,borderRadius:2,background:T.accent}}/>
+
+              {/* Rank */}
+              <span style={{fontSize:10,fontWeight:700,color:'rgba(147,154,158,0.4)',fontFamily:T.mono,width:18,textAlign:'right',flexShrink:0}}>{i+1}</span>
+
+              {/* Logo */}
+              <ClubLogo club={team} size={34} style={{flexShrink:0}}/>
+
+              {/* Name + meta */}
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:800,color:T.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{team}</div>
+                <div style={{display:'flex',alignItems:'center',gap:5,marginTop:2}}>
+                  <span style={{fontSize:9,fontWeight:700,letterSpacing:'0.06em',color:T.accent,textTransform:'uppercase',background:'rgba(26,101,211,0.12)',padding:'1px 6px',borderRadius:4}}>{rep?.formation||meta.formation}</span>
+                  <span style={{fontSize:9,color:T.dim,fontWeight:600,letterSpacing:'0.04em',textTransform:'uppercase'}}>{rep?.style||meta.style}</span>
+                </div>
+              </div>
+
+              {/* Stats */}
+              {rep?(
+                <div style={{display:'flex',gap:14,flexShrink:0,alignItems:'center'}}>
+                  <div style={{textAlign:'center',minWidth:18}}>
+                    <div style={{fontSize:13,fontWeight:900,color:T.accent,lineHeight:1,fontFamily:T.mono}}>{rep.w}</div>
+                    <div style={{fontSize:8,color:'rgba(147,154,158,0.5)',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.05em',marginTop:1}}>W</div>
+                  </div>
+                  <div style={{textAlign:'center',minWidth:18}}>
+                    <div style={{fontSize:13,fontWeight:900,color:T.dim,lineHeight:1,fontFamily:T.mono}}>{rep.d}</div>
+                    <div style={{fontSize:8,color:'rgba(147,154,158,0.5)',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.05em',marginTop:1}}>D</div>
+                  </div>
+                  <div style={{textAlign:'center',minWidth:18}}>
+                    <div style={{fontSize:13,fontWeight:900,color:'rgba(147,154,158,0.45)',lineHeight:1,fontFamily:T.mono}}>{rep.l}</div>
+                    <div style={{fontSize:8,color:'rgba(147,154,158,0.5)',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.05em',marginTop:1}}>L</div>
+                  </div>
+                  <div style={{width:1,height:24,background:'rgba(255,255,255,0.06)',flexShrink:0}}/>
+                  <div style={{textAlign:'center',flexShrink:0}}>
+                    <div style={{fontSize:11,fontWeight:800,color:T.dim,lineHeight:1,fontFamily:T.mono,letterSpacing:'0.03em'}}>{rep.gf}<span style={{color:'rgba(147,154,158,0.3)',fontWeight:400}}>:</span>{rep.ga}</div>
+                    <div style={{fontSize:8,color:'rgba(147,154,158,0.4)',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.05em',marginTop:1}}>GF:GA</div>
+                  </div>
+                </div>
+              ):(
+                <div style={{fontSize:10,color:'rgba(147,154,158,0.3)',fontFamily:T.mono}}>—</div>
+              )}
+
+              {/* Arrow */}
+              <div style={{color:'rgba(147,154,158,0.25)',fontSize:14,flexShrink:0,lineHeight:1}}>›</div>
             </motion.div>
           );
         })}
-      </div>
-      <motion.button initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.5}} whileHover={{scale:1.02}} whileTap={{scale:0.97}} onClick={onSkip} style={{...C.btn(false),padding:'12px 28px',fontSize:12,border:`1px solid ${T.border}`,borderRadius:999,cursor:'pointer',fontFamily:'inherit'}}>
-        Skip — Custom search without club context
-      </motion.button>
+      </motion.div>
+
     </div>
   );
 }
@@ -529,7 +629,7 @@ function getSuggestions(rep,team,ctx){
   const build=key=>{
     switch(key){
       case 'striker': return{
-        role:'Clinical Striker',posGroup:'FW',icon:'⚽',color:'#f43f5e',
+        role:'Clinical Striker',posGroup:'FW',icon:"",color:'#1A65D3',
         attrs:[{k:'goals',l:'Goal Scoring',p:'required'},{k:'xg_over',l:'Finishing Efficiency',p:'high'},{k:'shots',l:'Shot Volume',p:'high'},{k:'box_carry',l:'Carries into Box',p:'medium'},{k:'aerial',l:'Aerial Dominance',p:'medium'}],
         weights:{goals:'required',xg_over:'high',shots:'high',box_carry:'medium'},
         thresholds:{xg_over_raw:-2},
@@ -540,19 +640,19 @@ function getSuggestions(rep,team,ctx){
             :`${team} averaged ${gfPerGame.toFixed(2)} goals per game (${ordinal(gfR)} in the division). ${sName}'s ${sGoals} is the attack's ceiling; there is no second genuine goal threat. A clinical striker who outperforms their xG raises the floor every time the first choice is isolated or double-marked.`)
       };
       case 'winger': return{
-        role:'Inverted Winger',posGroup:'WG',icon:'💨',color:T.accent2,
+        role:'Inverted Winger',posGroup:'WG',icon:"",color:T.accent2,
         attrs:[{k:'goals',l:'Goal Scoring',p:'high'},{k:'shots',l:'Shot Volume',p:'high'},{k:'takeons',l:'Successful Dribbles',p:'high'},{k:'prog_carry',l:'Progressive Carrying',p:'high'},{k:'key_passes',l:'Key Passes',p:'medium'}],
         weights:{goals:'high',shots:'high',takeons:'high',prog_carry:'high'},
         because:`${team} rank ${ordinal(gfR)} for goals per game (${gfPerGame.toFixed(2)} vs ${avgGF.toFixed(2)} league avg). ${aName?`${aName} provides assists but`:'Chances are created but'} the attack lacks a second cutting edge from wide — someone who cuts inside and shoots as much as they cross. An inverted winger contributing 9-13 goals from wide positions adds a dimension the current squad cannot produce.`,
       };
       case 'wideFwd': return{
-        role:'Creative Wide Forward',posGroup:'WG',icon:'💨',color:T.accent2,
+        role:'Creative Wide Forward',posGroup:'WG',icon:"",color:T.accent2,
         attrs:[{k:'goals',l:'Goal Scoring',p:'high'},{k:'assists',l:'Assists & xA',p:'high'},{k:'takeons',l:'Successful Dribbles',p:'high'},{k:'prog_carry',l:'Progressive Carrying',p:'high'},{k:'sca',l:'Shot-Creating Actions',p:'medium'}],
         weights:{goals:'high',assists:'high',takeons:'high',prog_carry:'high'},
         because:`${sName} contributed ${sGoals} goals — ${Math.round(sShare*100)}% of ${team}'s total. That concentration is a structural risk: opponents double up on the threat, and one injury unravels the entire attack. A wide forward contributing 10+ goals and 8+ assists independently makes the attack two-dimensional and forces opposition to split their defensive focus.`,
       };
       case 'cb': return{
-        role:'Commanding CB',posGroup:'DF',icon:'🛡️',color:T.green,
+        role:'Commanding CB',posGroup:'DF',icon:"",color:T.green,
         attrs:[{k:'aerial',l:'Aerial Dominance',p:defCrisis?'required':'high'},{k:'tackles',l:'Tackles Won',p:defCrisis?'required':'high'},{k:'interceptions',l:'Interceptions',p:'high'},{k:'blocks',l:'Blocks & Clearances',p:'medium'},{k:'pass_pct',l:'Pass Accuracy',p:'medium'}],
         weights:{aerial:defCrisis?'required':'high',tackles:defCrisis?'required':'high',interceptions:'high',blocks:'medium'},
         because:defCrisis
@@ -562,32 +662,32 @@ function getSuggestions(rep,team,ctx){
           :`With ${errors} defensive errors (${ordinal(n+1-eR)} most in the league), the midfield is persistently bypassed — placing enormous pressure on the centre-backs to cover ground, make last-ditch interventions and win duels they shouldn't need to contest. A commanding CB who organises the defensive line, dominates aerially and steps aggressively into the midfield space would reduce the volume of dangerous situations even when the midfield shield fails.`,
       };
       case 'dm': return{
-        role:'Ball-Winning DM',posGroup:'MF',icon:'⚙️',color:T.accent,
+        role:'Ball-Winning DM',posGroup:'MF',icon:"",color:T.accent,
         attrs:[{k:'tackles',l:'Tackles Won',p:'required'},{k:'interceptions',l:'Interceptions',p:'required'},{k:'pressing',l:'Pressing Intensity',p:'high'},{k:'aerial',l:'Aerial Dominance',p:'medium'},{k:'pass_pct',l:'Pass Accuracy',p:'medium'}],
         weights:{tackles:'required',interceptions:'required',pressing:'high',aerial:'medium'},
         because:`${errors} defensive errors — ${ordinal(n+1-eR)} most in the league. The midfield fails to win back possession before opponents reach dangerous shooting positions, constantly exposing the back four. A genuine destroyer who dominates ground duels, reads passing lanes and absorbs transitions at source would shift ${team}'s defence from reactive to proactive — and directly reduce that error count.`,
       };
       case 'gk': return{
-        role:'Shot-Stopper GK',posGroup:'GK',icon:'🧤',color:T.yellow,
+        role:'Shot-Stopper GK',posGroup:'GK',icon:"",color:T.yellow,
         attrs:[{k:'gk_saves',l:'Save Percentage',p:'required'},{k:'gk_cs',l:'Clean Sheet %',p:'high'},{k:'gk_ga90',l:'Goals Against /90',p:'high'},{k:'gk_dist',l:'Distribution Quality',p:'medium'},{k:'gk_sweeper',l:'Sweeper-Keeper Activity',p:'medium'}],
         weights:{gk_saves:'required',gk_cs:'high',gk_ga90:'high',gk_dist:'medium'},
         because:`${cleanSheets} clean sheets — ${ordinal(n+1-csR)} fewest in the league. ${gk?`${gk}'s`:'The goalkeeper\'s'} shot-stopping is not providing the platform ${team} needs. Tight games that finish 1-0 require the exceptional save. A GK performing in the top quartile for save percentage is statistically worth 5-8 additional points per season — one of the most efficient signings per pound spent in the entire market.`,
       };
       case 'b2b': return{
-        role:'Box-to-Box Midfielder',posGroup:'MF',icon:'⚙️',color:T.accent,
+        role:'Box-to-Box Midfielder',posGroup:'MF',icon:"",color:T.accent,
         attrs:[{k:'goals',l:'Goal Scoring',p:'high'},{k:'pressing',l:'Pressing Intensity',p:'high'},{k:'prog_pass',l:'Progressive Passing',p:'high'},{k:'tackles',l:'Tackles Won',p:'medium'},{k:'assists',l:'Assists & xA',p:'medium'}],
         weights:{goals:'high',pressing:'high',prog_pass:'high',tackles:'medium'},
         because:`${team} drew ${d} games — ${Math.round(d/total*100)}% of their matches. Games consistently finish level because no one can manufacture the decisive moment in tight situations. A box-to-box midfielder who arrives late into the penalty area contributes 8-11 goals from midfield — an unpredictable secondary threat that breaks down defences which have already shut out the obvious attackers. Converting even four draws to wins means 8 extra points.`,
       };
       case 'playmaker':
         if(errLow&&attackPoor)return{
-          role:'Attacking Midfielder',posGroup:'MF',icon:'📐',color:T.accent2,
+          role:'Attacking Midfielder',posGroup:'MF',icon:"",color:T.accent2,
           attrs:[{k:'key_passes',l:'Key Passes',p:'required'},{k:'sca',l:'Shot-Creating Actions',p:'high'},{k:'assists',l:'Assists & xA',p:'high'},{k:'goals',l:'Goal Scoring',p:'high'},{k:'prog_carry',l:'Progressive Carrying',p:'medium'}],
           weights:{key_passes:'required',sca:'high',assists:'high',goals:'high'},
           because:`${team}'s defensive record is one of the league's best — only ${errors} errors (${ordinal(eR)} fewest) and ${cleanSheets} clean sheets. The constraint is entirely offensive: ${gfPerGame.toFixed(2)} goals per game ranks ${ordinal(gfR)} in the division. An attacking midfielder who operates between the lines, creates 60+ chances per season and contributes directly to goals would convert that defensive platform into significantly more points.`,
         };
         return{
-          role:'Deep Playmaker',posGroup:'MF',icon:'📐',color:T.accent2,
+          role:'Deep Playmaker',posGroup:'MF',icon:"",color:T.accent2,
           attrs:[{k:'pass_pct',l:'Pass Accuracy',p:'required'},{k:'prog_pass',l:'Progressive Passing',p:'high'},{k:'key_passes',l:'Key Passes',p:'high'},{k:'sca',l:'Shot-Creating Actions',p:'high'},{k:'buildup',l:'Buildup Contribution',p:'medium'}],
           weights:{pass_pct:'required',prog_pass:'high',key_passes:'high',sca:'high'},
           because:`${team} have the defensive structure to compete at a higher level — ${errors} errors (${ordinal(eR)} in the league), ${gfPerGame.toFixed(2)} goals per game from a stable base. The ceiling is in ball progression and chance creation volume. A deep playmaker who advances play quickly into half-spaces, completes 85%+ passes and generates 65+ chances per season turns good performances into consistent points.`,
@@ -617,8 +717,8 @@ function getSuggestions(rep,team,ctx){
     'Attacking Forward / Winger':'WG','Goalkeeper':'GK','Creative Midfielder':'MF',
     'Midfielder':'MF','Centre-Back':'DF','Aerial Centre-Back':'DF','Defender':'DF',
     'Left Back':'DF','Right Back':'DF','Full-Back':'DF'};
-  const PRIO_ICON={FW:'⚽',WG:'💨',GK:'🧤',MF:'⚙️',DF:'🛡️'};
-  const PRIO_COLOR={FW:'#f43f5e',WG:'#818cf8',GK:'#fbbf24',MF:'#22d3ee',DF:'#34d399'};
+  const PRIO_ICON={FW:'',WG:'',GK:'',MF:'',DF:''};
+  const PRIO_COLOR={FW:'#1A65D3',WG:'#2B4C5E',GK:'#939A9E',MF:'#4F82D6',DF:'#6E7E8A'};
   const PRIO_ATTRS={
     FW:[{k:'goals',l:'Goal Scoring',p:'required'},{k:'xg_over',l:'Finishing Efficiency',p:'high'},{k:'shots',l:'Shot Volume',p:'high'},{k:'box_carry',l:'Carries into Box',p:'medium'}],
     WG:[{k:'goals',l:'Goal Scoring',p:'high'},{k:'takeons',l:'Successful Dribbles',p:'high'},{k:'prog_carry',l:'Progressive Carrying',p:'high'},{k:'key_passes',l:'Key Passes',p:'medium'}],
@@ -638,7 +738,7 @@ function getSuggestions(rep,team,ctx){
       // Add a new card for positions the scoring didn't catch
       sugs.push({
         role:prio.position,posGroup:pg,
-        icon:PRIO_ICON[pg]||'🎯',color:PRIO_COLOR[pg]||'#f43f5e',
+        icon:PRIO_ICON[pg]||'',color:PRIO_COLOR[pg]||'#1A65D3',
         attrs:PRIO_ATTRS[pg]||[],weights:{},thresholds:{},
         because:prio.reason,
       });
@@ -661,32 +761,35 @@ function ClubReport({clubCtx,data,teamReports,onSearch,onBack}){
     setTimeout(()=>searchRef.current?.scrollIntoView({behavior:'smooth',block:'start'}),100);
   };
 
-  const PRI_C2={required:'#f43f5e',high:T.accent,medium:T.yellow,low:T.orange};
+  const PRI_C2={required:'#1A65D3',high:T.accent,medium:T.yellow,low:T.orange};
   const PRI_W={required:4,high:3,medium:2,low:1};
 
   return(
     <div style={{maxWidth:900,margin:'0 auto',padding:20,fontFamily:T.font}}>
       {/* Header */}
-      <motion.button whileHover={{x:-3}} whileTap={{scale:0.95}} transition={{duration:0.15}} onClick={onBack} style={{background:'none',border:'none',color:T.accent,cursor:'pointer',fontSize:12,padding:0,marginBottom:14,fontFamily:T.font}}>← All Clubs</motion.button>
+      <motion.button whileHover={{x:-3}} whileTap={{scale:0.95}} transition={{duration:0.15}} onClick={onBack} style={{background:'none',border:'none',color:T.accent,cursor:'pointer',fontSize:13,padding:0,marginBottom:14,fontFamily:T.font}}>← All Clubs</motion.button>
       <div style={{...C.card,borderTop:`4px solid ${color}`,marginBottom:16}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12}}>
-          <div>
-            <h2 style={{fontSize:24,fontWeight:900,color:T.text,margin:0}}>{team}</h2>
-            <p style={{color:T.dim,fontSize:12,margin:'4px 0 0'}}>{formation} · {style} · 2024/25 Season Report</p>
+          <div style={{display:'flex',alignItems:'center',gap:14}}>
+            <ClubLogo club={team} size={48}/>
+            <div>
+              <h2 style={{fontSize:24,fontWeight:900,color:T.text,margin:0}}>{team}</h2>
+              <p style={{color:T.dim,fontSize:13,margin:'4px 0 0'}}>{formation} · {style} · 2024/25 Season Report</p>
+            </div>
           </div>
           {rep&&(
             <div style={{display:'flex',gap:20,flexWrap:'wrap'}}>
-              {[['Wins',rep.w,T.green],['Draws',rep.d,T.yellow],['Losses',rep.l,T.red],['Goals For',rep.gf,T.accent],['Goals Against',rep.ga,T.dim],['Clean Sheets',rep.cleanSheets,T.green],['Errors',rep.errors,T.red]].map(([l,v,c])=>(
+              {[['Wins',rep.w,T.accent],['Draws',rep.d,T.dim],['Losses',rep.l,T.text],['Goals For',rep.gf,T.accent],['Goals Against',rep.ga,T.dim],['Clean Sheets',rep.cleanSheets,T.accent],['Errors',rep.errors,T.text]].map(([l,v,c])=>(
                 <div key={l} style={{textAlign:'center'}}>
-                  <div style={{fontSize:20,fontWeight:800,color:c,fontFamily:'monospace'}}>{v}</div>
-                  <div style={{fontSize:9,color:T.dim,textTransform:'uppercase',letterSpacing:0.5}}>{l}</div>
+                  <div style={{fontSize:20,fontWeight:800,color:c,fontFamily:'inherit'}}>{v}</div>
+                  <div style={{fontSize:11,color:T.dim,textTransform:'uppercase',letterSpacing:0.5}}>{l}</div>
                 </div>
               ))}
             </div>
           )}
         </div>
         {rep&&(
-          <div style={{display:'flex',gap:16,marginTop:12,flexWrap:'wrap',fontSize:11,color:T.dim}}>
+          <div style={{display:'flex',gap:16,marginTop:12,flexWrap:'wrap',fontSize:12,color:T.dim}}>
             {rep.topScorer&&<span>Top Scorer: <b style={{color:T.text}}>{rep.topScorer}</b></span>}
             {rep.topAssister&&<span>Top Assister: <b style={{color:T.text}}>{rep.topAssister}</b></span>}
             {rep.gk&&<span>GK: <b style={{color:T.text}}>{rep.gk}</b></span>}
@@ -699,19 +802,19 @@ function ClubReport({clubCtx,data,teamReports,onSearch,onBack}){
         <div style={{display:'flex',gap:16,marginBottom:16}}>
           {rep.positives?.length>0&&(
             <div style={{...C.card,flex:1,marginBottom:0,border:`1px solid ${T.green}30`,background:T.green+'06'}}>
-              <div style={{fontSize:11,fontWeight:800,color:T.green,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>✅ Strengths</div>
+              <div style={{fontSize:12,fontWeight:800,color:T.green,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>Strengths</div>
               {rep.positives.map((s,i)=>{
                 const[title,...rest]=s.split(':');
-                return(<div key={i} style={{marginBottom:8}}><div style={{fontSize:11,fontWeight:700,color:T.text}}>{title}</div><div style={{fontSize:11,color:T.dim,lineHeight:1.5}}>{rest.join(':').trim()}</div></div>);
+                return(<div key={i} style={{marginBottom:8}}><div style={{fontSize:12,fontWeight:700,color:T.text}}>{title}</div><div style={{fontSize:12,color:T.dim,lineHeight:1.5}}>{rest.join(':').trim()}</div></div>);
               })}
             </div>
           )}
           {rep.negatives?.length>0&&(
             <div style={{...C.card,flex:1,marginBottom:0,border:`1px solid ${T.red}30`,background:T.red+'06'}}>
-              <div style={{fontSize:11,fontWeight:800,color:T.red,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>⚠️ Weaknesses</div>
+              <div style={{fontSize:12,fontWeight:800,color:T.red,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>Weaknesses</div>
               {rep.negatives.map((s,i)=>{
                 const[title,...rest]=s.split(':');
-                return(<div key={i} style={{marginBottom:8}}><div style={{fontSize:11,fontWeight:700,color:T.text}}>{title}</div><div style={{fontSize:11,color:T.dim,lineHeight:1.5}}>{rest.join(':').trim()}</div></div>);
+                return(<div key={i} style={{marginBottom:8}}><div style={{fontSize:12,fontWeight:700,color:T.text}}>{title}</div><div style={{fontSize:12,color:T.dim,lineHeight:1.5}}>{rest.join(':').trim()}</div></div>);
               })}
             </div>
           )}
@@ -721,8 +824,8 @@ function ClubReport({clubCtx,data,teamReports,onSearch,onBack}){
       {/* Suggestions */}
       {sugs.length>0&&(
         <div style={{marginBottom:16}}>
-          <div style={{fontSize:12,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>🎯 Recruitment Priorities</div>
-          <p style={{fontSize:11,color:T.dim,marginBottom:12}}>Based on 24/25 season analysis — click a role to pre-fill the search below</p>
+          <div style={{fontSize:13,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>Recruitment Priorities</div>
+          <p style={{fontSize:12,color:T.dim,marginBottom:12}}>Based on 24/25 season analysis — click a role to pre-fill the search below</p>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(340px,1fr))',gap:12}}>
             {sugs.map((s,i)=>{
               const active=selSug?.role===s.role;
@@ -733,28 +836,29 @@ function ClubReport({clubCtx,data,teamReports,onSearch,onBack}){
                   onMouseEnter={e=>{if(!active){e.currentTarget.style.borderColor=s.color+'80';}}}
                   onMouseLeave={e=>{if(!active){e.currentTarget.style.borderColor=T.border;}}}>
                   <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
-                    <span style={{fontSize:16}}>{s.icon}</span>
+                    <div style={{width:3,height:20,borderRadius:999,background:s.color,flexShrink:0}}/>
+
                     <div>
                       <div style={{fontSize:14,fontWeight:800,color:active?s.color:T.text}}>{s.role}</div>
-                      <div style={{fontSize:10,color:T.dim}}>{POS[s.posGroup]?.label} · {POS[s.posGroup]?.sub}</div>
+                      <div style={{fontSize:11,color:T.dim}}>{POS[s.posGroup]?.label} · {POS[s.posGroup]?.sub}</div>
                     </div>
-                    {active&&<span style={{marginLeft:'auto',fontSize:9,fontWeight:800,padding:'2px 8px',borderRadius:4,background:s.color,color:'#000'}}>SELECTED</span>}
+                    {active&&<span style={{marginLeft:'auto',fontSize:11,fontWeight:800,padding:'2px 8px',borderRadius:4,background:s.color,color:'#000'}}>SELECTED</span>}
                   </div>
                   {/* Attribute bars */}
                   <div style={{marginBottom:10}}>
                     {s.attrs.map(a=>(
                       <div key={a.k} style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
-                        <span style={{width:140,fontSize:10,color:T.dim,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{a.l}</span>
+                        <span style={{width:140,fontSize:11,color:T.dim,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{a.l}</span>
                         <div style={{flex:1,height:5,borderRadius:3,background:T.border,overflow:'hidden'}}>
                           <div style={{width:`${PRI_W[a.p]/4*100}%`,height:'100%',borderRadius:3,background:PRI_C2[a.p]}}/>
                         </div>
-                        <span style={{width:52,fontSize:9,fontWeight:800,color:PRI_C2[a.p],textAlign:'right',textTransform:'uppercase'}}>{a.p}</span>
+                        <span style={{width:52,fontSize:11,fontWeight:800,color:PRI_C2[a.p],textAlign:'right',textTransform:'uppercase'}}>{a.p}</span>
                       </div>
                     ))}
                   </div>
                   {/* Because */}
-                  <div style={{fontSize:11,color:T.dim,lineHeight:1.6,borderTop:`1px solid ${T.border}`,paddingTop:8}}>
-                    <span style={{fontSize:10,fontWeight:700,color:T.dim,textTransform:'uppercase',letterSpacing:0.5}}>Why: </span>
+                  <div style={{fontSize:12,color:T.dim,lineHeight:1.6,borderTop:`1px solid ${T.border}`,paddingTop:8}}>
+                    <span style={{fontSize:11,fontWeight:700,color:T.dim,textTransform:'uppercase',letterSpacing:0.5}}>Why: </span>
                     {s.because}
                   </div>
                 </div>
@@ -766,12 +870,12 @@ function ClubReport({clubCtx,data,teamReports,onSearch,onBack}){
 
       {/* Divider */}
       <div ref={searchRef} style={{borderTop:`2px solid ${T.border}`,marginBottom:20,paddingTop:20}}>
-        <div style={{fontSize:12,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>
-          🔍 Player Search {selSug?`— ${selSug.role} for ${team}`:''}
+        <div style={{fontSize:13,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>
+          Player Search {selSug?`— ${selSug.role} for ${team}`:''}
         </div>
         {selSug
-          ?<p style={{fontSize:11,color:T.dim,marginBottom:0}}>Pre-filled from your selection — adjust any criteria then search</p>
-          :<p style={{fontSize:11,color:T.dim,marginBottom:0}}>No role selected — set your own criteria below or click a recommendation above</p>
+          ?<p style={{fontSize:12,color:T.dim,marginBottom:0}}>Pre-filled from your selection — adjust any criteria then search</p>
+          :<p style={{fontSize:12,color:T.dim,marginBottom:0}}>No role selected — set your own criteria below or click a recommendation above</p>
         }
       </div>
 
@@ -787,7 +891,103 @@ function ClubReport({clubCtx,data,teamReports,onSearch,onBack}){
 }
 
 // ─── SEARCH ───
-function Search({data,onSearch,clubCtx,forceValues}){
+// Collapsible panel — progressive disclosure to reduce filter clutter
+function Collapsible({title,summary,badge,defaultOpen=false,icon,children}){
+  const[open,setOpen]=useState(defaultOpen);
+  const Icon=typeof icon==='function'?icon:null;
+  return(
+    <div style={{...C.card,padding:0,marginBottom:12,overflow:'hidden'}}>
+      <button onClick={()=>setOpen(o=>!o)} aria-expanded={open} style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'15px 18px',background:'transparent',border:'none',cursor:'pointer',textAlign:'left',fontFamily:'inherit'}}>
+        {Icon&&<Icon size={16} weight="bold" color={T.accent} aria-hidden="true"/>}
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:12,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1}}>{title}</div>
+          {!open&&summary&&<div style={{fontSize:11,color:T.dim,marginTop:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{summary}</div>}
+        </div>
+        {badge!=null&&badge>0&&<span style={C.tag(T.accent)}>{badge}</span>}
+        <CaretDown size={16} weight="bold" color={T.dim} aria-hidden="true" style={{transform:open?'rotate(180deg)':'none',transition:'transform 0.22s ease',flexShrink:0}}/>
+      </button>
+      <AnimatePresence initial={false}>
+        {open&&(
+          <motion.div initial={{height:0,opacity:0}} animate={{height:'auto',opacity:1}} exit={{height:0,opacity:0}} transition={{duration:0.28,ease:EASE}} style={{overflow:'hidden'}}>
+            <div style={{padding:'0 18px 18px'}}>{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// Single attribute category — collapsible to tame the priorities wall
+function AttrCategory({g,priorities,thresholds,uP,uT,gP,tooltip,setTooltip,defaultOpen}){
+  const[open,setOpen]=useState(defaultOpen);
+  const active=g.attrs.filter(a=>priorities[a.k]&&priorities[a.k]!=='none').length;
+  const Icon=CAT_ICON[g.cat];
+  return(
+    <div style={{borderTop:`1px solid ${T.border}`}}>
+      <button onClick={()=>setOpen(o=>!o)} aria-expanded={open} style={{width:'100%',display:'flex',alignItems:'center',gap:8,padding:'11px 0',background:'transparent',border:'none',cursor:'pointer',fontFamily:'inherit',textAlign:'left'}}>
+        {Icon&&<Icon size={15} weight="bold" color={active?T.accent:T.dim} aria-hidden="true"/>}
+        <span style={{flex:1,fontSize:12,fontWeight:800,color:active?T.text:T.dim,letterSpacing:0.5}}>{g.cat}</span>
+        {g.note&&<span style={{fontSize:11,color:T.dim}}>{g.note}</span>}
+        {active>0&&<span style={C.tag(T.accent)}>{active}</span>}
+        <CaretDown size={14} weight="bold" color={T.dim} aria-hidden="true" style={{transform:open?'rotate(180deg)':'none',transition:'transform 0.22s ease'}}/>
+      </button>
+      <AnimatePresence initial={false}>
+        {open&&(
+          <motion.div initial={{height:0,opacity:0}} animate={{height:'auto',opacity:1}} exit={{height:0,opacity:0}} transition={{duration:0.24,ease:EASE}} style={{overflow:'hidden'}}>
+            <div style={{paddingBottom:12}}>
+              <div style={{display:'flex',gap:4,marginBottom:10}}>
+                <button onClick={()=>gP(g,'required')} style={{...C.btn(false,T.accent),fontSize:10,padding:'3px 9px'}}>All Req</button>
+                <button onClick={()=>gP(g,'high')} style={{...C.btn(false,T.accent),fontSize:10,padding:'3px 9px'}}>All High</button>
+                <button onClick={()=>gP(g,'none')} style={{...C.btn(false),fontSize:10,padding:'3px 9px'}}>Clear</button>
+              </div>
+              {g.attrs.map(a=>(
+                <div key={a.k} style={{marginBottom:8}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:a.thresholdKey&&priorities[a.k]&&priorities[a.k]!=='none'?4:0}}>
+                    <div style={{flex:1}}>
+                      <div style={{display:'flex',alignItems:'center',gap:6}}>
+                        <span style={{fontSize:13,color:T.text,fontWeight:500}}>{a.l}</span>
+                        {a.desc&&(
+                          <span role="button" tabIndex={0} aria-label={a.desc}
+                            style={{fontSize:11,color:T.dim,cursor:'help',position:'relative'}}
+                            onMouseEnter={()=>setTooltip(a.k)} onMouseLeave={()=>setTooltip(null)}
+                            onFocus={()=>setTooltip(a.k)} onBlur={()=>setTooltip(null)}
+                          >ⓘ{tooltip===a.k&&(
+                            <span style={{position:'absolute',bottom:'120%',left:0,width:220,background:T.card2,border:`1px solid ${T.border}`,borderRadius:6,padding:'6px 8px',fontSize:11,color:T.text,lineHeight:1.4,zIndex:100,pointerEvents:'none',whiteSpace:'normal'}}>{a.desc}</span>
+                          )}</span>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{display:'flex',gap:2}}>
+                      {Object.keys(PRI).map(p=>{
+                        const plabel=p==='required'?'Required':p==='none'?'Ignored':p.charAt(0).toUpperCase()+p.slice(1);
+                        return(
+                        <button key={p} onClick={()=>uP(a.k,p)}
+                          aria-label={`Set ${a.l} priority to ${plabel}`} aria-pressed={priorities[a.k]===p} title={plabel}
+                          style={{...C.btn(priorities[a.k]===p,PRI_C[p]),fontSize:11,padding:'3px 8px',minHeight:24,border:priorities[a.k]===p?'none':`1px solid ${T.border}30`}}
+                        >{p==='required'?'REQ':p==='none'?'—':p.charAt(0).toUpperCase()+p.slice(1)}</button>
+                      );})}
+                    </div>
+                  </div>
+                  {a.thresholdKey&&priorities[a.k]&&priorities[a.k]!=='none'&&(
+                    <div style={{display:'flex',alignItems:'center',gap:8,marginLeft:24,marginTop:2}}>
+                      <span style={{fontSize:11,color:T.dim,minWidth:80}}>{a.thresholdLabel}:</span>
+                      <input aria-label={`${a.thresholdLabel} for ${a.l}`} type="number" step="0.01" value={thresholds[a.thresholdKey]||''}
+                        onChange={e=>uT(a.thresholdKey,e.target.value)} placeholder="Min (optional)"
+                        style={{...C.input,width:120,padding:'4px 12px',fontSize:12,border:`1px solid ${thresholds[a.thresholdKey]?'#1A65D3':T.border}`}}/>
+                      {thresholds[a.thresholdKey]&&<span style={{fontSize:11,color:'#1A65D3',fontWeight:700}}>KNOCKOUT</span>}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function Search({data,onSearch,clubCtx,forceValues,sidebar}){
   const leagues=useMemo(()=>[...new Set(data.current.map(p=>p.league).filter(Boolean))].sort(),[data]);
   const[f,setF]=useState({posGroup:'FW',ageMin:18,ageMax:35,budgetMin:'',budgetMax:'',heightMin:'',heightMax:'',foot:'Any',contractBefore:'',contractAfter:'',nationality:'',mlRole:[],leagues:[],minMinutes:450,priorities:{},thresholds:{},teamFormation:clubCtx?.formation||'4-3-3',teamStyle:clubCtx?.style||'',playerNeed:'',similarTo:'',subPos:'',potentialTier:'',gkMinSave:'',gkMaxGA:'',gkMinCS:''});
   const[tooltip,setTooltip]=useState(null);
@@ -852,31 +1052,40 @@ function Search({data,onSearch,clubCtx,forceValues}){
   const hc=Object.values(f.priorities).filter(v=>v==='high').length;
 
   return(
-    <div style={{maxWidth:860,margin:'0 auto',padding:20,fontFamily:T.font}}>
-      {/* Header */}
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+    <div style={{...(sidebar?{padding:'14px 14px 120px'}:{maxWidth:860,margin:'0 auto',padding:'20px 20px 40px'}),fontFamily:T.font}}>
+      {/* Sidebar: compact position pills at top */}
+      {sidebar&&<div style={{marginBottom:14}}>
+        <div style={C.label}>Position</div>
+        <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+          {Object.entries(POS).map(([k,v])=>(
+            <motion.button key={k} onClick={()=>applyPreset(k)} whileTap={{scale:0.93}} animate={{background:f.posGroup===k?T.accent:'transparent',color:f.posGroup===k?'#F2F2F2':T.dim}} transition={{duration:0.18}} style={{padding:'5px 10px',fontSize:11,borderRadius:999,border:`1px solid ${f.posGroup===k?T.accent:T.border+'80'}`,cursor:'pointer',fontFamily:'inherit',fontWeight:700,letterSpacing:'0.5px',textTransform:'uppercase'}}>{v.label}</motion.button>
+          ))}
+        </div>
+      </div>}
+      {/* Full-page: header with title + position pills */}
+      {!sidebar&&<div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
         <div>
-          <div style={{fontSize:10,fontWeight:800,letterSpacing:3,color:T.accent,textTransform:'uppercase'}}>ScoutLab</div>
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:3,color:T.accent,textTransform:'uppercase'}}>ScoutLab</div>
           <h1 style={{fontSize:22,fontWeight:800,color:T.text,margin:'4px 0 0',letterSpacing:'-0.3px'}}>Player Search</h1>
-          <p style={{color:T.dim,fontSize:12,marginTop:2}}>{data.current.length} players · {data.meta.currentSeason} season</p>
-          {clubCtx&&<div style={{display:'flex',alignItems:'center',gap:8,marginTop:6,padding:'5px 10px',borderRadius:6,background:clubCtx.color+'15',border:`1px solid ${clubCtx.color}30`,display:'inline-flex'}}>
-            <div style={{width:8,height:8,borderRadius:'50%',background:clubCtx.color,flexShrink:0}}/>
-            <span style={{fontSize:11,fontWeight:700,color:clubCtx.color}}>{clubCtx.team}</span>
-            <span style={{fontSize:10,color:T.dim}}>{clubCtx.formation} · {clubCtx.style}</span>
+          <p style={{color:T.dim,fontSize:13,marginTop:2}}>{data.current.length} players · {data.meta.currentSeason} season</p>
+          {clubCtx&&<div style={{display:'inline-flex',alignItems:'center',gap:8,marginTop:6,padding:'5px 12px',borderRadius:999,background:clubCtx.color+'15',border:`1px solid ${clubCtx.color}30`}}>
+            <ClubLogo club={clubCtx.team} size={16}/>
+            <span style={{fontSize:12,fontWeight:700,color:clubCtx.color}}>{clubCtx.team}</span>
+            <span style={{fontSize:11,color:T.dim}}>{clubCtx.formation} · {clubCtx.style}</span>
           </div>}
         </div>
         <div style={{display:'flex',gap:4,flexWrap:'wrap',justifyContent:'flex-end'}}>
           {Object.entries(POS).map(([k,v])=>(
-            <motion.button key={k} onClick={()=>applyPreset(k)} whileTap={{scale:0.93}} animate={{background:f.posGroup===k?T.accent:'transparent',color:f.posGroup===k?'#F2F2F2':T.dim}} transition={{duration:0.18}} style={{padding:'8px 14px',fontSize:11,borderRadius:999,border:`1px solid ${f.posGroup===k?T.accent:T.border+'60'}`,cursor:'pointer',fontFamily:'inherit',fontWeight:700,letterSpacing:'0.5px',textTransform:'uppercase'}}>{v.label}</motion.button>
+            <motion.button key={k} onClick={()=>applyPreset(k)} whileTap={{scale:0.93}} animate={{background:f.posGroup===k?T.accent:'transparent',color:f.posGroup===k?'#F2F2F2':T.dim}} transition={{duration:0.18}} style={{padding:'8px 14px',fontSize:12,borderRadius:999,border:`1px solid ${f.posGroup===k?T.accent:T.border+'60'}`,cursor:'pointer',fontFamily:'inherit',fontWeight:700,letterSpacing:'0.5px',textTransform:'uppercase'}}>{v.label}</motion.button>
           ))}
         </div>
-      </div>
+      </div>}
 
       {/* Sub-position filter for DF and WG */}
       {(f.posGroup==='DF'||f.posGroup==='WG')&&(
         <div style={{...C.card,marginBottom:12}}>
-          <div style={{fontSize:11,fontWeight:800,color:T.dim,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>
-            {f.posGroup==='DF'?'🛡️ Defender Type':'🏃 Winger Side'}
+          <div style={{fontSize:12,fontWeight:800,color:T.dim,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>
+            {f.posGroup==='DF'?'Defender Type':'Winger Side'}
           </div>
           <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
             {(f.posGroup==='DF'
@@ -885,7 +1094,7 @@ function Search({data,onSearch,clubCtx,forceValues}){
             ).map(([val,label])=>(
               <button key={val} onClick={()=>u('subPos',val)} style={{
                 ...C.btn(f.subPos===val,T.green),
-                padding:'7px 16px',fontSize:10,borderRadius:999,
+                padding:'7px 16px',fontSize:11,borderRadius:999,
                 border:f.subPos===val?'none':`1px solid ${T.border}30`,
               }}>{label}</button>
             ))}
@@ -896,199 +1105,141 @@ function Search({data,onSearch,clubCtx,forceValues}){
       {/* GK-specific stat filters */}
       {f.posGroup==='GK'&&(
         <div style={{...C.card,marginBottom:12}}>
-          <div style={{fontSize:11,fontWeight:800,color:T.dim,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>🧤 Goalkeeper Thresholds</div>
+          <div style={{fontSize:12,fontWeight:800,color:T.dim,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>Goalkeeper Thresholds</div>
           <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
             <div style={{flex:1,minWidth:100}}>
               <label style={C.label}>Min Save %</label>
-              <input type="number" value={f.gkMinSave} onChange={e=>u('gkMinSave',+e.target.value||'')} style={C.input} placeholder="e.g. 68"/>
+              <input aria-label="Minimum Save percentage" type="number" value={f.gkMinSave} onChange={e=>u('gkMinSave',+e.target.value||'')} style={C.input} placeholder="e.g. 68"/>
             </div>
             <div style={{flex:1,minWidth:100}}>
               <label style={C.label}>Max GA / 90</label>
-              <input type="number" step="0.1" value={f.gkMaxGA} onChange={e=>u('gkMaxGA',+e.target.value||'')} style={C.input} placeholder="e.g. 1.2"/>
+              <input aria-label="Maximum Goals Against per 90" type="number" step="0.1" value={f.gkMaxGA} onChange={e=>u('gkMaxGA',+e.target.value||'')} style={C.input} placeholder="e.g. 1.2"/>
             </div>
             <div style={{flex:1,minWidth:100}}>
               <label style={C.label}>Min Clean Sheet %</label>
-              <input type="number" value={f.gkMinCS} onChange={e=>u('gkMinCS',+e.target.value||'')} style={C.input} placeholder="e.g. 30"/>
+              <input aria-label="Minimum Clean Sheet percentage" type="number" value={f.gkMinCS} onChange={e=>u('gkMinCS',+e.target.value||'')} style={C.input} placeholder="e.g. 30"/>
             </div>
           </div>
         </div>
       )}
 
-      {/* ML Role Archetype */}
-      {availMlRoles.length>0&&(
-        <div style={{...C.card,marginBottom:12}}>
-          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
-            <span style={{fontSize:11,fontWeight:800,color:T.dim,textTransform:'uppercase',letterSpacing:1}}>🏷️ Player Role Archetype</span>
-            {f.mlRole.length>0&&<span style={C.tag('#f43f5e')}>{f.mlRole.length} selected · KNOCKOUT</span>}
-            {f.mlRole.length>0&&<button onClick={()=>u('mlRole',[])} style={{...C.btn(false),fontSize:9,padding:'2px 8px',border:`1px solid ${T.border}`}}>✕ Clear</button>}
+      {/* Filters */}
+      <Collapsible title="Basic Requirements" icon={SlidersHorizontal} defaultOpen={false}
+        summary={`Age ${f.ageMin}–${f.ageMax} · ${f.minMinutes}+ mins${f.budgetMax?` · up to €${(f.budgetMax/1e6).toFixed(0)}M`:''}${f.nationality?` · ${f.nationality}`:''}`}>
+        <div className="scout-filter-grid">
+          <div><label style={C.label}>Age Min</label><input aria-label="Age Min" type="number" value={f.ageMin} onChange={e=>u('ageMin',+e.target.value||'')} style={C.input}/></div>
+          <div><label style={C.label}>Age Max</label><input aria-label="Age Max" type="number" value={f.ageMax} onChange={e=>u('ageMax',+e.target.value||'')} style={C.input}/></div>
+          <div><label style={C.label}>Budget Min</label><select aria-label="Budget Min" value={f.budgetMin} onChange={e=>u('budgetMin',e.target.value?+e.target.value:'')} style={C.input}>{BUDGET.map(b=><option key={`mn${b.v}`} value={b.v}>{b.l}</option>)}</select></div>
+          <div><label style={C.label}>Budget Max</label><select aria-label="Budget Max" value={f.budgetMax} onChange={e=>u('budgetMax',e.target.value?+e.target.value:'')} style={C.input}>{BUDGET.map(b=><option key={`mx${b.v}`} value={b.v}>{b.l}</option>)}</select></div>
+          <div><label style={C.label}>Height Min (cm)</label><input aria-label="Height Min in centimetres" type="number" value={f.heightMin} onChange={e=>u('heightMin',+e.target.value||'')} style={C.input} placeholder="e.g. 180"/></div>
+          <div><label style={C.label}>Height Max (cm)</label><input aria-label="Height Max in centimetres" type="number" value={f.heightMax} onChange={e=>u('heightMax',+e.target.value||'')} style={C.input} placeholder="e.g. 195"/></div>
+          <div><label style={C.label}>Preferred Foot</label><select aria-label="Preferred Foot" value={f.foot} onChange={e=>u('foot',e.target.value)} style={C.input}>{['Any','Right','Left','Both'].map(x=><option key={x}>{x}</option>)}</select></div>
+          <div><label style={C.label}>Min Minutes</label><input aria-label="Minimum minutes played" type="number" value={f.minMinutes} onChange={e=>u('minMinutes',+e.target.value||0)} style={C.input}/></div>
+          <div><label style={C.label}>Nationality</label><input aria-label="Nationality" value={f.nationality} onChange={e=>u('nationality',e.target.value)} style={C.input} placeholder="e.g. Spanish, French"/></div>
+          <div><label style={C.label}>Potential</label><select aria-label="Potential tier" value={f.potentialTier} onChange={e=>u('potentialTier',e.target.value)} style={C.input}><option value=''>Any</option><option value='Developing'>Developing (50+)</option><option value='High Potential'>High Potential (65+)</option><option value='Elite Prospect'>Elite Prospect (80+)</option></select></div>
+          <div><label style={C.label}>Contract Expires Before</label><input aria-label="Contract Expires Before" type="date" value={f.contractBefore} onChange={e=>u('contractBefore',e.target.value)} style={C.input}/></div>
+          <div><label style={C.label}>Contract Expires After</label><input aria-label="Contract Expires After" type="date" value={f.contractAfter} onChange={e=>u('contractAfter',e.target.value)} style={C.input}/></div>
+        </div>
+        <div style={{display:'flex',gap:6,marginBottom:10}}>
+          {[['Free Agents',()=>{const d=new Date();d.setMonth(d.getMonth()+3);u('contractBefore',d.toISOString().slice(0,10));}],['Expiring 12m',()=>{const d=new Date();d.setMonth(d.getMonth()+12);u('contractBefore',d.toISOString().slice(0,10));}],['Clear',()=>{u('contractBefore','');u('contractAfter','');}]].map(([l,fn])=>(
+            <button key={l} onClick={fn} style={{...C.btn(false,T.accent2),padding:'8px 10px',fontSize:11,border:`1px solid ${T.border}`}}>{l}</button>
+          ))}
+        </div>
+        <label style={C.label}>Leagues</label>
+        <div style={{display:'flex',flexWrap:'wrap',gap:6}}>{leagues.map(l=><button key={l} onClick={()=>tL(l)} style={C.btn(f.leagues.includes(l))}>{l}</button>)}</div>
+      </Collapsible>
+
+      {/* Attribute Priorities */}
+      <div style={C.card}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+            <span style={{fontSize:12,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1}}>Attribute Priorities</span>
+            {reqc>0&&<span style={C.tag('#1A65D3')}>{reqc} required</span>}
+            {hc>0&&<span style={C.tag(T.accent)}>{hc} high</span>}
+            <span style={C.tag(ac?T.dim:T.red)}>{ac} active</span>
           </div>
+          <button onClick={()=>applyPreset(f.posGroup)} style={{...C.btn(false),border:`1px solid ${T.border}`,fontSize:11}}>↻ Reset</button>
+        </div>
+
+        {/* Legend */}
+        <div style={{display:'flex',gap:12,marginBottom:12,padding:'8px 10px',background:T.bg,borderRadius:8,flexWrap:'wrap'}}>
+          {Object.entries(PRI_LABELS).map(([k,l])=>(
+            <div key={k} style={{display:'flex',alignItems:'center',gap:5,fontSize:11}}>
+              <div style={{width:8,height:8,borderRadius:2,background:PRI_C[k]}}/>
+              <span style={{color:T.dim,fontWeight:600}}>{l}</span>
+              <span style={{color:T.dim,opacity:0.6}}>—</span>
+              <span style={{color:T.dim,fontSize:11}}>{k==='required'?'Must be ≥ avg · 4× weight':k==='high'?'Major weight (3×)':k==='medium'?'Standard weight (2×)':k==='low'?'Minor weight (1×)':'Ignored'}</span>
+            </div>
+          ))}
+        </div>
+
+        {ac===0&&<div style={{background:T.red+'15',border:`1px solid ${T.red}30`,borderRadius:8,padding:10,marginBottom:12,fontSize:13,color:T.red}}>No attributes set — all players will score equally. Set at least 2-3 attributes.</div>}
+
+        {availCats.map((g,gi)=>(
+          <AttrCategory key={g.cat} g={g} priorities={f.priorities} thresholds={f.thresholds}
+            uP={uP} uT={uT} gP={gP} tooltip={tooltip} setTooltip={setTooltip} defaultOpen={gi===0}/>
+        ))}
+      </div>
+
+      {/* ML Role Archetype — advanced knockout filter */}
+      {availMlRoles.length>0&&(
+        <Collapsible title="Player Role Archetype" icon={Brain} badge={f.mlRole.length} defaultOpen={false}
+          summary={f.mlRole.length>0?`${f.mlRole.join(', ')} · knockout filter`:'Optional — narrow to specific ML archetypes'}>
+          {f.mlRole.length>0&&<button onClick={()=>u('mlRole',[])} style={{...C.btn(false),fontSize:11,padding:'3px 10px',marginBottom:10,border:`1px solid ${T.border}`}}>Clear selection</button>}
           <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
             {availMlRoles.map(r=>{
               const on=f.mlRole.includes(r);
               return(
                 <button key={r} onClick={()=>u('mlRole',on?f.mlRole.filter(x=>x!==r):[...f.mlRole,r])} style={{
                   ...C.btn(on,T.accent2),
-                  padding:'6px 14px',fontSize:10,borderRadius:999,
+                  padding:'6px 14px',fontSize:11,borderRadius:999,
                   border:on?'none':`1px solid ${T.border}30`,
                 }}>{r}</button>
               );
             })}
           </div>
-          <p style={{fontSize:10,color:T.dim,marginTop:8,marginBottom:0}}>Select one or more roles — only players the ML model classified in those archetypes will appear.</p>
-        </div>
+          <p style={{fontSize:11,color:T.dim,marginTop:10,marginBottom:0}}>Select one or more roles — only players the ML model classified in those archetypes will appear.</p>
+        </Collapsible>
       )}
 
-      {/* Filters */}
-      <div style={C.card}>
-        <div style={{fontSize:11,fontWeight:800,color:T.dim,textTransform:'uppercase',letterSpacing:1,marginBottom:12}}>📋 Basic Requirements</div>
-        <div style={{display:'flex',gap:10,marginBottom:10,flexWrap:'wrap'}}>
-          <div style={{flex:1,minWidth:90}}><label style={C.label}>Age Min</label><input type="number" value={f.ageMin} onChange={e=>u('ageMin',+e.target.value||'')} style={C.input}/></div>
-          <div style={{flex:1,minWidth:90}}><label style={C.label}>Age Max</label><input type="number" value={f.ageMax} onChange={e=>u('ageMax',+e.target.value||'')} style={C.input}/></div>
-          <div style={{flex:1,minWidth:90}}><label style={C.label}>Budget Min</label><select value={f.budgetMin} onChange={e=>u('budgetMin',e.target.value?+e.target.value:'')} style={C.input}>{BUDGET.map(b=><option key={`mn${b.v}`} value={b.v}>{b.l}</option>)}</select></div>
-          <div style={{flex:1,minWidth:90}}><label style={C.label}>Budget Max</label><select value={f.budgetMax} onChange={e=>u('budgetMax',e.target.value?+e.target.value:'')} style={C.input}>{BUDGET.map(b=><option key={`mx${b.v}`} value={b.v}>{b.l}</option>)}</select></div>
-        </div>
-        <div style={{display:'flex',gap:10,marginBottom:10,flexWrap:'wrap'}}>
-          <div style={{flex:1,minWidth:90}}><label style={C.label}>Height Min (cm)</label><input type="number" value={f.heightMin} onChange={e=>u('heightMin',+e.target.value||'')} style={C.input} placeholder="e.g. 180"/></div>
-          <div style={{flex:1,minWidth:90}}><label style={C.label}>Height Max (cm)</label><input type="number" value={f.heightMax} onChange={e=>u('heightMax',+e.target.value||'')} style={C.input} placeholder="e.g. 195"/></div>
-          <div style={{flex:1,minWidth:90}}><label style={C.label}>Preferred Foot</label><select value={f.foot} onChange={e=>u('foot',e.target.value)} style={C.input}>{['Any','Right','Left','Both'].map(x=><option key={x}>{x}</option>)}</select></div>
-          <div style={{flex:1,minWidth:90}}><label style={C.label}>Min Minutes</label><input type="number" value={f.minMinutes} onChange={e=>u('minMinutes',+e.target.value||0)} style={C.input}/></div>
-          <div style={{flex:1,minWidth:120}}><label style={C.label}>Nationality</label><input value={f.nationality} onChange={e=>u('nationality',e.target.value)} style={C.input} placeholder="e.g. Spanish, French"/></div>
-          <div style={{flex:1,minWidth:130}}><label style={C.label}>Potential</label><select value={f.potentialTier} onChange={e=>u('potentialTier',e.target.value)} style={C.input}><option value=''>Any</option><option value='Developing'>Developing (50+)</option><option value='High Potential'>High Potential (65+)</option><option value='Elite Prospect'>Elite Prospect (80+)</option></select></div>
-        </div>
-        <div style={{display:'flex',gap:10,marginBottom:10,flexWrap:'wrap',alignItems:'flex-end'}}>
-          <div style={{flex:1,minWidth:130}}><label style={C.label}>Contract Expires Before</label><input type="date" value={f.contractBefore} onChange={e=>u('contractBefore',e.target.value)} style={C.input}/></div>
-          <div style={{flex:1,minWidth:130}}><label style={C.label}>Contract Expires After</label><input type="date" value={f.contractAfter} onChange={e=>u('contractAfter',e.target.value)} style={C.input}/></div>
-          <div style={{display:'flex',gap:6,paddingBottom:0,flexShrink:0}}>
-            {[['Free Agents',()=>{const d=new Date();d.setMonth(d.getMonth()+3);u('contractBefore',d.toISOString().slice(0,10));}],['Expiring 12m',()=>{const d=new Date();d.setMonth(d.getMonth()+12);u('contractBefore',d.toISOString().slice(0,10));}],['Clear',()=>{u('contractBefore','');u('contractAfter','');}]].map(([l,fn])=>(
-              <button key={l} onClick={fn} style={{...C.btn(false,T.accent2),padding:'8px 10px',fontSize:9,border:`1px solid ${T.border}`}}>{l}</button>
-            ))}
-          </div>
-        </div>
-        <label style={C.label}>Leagues</label>
-        <div style={{display:'flex',flexWrap:'wrap',gap:6}}>{leagues.map(l=><button key={l} onClick={()=>tL(l)} style={C.btn(f.leagues.includes(l))}>{l}</button>)}</div>
-      </div>
-
-      {/* Attribute Priorities */}
-      <div style={C.card}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-          <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-            <span style={{fontSize:11,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1}}>⚙️ Attribute Priorities</span>
-            {reqc>0&&<span style={C.tag('#f43f5e')}>{reqc} required</span>}
-            {hc>0&&<span style={C.tag(T.accent)}>{hc} high</span>}
-            <span style={C.tag(ac?T.dim:T.red)}>{ac} active</span>
-          </div>
-          <button onClick={()=>applyPreset(f.posGroup)} style={{...C.btn(false),border:`1px solid ${T.border}`,fontSize:9}}>↻ Reset</button>
-        </div>
-
-        {/* Legend */}
-        <div style={{display:'flex',gap:12,marginBottom:12,padding:'8px 10px',background:T.bg,borderRadius:8,flexWrap:'wrap'}}>
-          {Object.entries(PRI_LABELS).map(([k,l])=>(
-            <div key={k} style={{display:'flex',alignItems:'center',gap:5,fontSize:10}}>
-              <div style={{width:8,height:8,borderRadius:2,background:PRI_C[k]}}/>
-              <span style={{color:T.dim,fontWeight:600}}>{l}</span>
-              <span style={{color:T.dim,opacity:0.6}}>—</span>
-              <span style={{color:T.dim,fontSize:9}}>{k==='required'?'Must be ≥ avg · 4× weight':k==='high'?'Major weight (3×)':k==='medium'?'Standard weight (2×)':k==='low'?'Minor weight (1×)':'Ignored'}</span>
-            </div>
-          ))}
-        </div>
-
-        {ac===0&&<div style={{background:T.red+'15',border:`1px solid ${T.red}30`,borderRadius:8,padding:10,marginBottom:12,fontSize:12,color:T.red}}>⚠ No attributes set — all players will score equally. Set at least 2-3 attributes.</div>}
-
-        {availCats.map(g=>(
-          <div key={g.cat} style={{marginBottom:16}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${T.border}`}}>
-              <div>
-                <span style={{fontSize:11,fontWeight:800,color:T.text,letterSpacing:0.5}}>{g.icon} {g.cat}</span>
-                {g.note&&<div style={{fontSize:9,color:T.yellow,marginTop:2}}>⚠ {g.note}</div>}
-              </div>
-              <div style={{display:'flex',gap:3}}>
-                <button onClick={()=>gP(g,'required')} style={{...C.btn(false,'#f43f5e'),fontSize:8,padding:'2px 7px'}}>All Req</button>
-                <button onClick={()=>gP(g,'high')} style={{...C.btn(false,T.green),fontSize:8,padding:'2px 7px'}}>All High</button>
-                <button onClick={()=>gP(g,'none')} style={{...C.btn(false),fontSize:8,padding:'2px 7px'}}>Clear</button>
-              </div>
-            </div>
-            {g.attrs.map(a=>(
-              <div key={a.k} style={{marginBottom:8}}>
-                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:a.thresholdKey&&f.priorities[a.k]&&f.priorities[a.k]!=='none'?4:0}}>
-                  <span style={{width:16,fontSize:11}}>{a.i}</span>
-                  <div style={{flex:1}}>
-                    <div style={{display:'flex',alignItems:'center',gap:6}}>
-                      <span style={{fontSize:12,color:T.text,fontWeight:500}}>{a.l}</span>
-                      {a.desc&&(
-                        <span
-                          style={{fontSize:9,color:T.dim,cursor:'help',position:'relative'}}
-                          onMouseEnter={()=>setTooltip(a.k)}
-                          onMouseLeave={()=>setTooltip(null)}
-                        >ⓘ{tooltip===a.k&&(
-                          <span style={{position:'absolute',bottom:'120%',left:0,width:220,background:T.card2,border:`1px solid ${T.border}`,borderRadius:6,padding:'6px 8px',fontSize:10,color:T.text,lineHeight:1.4,zIndex:100,pointerEvents:'none',whiteSpace:'normal'}}>
-                            {a.desc}
-                          </span>
-                        )}</span>
-                      )}
-                    </div>
-                  </div>
-                  <div style={{display:'flex',gap:2}}>
-                    {Object.keys(PRI).map(p=>(
-                      <button key={p} onClick={()=>uP(a.k,p)} style={{
-                        ...C.btn(f.priorities[a.k]===p,PRI_C[p]),
-                        fontSize:9,padding:'3px 8px',
-                        border:f.priorities[a.k]===p?'none':`1px solid ${T.border}30`,
-                      }}>{p==='required'?'REQ':p==='none'?'—':p.charAt(0).toUpperCase()+p.slice(1)}</button>
-                    ))}
-                  </div>
-                </div>
-                {/* Minimum threshold input — only shown when attribute is active */}
-                {a.thresholdKey&&f.priorities[a.k]&&f.priorities[a.k]!=='none'&&(
-                  <div style={{display:'flex',alignItems:'center',gap:8,marginLeft:24,marginTop:2}}>
-                    <span style={{fontSize:10,color:T.dim,minWidth:80}}>{a.thresholdLabel}:</span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={f.thresholds[a.thresholdKey]||''}
-                      onChange={e=>uT(a.thresholdKey,e.target.value)}
-                      placeholder="Min (optional)"
-                      style={{...C.input,width:120,padding:'4px 8px',fontSize:11,border:`1px solid ${f.thresholds[a.thresholdKey]?'#f43f5e':T.border}`}}
-                    />
-                    {f.thresholds[a.thresholdKey]&&<span style={{fontSize:9,color:'#f43f5e',fontWeight:700}}>KNOCKOUT</span>}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-
       {/* Context */}
-      <div style={C.card}>
-        <div style={{fontSize:11,fontWeight:800,color:T.dim,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>🏟️ Team Context</div>
+      <Collapsible title="Team Context" icon={UsersThree} defaultOpen={false}
+        summary={`${f.teamFormation}${f.teamStyle?` · ${f.teamStyle}`:''}${f.similarTo?` · like ${f.similarTo}`:''}`}>
         <div style={{display:'flex',gap:10,marginBottom:10}}>
-          <div style={{flex:1}}><label style={C.label}>Formation</label><select value={f.teamFormation} onChange={e=>u('teamFormation',e.target.value)} style={C.input}>{['4-3-3','4-2-3-1','3-5-2','4-4-2','3-4-3','5-3-2','4-1-4-1'].map(x=><option key={x}>{x}</option>)}</select></div>
-          <div style={{flex:1}}><label style={C.label}>Playing Style</label><select value={f.teamStyle} onChange={e=>u('teamStyle',e.target.value)} style={C.input}><option value="">Any</option>{['Possession','Counter-attack','High Press','Direct Play','Gegenpressing'].map(x=><option key={x}>{x}</option>)}</select></div>
+          <div style={{flex:1}}><label style={C.label}>Formation</label><select aria-label="Team Formation" value={f.teamFormation} onChange={e=>u('teamFormation',e.target.value)} style={C.input}>{['4-3-3','4-2-3-1','3-5-2','4-4-2','3-4-3','5-3-2','4-1-4-1'].map(x=><option key={x}>{x}</option>)}</select></div>
+          <div style={{flex:1}}><label style={C.label}>Playing Style</label><select aria-label="Team Playing Style" value={f.teamStyle} onChange={e=>u('teamStyle',e.target.value)} style={C.input}><option value="">Any</option>{['Possession','Counter-attack','High Press','Direct Play','Gegenpressing'].map(x=><option key={x}>{x}</option>)}</select></div>
         </div>
-        <label style={C.label}>Similar to Existing Player</label><input value={f.similarTo} onChange={e=>u('similarTo',e.target.value)} placeholder="e.g. Pedri, Salah, Haaland — boosts attributes matching their profile" style={C.input}/>
-      </div>
+        <label style={C.label}>Similar to Existing Player</label><input aria-label="Similar to Existing Player" value={f.similarTo} onChange={e=>u('similarTo',e.target.value)} placeholder="e.g. Pedri, Salah, Haaland — boosts attributes matching their profile" style={C.input}/>
+      </Collapsible>
 
       {/* Active filters summary */}
       {(reqc>0||Object.values(f.thresholds).some(v=>v)||f.contractBefore||f.contractAfter||f.mlRole?.length>0||f.nationality||f.subPos||f.potentialTier)&&(
-        <div style={{...C.card,border:`1px solid #f43f5e40`,background:'#f43f5e08',marginBottom:12}}>
-          <div style={{fontSize:11,fontWeight:800,color:'#f43f5e',marginBottom:8}}>🚫 KNOCKOUT FILTERS ACTIVE</div>
+        <div style={{...C.card,border:`1px solid #1A65D340`,background:'#1A65D308',marginBottom:12}}>
+          <div style={{fontSize:12,fontWeight:800,color:'#1A65D3',marginBottom:8}}>KNOCKOUT FILTERS ACTIVE</div>
           <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-            {reqc>0&&<span style={C.tag('#f43f5e')}>{reqc} Required attributes — must be ≥ pool average</span>}
+            {reqc>0&&<span style={C.tag('#1A65D3')}>{reqc} Required attributes — must be ≥ pool average</span>}
             {Object.entries(f.thresholds).filter(([,v])=>v).map(([k,v])=>(
-              <span key={k} style={C.tag('#f43f5e')}>{k.replace(/_per90/,'').replace(/_/g,' ')} ≥ {v}</span>
+              <span key={k} style={C.tag('#1A65D3')}>{k.replace(/_per90/,'').replace(/_/g,' ')} ≥ {v}</span>
             ))}
-            {f.subPos&&<span style={C.tag('#f43f5e')}>Position: {f.subPos==='LB'?'Left Back':f.subPos==='RB'?'Right Back':f.subPos==='CB'?'Centre-Back':f.subPos==='LW'?'Left Winger':f.subPos==='RW'?'Right Winger':f.subPos}</span>}
-            {f.mlRole?.length>0&&<span style={C.tag('#f43f5e')}>Roles: {f.mlRole.join(', ')}</span>}
-            {f.nationality&&<span style={C.tag('#f43f5e')}>Nationality: {f.nationality}</span>}
-            {f.potentialTier&&<span style={C.tag(PTL[f.potentialTier]?.c||'#a855f7')}>{PTL[f.potentialTier]?.i} {f.potentialTier}</span>}
-            {f.contractBefore&&<span style={C.tag('#f43f5e')}>Contract expires ≤ {f.contractBefore}</span>}
-            {f.contractAfter&&<span style={C.tag('#f43f5e')}>Contract expires ≥ {f.contractAfter}</span>}
+            {f.subPos&&<span style={C.tag('#1A65D3')}>Position: {f.subPos==='LB'?'Left Back':f.subPos==='RB'?'Right Back':f.subPos==='CB'?'Centre-Back':f.subPos==='LW'?'Left Winger':f.subPos==='RW'?'Right Winger':f.subPos}</span>}
+            {f.mlRole?.length>0&&<span style={C.tag('#1A65D3')}>Roles: {f.mlRole.join(', ')}</span>}
+            {f.nationality&&<span style={C.tag('#1A65D3')}>Nationality: {f.nationality}</span>}
+            {f.potentialTier&&<span style={C.tag(PTL[f.potentialTier]?.c||T.accent)}>{f.potentialTier}</span>}
+            {f.contractBefore&&<span style={C.tag('#1A65D3')}>Contract expires ≤ {f.contractBefore}</span>}
+            {f.contractAfter&&<span style={C.tag('#1A65D3')}>Contract expires ≥ {f.contractAfter}</span>}
           </div>
-          <p style={{fontSize:10,color:T.dim,marginTop:6,marginBottom:0}}>Players not meeting these thresholds are excluded entirely from results, regardless of other attributes.</p>
+          <p style={{fontSize:11,color:T.dim,marginTop:6,marginBottom:0}}>Players not meeting these thresholds are excluded entirely from results, regardless of other attributes.</p>
         </div>
       )}
 
-      <motion.button onClick={()=>onSearch(f)} whileHover={{scale:1.015,boxShadow:'0 8px 32px rgba(26,101,211,0.45)'}} whileTap={{scale:0.98}} style={{width:'100%',padding:16,borderRadius:999,border:'none',cursor:'pointer',background:T.accent,color:'#F2F2F2',fontSize:16,fontWeight:800,letterSpacing:0.5,fontFamily:'inherit'}}>Search Players</motion.button>
+      <div style={{position:'sticky',bottom:16,zIndex:20,marginTop:8}}>
+        <motion.button onClick={()=>onSearch(f)} whileHover={{scale:1.01}} whileTap={{scale:0.98}}
+          style={{width:'100%',padding:'15px 24px',borderRadius:999,border:'none',cursor:'pointer',background:T.accent,color:'#F2F2F2',fontSize:16,fontWeight:800,letterSpacing:0.3,fontFamily:'inherit',display:'flex',alignItems:'center',justifyContent:'center',gap:10,boxShadow:'0 10px 36px rgba(26,101,211,0.5)'}}>
+          <MagnifyingGlass size={18} weight="bold" aria-hidden="true"/>
+          Search Players
+          {ac>0&&<span style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:999,background:'rgba(255,255,255,0.2)'}}>{ac} attribute{ac>1?'s':''}</span>}
+        </motion.button>
+      </div>
     </div>
   );
 }
@@ -1110,30 +1261,30 @@ function Results({results,req,shortlist,onToggleShortlist,onSelect,onBack,onShor
     <div style={{maxWidth:920,margin:'0 auto',padding:20,fontFamily:T.font}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16}}>
         <div>
-          <motion.button whileHover={{x:-3}} whileTap={{scale:0.95}} transition={{duration:0.15}} onClick={onBack} style={{background:'none',border:'none',color:T.accent,cursor:'pointer',fontSize:12,padding:0,marginBottom:6,fontFamily:T.font}}>← Search</motion.button>
+          <motion.button whileHover={{x:-3}} whileTap={{scale:0.95}} transition={{duration:0.15}} onClick={onBack} style={{background:'none',border:'none',color:T.accent,cursor:'pointer',fontSize:13,padding:0,marginBottom:6,fontFamily:T.font}}>← Search</motion.button>
           <h2 style={{fontSize:20,fontWeight:800,color:T.text,margin:0}}>{devMode?'Development Scouting':'Scouting Results'}</h2>
-          {devMode&&<p style={{fontSize:11,color:'#a855f7',margin:'2px 0 0'}}>Sorted by potential score — showing players aged 26 and under</p>}
+          {devMode&&<p style={{fontSize:12,color:T.accent,margin:'2px 0 0'}}>Sorted by potential score — showing players aged 26 and under</p>}
         </div>
         <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6}}>
           <div style={{display:'flex',gap:6}}>
-            <button onClick={()=>setDevMode(m=>!m)} style={{...C.btn(devMode,'#a855f7'),padding:'7px 14px',fontSize:11,border:`1px solid #a855f780`,borderRadius:999}}>
-              {devMode?'⚡ Dev Mode ON':'🌱 Dev Mode'}
+            <button onClick={()=>setDevMode(m=>!m)} style={{...C.btn(devMode,T.accent),padding:'7px 14px',fontSize:12,border:`1px solid ${T.accent}80`,borderRadius:999}}>
+              {devMode?'Dev Mode ON':'Dev Mode'}
             </button>
-            <button onClick={onShortlist} style={{...C.btn(false,T.yellow),padding:'7px 14px',fontSize:11,border:`1px solid ${T.yellow}30`,borderRadius:999}}>
-              ⭐ Shortlist {shortlist?.length>0?`(${shortlist.length})`:''}
+            <button onClick={onShortlist} style={{...C.btn(false,T.yellow),padding:'7px 14px',fontSize:12,border:`1px solid ${T.yellow}30`,borderRadius:999}}>
+              <Star size={12} weight="fill" style={{display:'inline',verticalAlign:'middle',marginRight:4}}/> Shortlist {shortlist?.length>0?`(${shortlist.length})`:''}
             </button>
           </div>
-          <div style={{textAlign:'right'}}>
-            <div style={{fontSize:22,fontWeight:800,color:devMode?'#a855f7':T.accent}}>{devMode?top.length:results.length}</div>
-            <div style={{fontSize:11,color:T.dim}}>{devMode?'prospects found':'matches found'}</div>
+          <div style={{textAlign:'right'}} aria-live="polite" aria-atomic="true">
+            <div style={{fontSize:22,fontWeight:800,color:T.accent}}>{devMode?top.length:results.length}</div>
+            <div style={{fontSize:12,color:T.dim}}>{devMode?'prospects found':'matches found'}</div>
           </div>
         </div>
       </div>
       <div style={{display:'flex',gap:6,marginBottom:16,flexWrap:'wrap'}}>
-        <span style={C.tag()}>📌 {posL}</span>
-        <span style={C.tag()}>👤 {req?.ageMin}–{req?.ageMax}</span>
-        {req?.budgetMax&&<span style={C.tag()}>💰 {req.budgetMin?`€${(req.budgetMin/1e6).toFixed(0)}M`:'€0'}–€{(req.budgetMax/1e6).toFixed(0)}M</span>}
-        {req?.similarTo&&<span style={C.tag(T.accent2)}>🔍 Like: {req.similarTo}</span>}
+        <span style={C.tag()}>{posL}</span>
+        <span style={C.tag()}>{req?.ageMin}–{req?.ageMax} yrs</span>
+        {req?.budgetMax&&<span style={C.tag()}>{req.budgetMin?`€${(req.budgetMin/1e6).toFixed(0)}M`:'€0'}–€{(req.budgetMax/1e6).toFixed(0)}M</span>}
+        {req?.similarTo&&<span style={C.tag(T.accent2)}>Like: {req.similarTo}</span>}
       </div>
 
       {top.map((p,i)=>{
@@ -1146,7 +1297,7 @@ function Results({results,req,shortlist,onToggleShortlist,onSelect,onBack,onShor
           transition={{duration:0.4,ease:EASE,delay:Math.min(i*0.04,1)}}
           whileHover={{x:5,borderColor:T.accent,transition:{duration:0.15}}}
           style={{display:'flex',alignItems:'center',gap:14,padding:12,marginBottom:4,background:i===0?T.accent+'10':T.card,border:`1px solid ${i===0?T.accent+'40':T.border}`,borderRadius:10,cursor:'pointer'}}>
-          <span style={{fontSize:10,fontWeight:700,color:T.dim,width:22,textAlign:'center',fontFamily:T.mono}}>#{i+1}</span>
+          <span style={{fontSize:11,fontWeight:700,color:T.dim,width:22,textAlign:'center',fontFamily:T.mono}}>#{i+1}</span>
           {/* Player photo */}
           <div style={{flexShrink:0,cursor:'pointer'}} onClick={()=>onSelect(p,i)}>
             <PlayerAvatar name={p.Player} playerId={p._player_id} size={52} style={{borderRadius:8}}/>
@@ -1154,32 +1305,35 @@ function Results({results,req,shortlist,onToggleShortlist,onSelect,onBack,onShor
           {/* Score badge — match score in normal mode, potential score in dev mode */}
           {devMode?(
             <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,flexShrink:0,cursor:'pointer'}} onClick={()=>onSelect(p,i)}>
-              <div style={{width:34,height:34,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',background:'#a855f7',color:'#fff',fontWeight:900,fontSize:12,fontFamily:T.mono}}>{p._potential_score}</div>
-              <div style={{fontSize:8,color:'#a855f7',fontWeight:700}}>POT</div>
+              <div style={{width:34,height:34,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',background:T.accent,color:'#fff',fontWeight:900,fontSize:13,fontFamily:T.mono}}>{p._potential_score}</div>
+              <div style={{fontSize:10,color:T.accent,fontWeight:700}}>POT</div>
             </div>
           ):(
             <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,flexShrink:0,cursor:'pointer'}} onClick={()=>onSelect(p,i)}>
-              <div style={{width:34,height:34,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',background:sc(p.matchScore),color:'#000',fontWeight:900,fontSize:12,fontFamily:T.mono}}>{p.matchScore}</div>
-              <div style={{fontSize:8,color:T.dim,fontWeight:700}}>FIT</div>
+              <div style={{width:34,height:34,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',background:sc(p.matchScore),color:'#F2F2F2',fontWeight:900,fontSize:13,fontFamily:T.mono}}>{p.matchScore}</div>
+              <div style={{fontSize:10,color:T.dim,fontWeight:700}}>FIT</div>
             </div>
           )}
           <div style={{flex:1,minWidth:0,cursor:'pointer'}} onClick={()=>onSelect(p,i)}>
             <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
-              {i===0&&!devMode&&<span style={{...C.tag(T.accent),fontSize:9}}>TOP MATCH</span>}
-              {i===0&&devMode&&<span style={{...C.tag('#a855f7'),fontSize:9}}>TOP PROSPECT</span>}
+              {i===0&&!devMode&&<span style={{...C.tag(T.accent),fontSize:11}}>TOP MATCH</span>}
+              {i===0&&devMode&&<span style={{...C.tag(T.accent),fontSize:11}}>TOP PROSPECT</span>}
               <span style={{fontWeight:700,color:T.text,fontSize:14}}>{p.Player}</span>
-              {p._trajectory&&<span style={{fontSize:10,fontWeight:700,color:TRJ[p._trajectory]?.c}}>{TRJ[p._trajectory]?.i} {p._trajectory}</span>}
-              {p._potential_tier&&<span style={{fontSize:9,padding:'1px 6px',borderRadius:3,background:PTL[p._potential_tier]?.c+'20',color:PTL[p._potential_tier]?.c,fontWeight:700}}>{PTL[p._potential_tier]?.i} {p._potential_tier}</span>}
-              {p._injury_risk&&p._injury_risk!=='Low'&&<span style={{fontSize:9,padding:'1px 5px',borderRadius:3,background:IRK[p._injury_risk]?.c+'20',color:IRK[p._injury_risk]?.c,fontWeight:700}}>{p._injury_risk} Risk</span>}
+              {p._trajectory&&<span style={{fontSize:11,fontWeight:700,color:TRJ[p._trajectory]?.c}}>{TRJ[p._trajectory]?.i} {p._trajectory}</span>}
+              {p._potential_tier&&<span style={{fontSize:11,padding:'1px 6px',borderRadius:3,background:PTL[p._potential_tier]?.c+'20',color:PTL[p._potential_tier]?.c,fontWeight:700}}>{p._potential_tier}</span>}
+              {p._injury_risk&&p._injury_risk!=='Low'&&<span style={{fontSize:11,padding:'1px 5px',borderRadius:3,background:IRK[p._injury_risk]?.c+'20',color:IRK[p._injury_risk]?.c,fontWeight:700}}>{p._injury_risk} Risk</span>}
             </div>
-            <div style={{fontSize:11,color:T.dim,marginTop:2}}>{p.Squad} · {p.league} · {p._ml_role||p.Pos||p.position} · {p.Age}y{p.height?` · ${p.height}cm`:''}{p.Min?` · ${p.Min}'`:''}{ p.whoscored_rating>0?` · ⭐${(+p.whoscored_rating).toFixed(2)}`:''}</div>
+            <div style={{display:'flex',alignItems:'center',gap:5,fontSize:12,color:T.dim,marginTop:2,flexWrap:'wrap'}}>
+              <ClubLogo club={p.Squad} size={14}/>
+              <span>{p.Squad} · {p.league} · {p._ml_role||p.Pos||p.position} · {p.Age}y{p.height?` · ${p.height}cm`:''}{p.Min?` · ${p.Min}'`:''}{ p.whoscored_rating>0?` · ${(+p.whoscored_rating).toFixed(2)}`:''}</span>
+            </div>
           </div>
           <div style={{textAlign:'right',cursor:'pointer'}} onClick={()=>onSelect(p,i)}>
             <div style={{fontSize:13,fontWeight:700,color:T.text,fontFamily:T.mono}}>{mv(p)}</div>
-            <div style={{fontSize:10,color:T.dim,fontFamily:T.mono}}>{+(p.goals||p.Gls||0)}G · {+(p.assists||p.Ast||0)}A</div>
+            <div style={{fontSize:11,color:T.dim,fontFamily:T.mono}}>{+(p.goals||p.Gls||0)}G · {+(p.assists||p.Ast||0)}A</div>
           </div>
-          <button onClick={e=>{e.stopPropagation();onToggleShortlist(p);}} style={{background:'none',border:'none',cursor:'pointer',fontSize:20,color:starred?T.yellow:T.dim,padding:'4px 6px',lineHeight:1,flexShrink:0}} title={starred?'Remove from shortlist':'Add to shortlist'}>
-            {starred?'★':'☆'}
+          <button onClick={e=>{e.stopPropagation();onToggleShortlist(p);}} aria-label={starred?`Remove ${p.Player} from shortlist`:`Add ${p.Player} to shortlist`} aria-pressed={starred} style={{background:'none',border:'none',cursor:'pointer',color:starred?T.yellow:T.dim,padding:'4px 6px',lineHeight:1,flexShrink:0}}>
+            <Star size={20} weight={starred?'fill':'regular'}/>
           </button>
         </motion.div>
         );
@@ -1190,14 +1344,379 @@ function Results({results,req,shortlist,onToggleShortlist,onSelect,onBack,onShor
 
 // ─── SECTION WRAPPER — defined outside Report so React never remounts it on re-render ───
 function Sec({icon,title,tag,children,accent}){
+  const ac=accent||T.accent;
+  const Icon=typeof icon==='function'?icon:null;
   return(
-    <div style={{...C.card,border:accent?`1px solid ${accent}40`:C.card.border,background:accent?accent+'08':C.card.background}}>
+    <div style={{...C.card,border:accent?`1px solid ${accent}55`:C.card.border}}>
+      <div style={{position:'absolute',top:0,left:'8%',right:'8%',height:1,background:`linear-gradient(90deg,transparent,${ac},transparent)`,pointerEvents:'none'}}/>
       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14}}>
-        <span style={{fontSize:14}}>{icon}</span>
-        <span style={{fontSize:12,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1}}>{title}</span>
-        {tag&&<span style={C.tag(accent||T.accent)}>{tag}</span>}
+        {Icon
+          ?<Icon size={16} weight="bold" color={ac} aria-hidden="true"/>
+          :<div style={{width:2,height:16,borderRadius:999,background:ac,flexShrink:0}}/>}
+        <span style={{fontSize:13,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1}}>{title}</span>
+        {tag&&<span style={C.tag(ac)}>{tag}</span>}
       </div>
       {children}
+    </div>
+  );
+}
+
+// ─── PLAYER DRAWER ───
+// Slides in from right — compact summary, Full Report button navigates to /scout-report
+function PlayerDrawer({player:p,data,req,shortlist,onToggle,onClose,onViewFull}){
+  const pg=req?.posGroup!=='ALL'?req?.posGroup:'FW';
+  const prof=useMemo(()=>getProfile(p,data.current,pg),[p,data,pg]);
+  const top5=prof.slice(0,5);
+  const starred=shortlist?.includes(p.Player);
+  const verdict=p.matchScore>=90?{r:'Top Match',c:T.accent}:p.matchScore>=80?{r:'Recommended',c:T.accent}:p.matchScore>=70?{r:'Monitor',c:T.accent2}:{r:'Conditional',c:T.dim};
+
+  useEffect(()=>{
+    const onKey=e=>{if(e.key==='Escape')onClose();};
+    window.addEventListener('keydown',onKey);
+    return()=>window.removeEventListener('keydown',onKey);
+  },[onClose]);
+
+  return(
+    <>
+    <motion.div
+      initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+      transition={{duration:0.28,ease:EASE}}
+      onClick={onClose} aria-hidden="true"
+      style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:199}}
+    />
+    <motion.div
+      role="dialog" aria-modal="true" aria-label={`${p.Player} player profile`}
+      initial={{x:'100%',opacity:0}} animate={{x:0,opacity:1}} exit={{x:'100%',opacity:0}}
+      transition={{duration:0.28,ease:EASE}}
+      className="scout-player-drawer"
+      style={{position:'fixed',right:0,top:0,bottom:0,background:'#060608',
+        borderLeft:'1px solid rgba(255,255,255,0.09)',overflowY:'auto',zIndex:200,
+        boxShadow:'-24px 0 60px rgba(0,0,0,0.7)',display:'flex',flexDirection:'column'}}
+    >
+      {/* Header bar */}
+      <div style={{padding:'18px 22px',borderBottom:'1px solid rgba(255,255,255,0.06)',display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
+        <span style={{fontSize:10,fontWeight:800,letterSpacing:2.5,color:T.accent,textTransform:'uppercase'}}>Player Profile</span>
+        <button onClick={onClose} aria-label="Close player panel" style={{background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:999,width:30,height:30,cursor:'pointer',color:T.dim,fontSize:14,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'inherit'}}>✕</button>
+      </div>
+
+      {/* Identity */}
+      <div style={{padding:'22px 22px 0',flexShrink:0}}>
+        <div style={{display:'flex',gap:14,alignItems:'flex-start',marginBottom:18}}>
+          <div style={{position:'relative',flexShrink:0}}>
+            <PlayerAvatar name={p.Player} playerId={p._player_id} size={76} style={{borderRadius:12}}/>
+            <div style={{position:'absolute',bottom:-6,right:-6,width:26,height:26,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center',background:sc(p.matchScore),color:'#F2F2F2',fontWeight:900,fontSize:11}}>{p.matchScore}</div>
+          </div>
+          <div style={{flex:1,minWidth:0}}>
+            <h2 style={{fontSize:18,fontWeight:900,color:T.text,margin:'0 0 4px',lineHeight:1.2}}>{p.Player}</h2>
+            <div style={{display:'flex',alignItems:'center',gap:5,marginBottom:8}}>
+              <ClubLogo club={p.Squad} size={14}/>
+              <span style={{fontSize:12,color:T.dim}}>{p.Squad}</span>
+            </div>
+            <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+              <span style={{...C.tag(T.accent2),fontSize:10}}>{p._ml_role||p.Pos}</span>
+              <span style={{...C.tag(verdict.c),fontSize:10}}>{verdict.r}</span>
+              {p._trajectory&&<span style={{fontSize:10,color:TRJ[p._trajectory]?.c,fontWeight:700}}>{TRJ[p._trajectory]?.i} {p._trajectory}</span>}
+            </div>
+          </div>
+        </div>
+
+        {/* Quick stats grid */}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:7,marginBottom:18}}>
+          {[['Goals',+(p.goals||p.Gls||0)],['Assists',+(p.Ast||0)],['Age',p.Age||'—'],['Value',mv(p)],['Contract',p.contract_expires||'—'],['Mins',p.Min||'—']].map(([l,v])=>(
+            <div key={l} style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:9,padding:'9px 8px',textAlign:'center'}}>
+              <div style={{fontSize:14,fontWeight:800,color:T.text,lineHeight:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{v}</div>
+              <div style={{fontSize:9,color:T.dim,fontWeight:700,textTransform:'uppercase',marginTop:3,letterSpacing:0.5}}>{l}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Top attribute bars */}
+        {top5.length>0&&(
+          <div style={{marginBottom:16}}>
+            <div style={C.label}>Top Attributes vs Position</div>
+            {top5.map(a=>(
+              <div key={a.k} style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
+                <span style={{width:96,fontSize:11,color:T.dim,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flexShrink:0}}>{a.l}</span>
+                <div style={{flex:1,height:4,borderRadius:3,background:T.border,overflow:'hidden'}}>
+                  <div style={{width:`${a.percentile}%`,height:'100%',borderRadius:3,background:rc(a.percentile)}}/>
+                </div>
+                <span style={{fontSize:10,fontWeight:700,color:rc(a.percentile),width:32,textAlign:'right',flexShrink:0}}>P{a.percentile}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Risk / potential tags */}
+        {(p._injury_risk&&p._injury_risk!=='Low'||p._potential_tier)&&(
+          <div style={{display:'flex',gap:5,flexWrap:'wrap',marginBottom:16}}>
+            {p._injury_risk&&p._injury_risk!=='Low'&&<span style={C.tag(IRK[p._injury_risk]?.c)}>{p._injury_risk} Injury Risk</span>}
+            {p._potential_tier&&<span style={C.tag(PTL[p._potential_tier]?.c||T.dim)}>{p._potential_tier} · {p._potential_score}/100</span>}
+          </div>
+        )}
+      </div>
+
+      {/* Sticky action buttons */}
+      <div style={{padding:'16px 22px 28px',marginTop:'auto',flexShrink:0,borderTop:'1px solid rgba(255,255,255,0.06)'}}>
+        <motion.button onClick={onViewFull} whileHover={{scale:1.02}} whileTap={{scale:0.97}}
+          style={{width:'100%',padding:'13px 20px',borderRadius:999,border:'none',cursor:'pointer',background:T.accent,color:'#F2F2F2',fontSize:14,fontWeight:800,fontFamily:'inherit',display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:8,boxShadow:'0 8px 28px rgba(26,101,211,0.45)'}}>
+          Full Scout Report →
+        </motion.button>
+        <motion.button onClick={()=>onToggle(p)} whileHover={{scale:1.01}} whileTap={{scale:0.97}}
+          style={{width:'100%',padding:'11px 20px',borderRadius:999,cursor:'pointer',fontSize:13,fontWeight:700,fontFamily:'inherit',display:'flex',alignItems:'center',justifyContent:'center',gap:6,background:starred?'rgba(250,204,21,0.08)':'rgba(255,255,255,0.04)',color:starred?'#facc15':T.dim,border:`1px solid ${starred?'rgba(250,204,21,0.25)':'rgba(255,255,255,0.09)'}`}}>
+          <Star size={13} weight={starred?'fill':'regular'}/> {starred?'Shortlisted — Remove':'Add to Shortlist'}
+        </motion.button>
+      </div>
+    </motion.div>
+    </>
+  );
+}
+
+// ─── SUGGESTIONS PANEL ───
+// Right panel content before search runs — club recruitment priorities
+function SuggestionsPanel({clubCtx,teamReports,selSug,onPickSug,onBackToClubs}){
+  const BackToClubs=()=>(
+    <button onClick={onBackToClubs} aria-label="Back to all clubs" style={{background:'none',border:'none',color:T.accent,cursor:'pointer',fontSize:12,padding:0,fontFamily:'inherit',fontWeight:700,display:'flex',alignItems:'center',gap:4,marginBottom:14}}>← All Clubs</button>
+  );
+  const leagueCtx=useMemo(()=>computeLeagueCtx(teamReports),[teamReports]);
+  const rep=clubCtx?teamReports?.[clubCtx.team]:null;
+  const sugs=useMemo(()=>{if(!rep||!leagueCtx)return[];return getSuggestions(rep,clubCtx?.team,leagueCtx);},[rep,clubCtx,leagueCtx]);
+  const PRI_C2={required:'#1A65D3',high:T.accent,medium:T.accent2,low:T.dim};
+
+  if(!clubCtx){
+    return(
+      <div style={{display:'flex',flexDirection:'column',height:'100%',minHeight:360,padding:'24px 28px'}}>
+        <BackToClubs/>
+        <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <div style={{textAlign:'center',maxWidth:300}}>
+          <MagnifyingGlass size={36} weight="thin" color={T.dim} style={{marginBottom:14}}/>
+          <h3 style={{fontSize:16,fontWeight:800,color:T.text,margin:'0 0 8px'}}>Configure & Search</h3>
+          <p style={{color:T.dim,fontSize:13,lineHeight:1.6,margin:0}}>Set position and attribute priorities in the sidebar, then search for matching players.</p>
+        </div>
+        </div>
+      </div>
+    );
+  }
+
+  return(
+    <div style={{padding:'24px 28px',overflowY:'auto'}}>
+      <BackToClubs/>
+      {/* Club header */}
+      <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:10,flexWrap:'wrap'}}>
+        <ClubLogo club={clubCtx.team} size={44}/>
+        <div style={{flex:1,minWidth:0}}>
+          <h2 style={{fontSize:20,fontWeight:900,color:T.text,margin:'0 0 2px'}}>{clubCtx.team}</h2>
+          <p style={{color:T.dim,fontSize:12,margin:0}}>{clubCtx.formation} · {clubCtx.style} · 2024/25 Season</p>
+        </div>
+        {rep&&<div style={{display:'flex',gap:14,flexShrink:0}}>
+          {[['W',rep.w,T.accent],['D',rep.d,T.dim],['L',rep.l,T.text]].map(([l,v,c])=>(
+            <div key={l} style={{textAlign:'center'}}>
+              <div style={{fontSize:20,fontWeight:900,color:c}}>{v}</div>
+              <div style={{fontSize:9,color:T.dim,textTransform:'uppercase',letterSpacing:0.5}}>{l}</div>
+            </div>
+          ))}
+        </div>}
+      </div>
+      {rep&&<div style={{display:'flex',gap:14,marginBottom:22,fontSize:12,color:T.dim,borderBottom:'1px solid rgba(255,255,255,0.06)',paddingBottom:14,flexWrap:'wrap'}}>
+        {rep.topScorer&&<span>Top Scorer: <b style={{color:T.text}}>{rep.topScorer}</b></span>}
+        {rep.topAssister&&<span>Top Assister: <b style={{color:T.text}}>{rep.topAssister}</b></span>}
+        {rep.gf!==undefined&&<span>GF: <b style={{color:T.text}}>{rep.gf}</b> · GA: <b style={{color:T.text}}>{rep.ga}</b></span>}
+      </div>}
+
+      {sugs.length>0&&<>
+        <div style={{fontSize:10,fontWeight:800,letterSpacing:2.5,color:T.accent,textTransform:'uppercase',marginBottom:6}}>Recruitment Priorities</div>
+        <p style={{fontSize:12,color:T.dim,marginBottom:16}}>Click a role to pre-fill your search filters</p>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:12}}>
+          {sugs.map((s,i)=>{
+            const active=selSug?.role===s.role;
+            return(
+              <div key={i} className="scout-card-btn" role="button" tabIndex={0}
+                aria-pressed={active} aria-label={`${active?'Deselect':'Select'} recruitment role ${s.role}`}
+                onClick={()=>onPickSug(active?null:s)}
+                onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onPickSug(active?null:s);}}}
+                style={{padding:16,borderRadius:12,border:`2px solid ${active?s.color:T.border}`,background:active?s.color+'08':'rgba(255,255,255,0.02)',cursor:'pointer',transition:'all 0.13s'}}
+                onMouseEnter={e=>{if(!active)e.currentTarget.style.borderColor=s.color+'45';}}
+                onMouseLeave={e=>{if(!active)e.currentTarget.style.borderColor=T.border;}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                  <div style={{width:3,height:18,borderRadius:999,background:s.color,flexShrink:0}}/>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:800,color:active?s.color:T.text}}>{s.role}</div>
+                    <div style={{fontSize:11,color:T.dim}}>{POS[s.posGroup]?.label} · {POS[s.posGroup]?.sub}</div>
+                  </div>
+                  {active&&<span style={{fontSize:10,fontWeight:800,padding:'2px 8px',borderRadius:4,background:s.color,color:'#000',flexShrink:0}}>SELECTED</span>}
+                </div>
+                <div style={{display:'flex',gap:5,flexWrap:'wrap',marginBottom:8}}>
+                  {s.attrs?.slice(0,3).map(a=>(
+                    <span key={a.k} style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:999,background:PRI_C2[a.p]+'20',color:PRI_C2[a.p],textTransform:'uppercase'}}>{a.l.split('/')[0]}: {a.p}</span>
+                  ))}
+                </div>
+                <p style={{fontSize:11,color:T.dim,lineHeight:1.55,margin:0}}>{s.because?.slice(0,160)}{(s.because?.length||0)>160?'…':''}</p>
+              </div>
+            );
+          })}
+        </div>
+      </>}
+      {sugs.length===0&&<div style={{padding:'32px 0',textAlign:'center',color:T.dim,fontSize:13}}>
+        No recruitment priorities computed — set filters in the sidebar and search manually.
+      </div>}
+    </div>
+  );
+}
+
+// ─── MAIN LAYOUT ───
+// Two-column layout: left sidebar (filters) + right panel (suggestions or compact results)
+// Replaces the old sequential clubreport → search → results → report views
+function MainLayout({data,clubCtx,teamReports,shortlist,onToggleShortlist,onBackToClubs,onShortlistView}){
+  const navigate=useNavigate();
+  const[results,setResults]=useState(null);
+  const[req,setReq]=useState(null);
+  const[sel,setSel]=useState(null);
+  const[selSug,setSelSug]=useState(null);
+
+  const handleSearch=useCallback(f=>{
+    setReq(f);
+    const pool=clubCtx?data.current.filter(p=>p.Squad!==clubCtx.team):data.current;
+    setResults(search(pool,f));
+    setSel(null);
+  },[data,clubCtx]);
+
+  const viewFullReport=useCallback(p=>{
+    navigate('/scout-report',{state:{player:{
+      name:p.Player,
+      position:p._ml_role||p.Pos||p.position||'—',
+      club:p.Squad||'—',
+      nationality:p.citizenship||'—',
+      age:+(p.Age||0),
+      rating:Math.min(10,(+(p.matchScore||50))/10),
+      xg:+(p.xG||p.npxG||0),
+      xa:+(p.xAG||p.xA||0),
+      apps:Math.round(+(p['90s']||0)),
+      goals:+(p.goals||p.Gls||0),
+      assists:+(p.Ast||0),
+      minutesPlayed:+(p.Min||0),
+      recentInjuries:+(p.recent_injuries||0),
+      recentDaysMissed:+(p.recent_days_missed||0),
+      playerId:p._player_id||null,
+    }}});
+  },[navigate]);
+
+  return(
+    <div className="scoutlab-layout" style={{fontFamily:T.font}}>
+      {/* ── Left panel: suggestions or results ── */}
+      <div className="scoutlab-content">
+        {results===null?(
+          <SuggestionsPanel clubCtx={clubCtx} teamReports={teamReports} selSug={selSug} onPickSug={setSelSug} onBackToClubs={onBackToClubs}/>
+        ):(
+          <div style={{padding:'20px 24px'}}>
+            {/* Results header */}
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14,flexWrap:'wrap',gap:8}}>
+              <div>
+                <button onClick={()=>setResults(null)} style={{background:'none',border:'none',color:T.accent,cursor:'pointer',fontSize:12,padding:0,fontFamily:'inherit',fontWeight:700,marginBottom:5,display:'flex',alignItems:'center',gap:4}}>← Recruitment Priorities</button>
+                <div style={{fontSize:17,fontWeight:800,color:T.text}}>Search Results</div>
+              </div>
+              <div style={{display:'flex',gap:10,alignItems:'center'}}>
+                <div style={{textAlign:'right'}}>
+                  <div style={{fontSize:18,fontWeight:800,color:T.accent}}>{results.length}</div>
+                  <div style={{fontSize:10,color:T.dim,textTransform:'uppercase',letterSpacing:0.5}}>matches</div>
+                </div>
+                <button onClick={onShortlistView} style={{...C.btn(false),padding:'7px 14px',fontSize:11,border:`1px solid ${T.border}`,borderRadius:999,display:'flex',alignItems:'center',gap:4}}>
+                  <Star size={11} weight="fill" style={{verticalAlign:'middle'}}/> Shortlist {shortlist?.length>0?`(${shortlist.length})`:''}
+                </button>
+              </div>
+            </div>
+
+            {/* Active filter pills */}
+            <div style={{display:'flex',gap:5,marginBottom:14,flexWrap:'wrap'}}>
+              <span style={C.tag()}>{POS[req?.posGroup]?.label||'All'}</span>
+              {req?.ageMin&&<span style={C.tag()}>{req.ageMin}–{req.ageMax} yrs</span>}
+              {req?.budgetMax&&<span style={C.tag()}>up to €{(req.budgetMax/1e6).toFixed(0)}M</span>}
+              {req?.nationality&&<span style={C.tag()}>{req.nationality}</span>}
+              {req?.similarTo&&<span style={C.tag(T.accent2)}>Like: {req.similarTo}</span>}
+            </div>
+
+            {/* Compact player cards */}
+            {results.slice(0,50).map((p,i)=>{
+              const starred=shortlist?.includes(p.Player);
+              const isSelected=sel?.Player===p.Player;
+              return(
+                <motion.div
+                  key={`${p.Player}-${i}`}
+                  className="scout-card-btn"
+                  role="button" tabIndex={0}
+                  aria-pressed={isSelected}
+                  aria-label={`${p.Player}, ${p.Squad}, match score ${p.matchScore}. View details`}
+                  initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}
+                  transition={{duration:0.22,ease:EASE,delay:Math.min(i*0.022,0.55)}}
+                  onClick={()=>setSel(isSelected?null:p)}
+                  onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setSel(isSelected?null:p);}}}
+                  style={{
+                    display:'flex',alignItems:'center',gap:11,padding:'9px 13px',marginBottom:4,
+                    background:isSelected?T.accent+'12':i===0?T.accent+'07':'rgba(255,255,255,0.02)',
+                    border:`1px solid ${isSelected?T.accent+'55':i===0?T.accent+'20':T.border}`,
+                    borderRadius:10,cursor:'pointer',transition:'all 0.1s',
+                  }}
+                >
+                  <span style={{fontSize:10,fontWeight:700,color:T.dim,width:20,textAlign:'center',flexShrink:0}}>#{i+1}</span>
+                  <PlayerAvatar name={p.Player} playerId={p._player_id} size={38} style={{borderRadius:7,flexShrink:0}}/>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{display:'flex',alignItems:'center',gap:5,flexWrap:'wrap'}}>
+                      <span style={{fontWeight:700,color:T.text,fontSize:13}}>{p.Player}</span>
+                      {p._trajectory&&<span style={{fontSize:10,color:TRJ[p._trajectory]?.c,fontWeight:700}}>{TRJ[p._trajectory]?.i}</span>}
+                      {p._injury_risk&&p._injury_risk!=='Low'&&<span style={{fontSize:9,padding:'1px 5px',borderRadius:3,background:IRK[p._injury_risk]?.c+'18',color:IRK[p._injury_risk]?.c,fontWeight:700}}>{p._injury_risk} Risk</span>}
+                    </div>
+                    <div style={{display:'flex',alignItems:'center',gap:5,fontSize:11,color:T.dim,marginTop:2,flexWrap:'wrap'}}>
+                      <ClubLogo club={p.Squad} size={11}/>
+                      <span>{p.Squad}</span>
+                      <span>·</span><span>{p._ml_role||p.Pos}</span>
+                      <span>·</span><span>{p.Age}y</span>
+                      <span>·</span><span>{mv(p)}</span>
+                    </div>
+                  </div>
+                  {/* Key stats */}
+                  <div style={{display:'flex',gap:10,flexShrink:0}}>
+                    {[[+(p.goals||p.Gls||0),'G'],[+(p.Ast||0),'A'],[(+(p.xG||p.npxG||0)).toFixed(1),'xG']].map(([v,l])=>(
+                      <div key={l} style={{textAlign:'center',minWidth:26}}>
+                        <div style={{fontSize:12,fontWeight:800,color:T.text,lineHeight:1}}>{v}</div>
+                        <div style={{fontSize:9,color:T.dim,fontWeight:700,textTransform:'uppercase',marginTop:1}}>{l}</div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Match score */}
+                  <div style={{width:30,height:30,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center',background:sc(p.matchScore),color:'#F2F2F2',fontWeight:900,fontSize:11,flexShrink:0}}>{p.matchScore}</div>
+                  {/* Shortlist star */}
+                  <button onClick={e=>{e.stopPropagation();onToggleShortlist(p);}} aria-label={starred?`Remove ${p.Player} from shortlist`:`Add ${p.Player} to shortlist`}
+                    style={{background:'none',border:'none',cursor:'pointer',color:starred?'#facc15':T.dim,padding:'3px',flexShrink:0,display:'flex',alignItems:'center'}}
+                  ><Star size={14} weight={starred?'fill':'regular'}/></button>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ── Right sidebar: filter panel ── */}
+      <div className="scoutlab-sidebar">
+        <div style={{flex:1,overflow:'auto'}}>
+          <Search
+            data={data}
+            clubCtx={clubCtx?{...clubCtx,autoWeights:selSug?.weights||{}}:null}
+            forceValues={selSug?{posGroup:selSug.posGroup,priorities:selSug.weights,thresholds:selSug.thresholds||{}}:null}
+            onSearch={handleSearch}
+            sidebar={true}
+          />
+        </div>
+      </div>
+
+      {/* ── Player drawer overlay ── */}
+      <AnimatePresence>
+        {sel&&(
+          <PlayerDrawer
+            player={sel} data={data} req={req}
+            shortlist={shortlist} onToggle={onToggleShortlist}
+            onClose={()=>setSel(null)}
+            onViewFull={()=>viewFullReport(sel)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -1299,15 +1818,15 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
 
   const vmv=+(p.market_value_eur||0);
   const goals=+(p.goals||p.Gls||0);
-  const verdict=p.matchScore>=90?{s:'⭐⭐⭐⭐⭐',r:'HIGHLY RECOMMENDED',a:'Pursue actively.',c:T.accent}:p.matchScore>=80?{s:'⭐⭐⭐⭐',r:'RECOMMENDED',a:'Strong candidate.',c:T.green}:p.matchScore>=70?{s:'⭐⭐⭐',r:'WORTH MONITORING',a:'Good option, some gaps.',c:T.yellow}:p.matchScore>=60?{s:'⭐⭐',r:'CONDITIONAL',a:'Backup option.',c:T.orange}:{s:'⭐',r:'NOT RECOMMENDED',a:'Does not match requirements.',c:T.red};
+  const verdict=p.matchScore>=90?{r:'HIGHLY RECOMMENDED',a:'Pursue actively.',c:T.accent}:p.matchScore>=80?{r:'RECOMMENDED',a:'Strong candidate.',c:T.green}:p.matchScore>=70?{r:'WORTH MONITORING',a:'Good option, some gaps.',c:T.yellow}:p.matchScore>=60?{r:'CONDITIONAL',a:'Backup option.',c:T.orange}:{r:'NOT RECOMMENDED',a:'Does not match requirements.',c:T.red};
 
   return(
     <div style={{maxWidth:860,margin:'0 auto',padding:20,fontFamily:T.font}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-        <motion.button whileHover={{x:-3}} whileTap={{scale:0.95}} transition={{duration:0.15}} onClick={onBack} style={{background:'none',border:'none',color:T.accent,cursor:'pointer',fontSize:12,padding:0,fontFamily:T.font}}>← Results</motion.button>
+        <motion.button whileHover={{x:-3}} whileTap={{scale:0.95}} transition={{duration:0.15}} onClick={onBack} style={{background:'none',border:'none',color:T.accent,cursor:'pointer',fontSize:13,padding:0,fontFamily:T.font}}>← Results</motion.button>
         <div style={{display:'flex',gap:8}}>
-          <button onClick={onShortlist} style={{...C.btn(false,T.yellow),padding:'6px 12px',fontSize:10,border:`1px solid ${T.yellow}30`,borderRadius:999}}>⭐ Shortlist {shortlist?.length>0?`(${shortlist.length})`:''}</button>
-          <button onClick={()=>onToggleShortlist(p)} style={{background:'none',border:`1px solid ${T.border}`,borderRadius:999,cursor:'pointer',fontSize:18,color:shortlist?.includes(p.Player)?T.yellow:T.dim,padding:'3px 10px',lineHeight:1,fontFamily:T.font}} title="Toggle shortlist">{shortlist?.includes(p.Player)?'★':'☆'}</button>
+          <button onClick={onShortlist} style={{...C.btn(false,T.yellow),padding:'6px 12px',fontSize:11,border:`1px solid ${T.yellow}30`,borderRadius:999,display:'inline-flex',alignItems:'center',gap:4}}><Star size={12} weight="fill"/> Shortlist {shortlist?.length>0?`(${shortlist.length})`:''}</button>
+          <button onClick={()=>onToggleShortlist(p)} aria-label={shortlist?.includes(p.Player)?`Remove ${p.Player} from shortlist`:`Add ${p.Player} to shortlist`} aria-pressed={shortlist?.includes(p.Player)} style={{background:'none',border:`1px solid ${T.border}`,borderRadius:999,cursor:'pointer',color:shortlist?.includes(p.Player)?T.yellow:T.dim,padding:'3px 10px',lineHeight:1,display:'inline-flex',alignItems:'center'}}><Star size={18} weight={shortlist?.includes(p.Player)?'fill':'regular'}/></button>
         </div>
       </div>
 
@@ -1316,18 +1835,21 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
         {/* Player Photo */}
         <div style={{position:'relative',flexShrink:0}}>
           <PlayerAvatar name={p.Player} playerId={p._player_id} size={108} style={{borderRadius:12}}/>
-          <div style={{position:'absolute',bottom:-6,right:-6,width:28,height:28,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',background:sc(p.matchScore),color:'#000',fontWeight:900,fontSize:11,fontFamily:T.mono}}>{p.matchScore}</div>
+          <div style={{position:'absolute',bottom:-6,right:-6,width:28,height:28,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',background:sc(p.matchScore),color:'#F2F2F2',fontWeight:900,fontSize:12,fontFamily:T.mono}}>{p.matchScore}</div>
         </div>
         <div style={{flex:1}}>
           <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
             <h2 style={{fontSize:24,fontWeight:800,color:T.text,margin:0}}>{p.Player}</h2>
             <span style={C.tag(verdict.c)}>#{(idx||0)+1} · {verdict.r}</span>
-            {p._trajectory&&<span style={{fontSize:11,fontWeight:800,color:TRJ[p._trajectory]?.c,padding:'2px 8px',borderRadius:5,background:TRJ[p._trajectory]?.c+'15'}}>{TRJ[p._trajectory]?.i} {p._trajectory}</span>}
-            {p._potential_tier&&<span style={{fontSize:10,fontWeight:800,color:PTL[p._potential_tier]?.c,padding:'2px 8px',borderRadius:5,background:PTL[p._potential_tier]?.c+'15'}}>{PTL[p._potential_tier]?.i} {p._potential_tier} · {p._potential_score}/100</span>}
-            {p._injury_risk&&<span style={{fontSize:10,fontWeight:800,color:IRK[p._injury_risk]?.c,padding:'2px 8px',borderRadius:5,background:IRK[p._injury_risk]?.c+'15'}}>{IRK[p._injury_risk]?.i} {p._injury_risk} Injury Risk</span>}
+            {p._trajectory&&<span style={{fontSize:12,fontWeight:800,color:TRJ[p._trajectory]?.c,padding:'2px 8px',borderRadius:5,background:TRJ[p._trajectory]?.c+'15'}}>{TRJ[p._trajectory]?.i} {p._trajectory}</span>}
+            {p._potential_tier&&<span style={{fontSize:11,fontWeight:800,color:PTL[p._potential_tier]?.c,padding:'2px 8px',borderRadius:5,background:PTL[p._potential_tier]?.c+'15'}}>{p._potential_tier} · {p._potential_score}/100</span>}
+            {p._injury_risk&&<span style={{fontSize:11,fontWeight:800,color:IRK[p._injury_risk]?.c,padding:'2px 8px',borderRadius:5,background:IRK[p._injury_risk]?.c+'15'}}>{p._injury_risk} Injury Risk</span>}
           </div>
-          <p style={{color:T.dim,margin:'4px 0 0',fontSize:13}}>{p.Squad} · {p.league} · {p._ml_role||p.Pos||p.position}</p>
-          <div style={{display:'flex',gap:16,marginTop:8,fontSize:11,color:T.dim,flexWrap:'wrap'}}>
+          <div style={{display:'flex',alignItems:'center',gap:6,color:T.dim,margin:'4px 0 0',fontSize:13}}>
+            <ClubLogo club={p.Squad} size={16}/>
+            <span>{p.Squad} · {p.league} · {p._ml_role||p.Pos||p.position}</span>
+          </div>
+          <div style={{display:'flex',gap:16,marginTop:8,fontSize:12,color:T.dim,flexWrap:'wrap'}}>
             {[['Age',p.Age],['Height',p.height?p.height+'cm':''],['Foot',p.foot],['Nation',(p.citizenship||'').split(/\s{2,}/).filter(Boolean).join(' / ')||null],['Minutes',p.Min?`${p.Min}'`:''],['Value',mv(p)],['Contract',p.contract_expires]].filter(x=>x[1]).map(([l,v])=>(
               <span key={l}>{l}: <b style={{color:T.text}}>{v}</b></span>
             ))}
@@ -1340,22 +1862,22 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
       {/* Radar + Match Breakdown side by side */}
       <div style={{display:'flex',gap:16,marginBottom:16}}>
         <div style={{...C.card,flex:1,marginBottom:0}}>
-          <div style={{fontSize:12,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>📊 Player Profile</div>
+          <div style={{fontSize:13,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>Player Profile</div>
           {radarData.length>=3&&<ResponsiveContainer width="100%" height={220}>
-            <RadarChart data={radarData}><PolarGrid stroke={T.border}/><PolarAngleAxis dataKey="attr" tick={{fill:T.dim,fontSize:9}}/><PolarRadiusAxis domain={[0,100]} tick={false} axisLine={false}/><Radar dataKey="value" stroke={T.accent} fill={T.accent} fillOpacity={0.2} strokeWidth={2}/></RadarChart>
+            <RadarChart data={radarData}><PolarGrid stroke={T.border}/><PolarAngleAxis dataKey="attr" tick={{fill:T.dim,fontSize:11}}/><PolarRadiusAxis domain={[0,100]} tick={false} axisLine={false}/><Radar dataKey="value" stroke={T.accent} fill={T.accent} fillOpacity={0.2} strokeWidth={2}/></RadarChart>
           </ResponsiveContainer>}
         </div>
         <div style={{...C.card,flex:1,marginBottom:0}}>
-          <div style={{fontSize:12,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>🎯 Match Breakdown <span style={{color:T.dim,fontWeight:400}}>{data.meta.currentSeason}</span></div>
+          <div style={{fontSize:13,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>Match Breakdown <span style={{color:T.dim,fontWeight:400}}>{data.meta.currentSeason}</span></div>
           <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
             <div style={{flex:1,height:10,borderRadius:5,background:T.border,overflow:'hidden'}}><div style={{width:`${p.matchScore}%`,height:'100%',borderRadius:5,background:sc(p.matchScore)}}/></div>
             <span style={{fontWeight:900,color:sc(p.matchScore),fontSize:18,fontFamily:T.mono}}>{p.matchScore}</span>
           </div>
           {prof.slice(0,8).map(a=>(
             <div key={a.k} style={{display:'flex',alignItems:'center',gap:6,marginBottom:5}}>
-              <span style={{width:90,fontSize:10,color:T.dim,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{a.l}</span>
+              <span style={{width:90,fontSize:11,color:T.dim,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{a.l}</span>
               <div style={{flex:1,height:5,borderRadius:3,background:T.border,overflow:'hidden'}}><div style={{width:`${a.percentile}%`,height:'100%',borderRadius:3,background:rc(a.percentile)}}/></div>
-              <span style={{width:28,fontSize:9,fontWeight:700,color:rc(a.percentile),textAlign:'right',fontFamily:T.mono}}>{a.percentile}</span>
+              <span style={{width:28,fontSize:11,fontWeight:700,color:rc(a.percentile),textAlign:'right',fontFamily:T.mono}}>{a.percentile}</span>
             </div>
           ))}
         </div>
@@ -1363,31 +1885,31 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
 
       {/* Strengths & Weaknesses */}
       <div style={{display:'flex',gap:16,marginBottom:0}}>
-        <Sec icon="✅" title="Strengths" tag={data.meta.currentSeason}><div>
+        <Sec icon={TrendUp} title="Strengths" tag={data.meta.currentSeason}><div>
           {str.length?str.map(s=>(
             <div key={s.k} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
-              <span style={{fontSize:11}}>{s.i}</span>
-              <span style={{fontSize:12,fontWeight:600,color:T.text}}>{s.l}</span>
-              <span style={{fontSize:9,fontWeight:800,padding:'2px 8px',borderRadius:4,background:rc(s.percentile),color:'#000'}}>{s.rating}</span>
-              <span style={{fontSize:10,color:T.dim,fontFamily:T.mono,marginLeft:'auto'}}>{s.value?.toFixed(2)} · P{s.percentile}</span>
+              <TrendUp size={13} weight="bold" color={T.accent} aria-hidden="true" style={{flexShrink:0}}/>
+              <span style={{fontSize:13,fontWeight:600,color:T.text}}>{s.l}</span>
+              <span style={{fontSize:11,fontWeight:800,padding:'2px 8px',borderRadius:4,background:rc(s.percentile),color:'#F2F2F2'}}>{s.rating}</span>
+              <span style={{fontSize:11,color:T.dim,fontFamily:T.mono,marginLeft:'auto'}}>{s.value?.toFixed(2)} · P{s.percentile}</span>
             </div>
-          )):<p style={{color:T.dim,fontSize:12}}>No standout attributes</p>}
+          )):<p style={{color:T.dim,fontSize:13}}>No standout attributes</p>}
         </div></Sec>
-        {weak.length>0&&<Sec icon="⚠️" title="Development" tag={data.meta.currentSeason}><div>
+        {weak.length>0&&<Sec icon={Warning} title="Development" tag={data.meta.currentSeason}><div>
           {weak.map(w=>(
             <div key={w.k} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
-              <span style={{fontSize:11}}>{w.i}</span>
-              <span style={{fontSize:12,fontWeight:600,color:T.text}}>{w.l}</span>
-              <span style={{fontSize:9,fontWeight:800,padding:'2px 8px',borderRadius:4,background:rc(w.percentile),color:'#000'}}>{w.rating}</span>
-              <span style={{fontSize:10,color:T.dim,fontFamily:T.mono,marginLeft:'auto'}}>{w.value?.toFixed(2)} · P{w.percentile}</span>
+              <TrendDown size={13} weight="bold" color={T.dim} aria-hidden="true" style={{flexShrink:0}}/>
+              <span style={{fontSize:13,fontWeight:600,color:T.text}}>{w.l}</span>
+              <span style={{fontSize:11,fontWeight:800,padding:'2px 8px',borderRadius:4,background:rc(w.percentile),color:'#F2F2F2'}}>{w.rating}</span>
+              <span style={{fontSize:11,color:T.dim,fontFamily:T.mono,marginLeft:'auto'}}>{w.value?.toFixed(2)} · P{w.percentile}</span>
             </div>
           ))}
         </div></Sec>}
       </div>
 
       {/* vs Position Average */}
-      <Sec icon="📊" title="vs Position Average" tag={POS[pg]?.label||pg}>
-        <p style={{fontSize:10,color:T.dim,marginTop:-6,marginBottom:10}}>Bar = player value. Line marker (|) = position average. Bold = above average.</p>
+      <Sec icon={ChartBar} title="vs Position Average" tag={POS[pg]?.label||pg}>
+        <p style={{fontSize:11,color:T.dim,marginTop:-6,marginBottom:10}}>Bar = player value. Line marker (|) = position average. Bold = above average.</p>
         <div>
           {prof.slice(0,12).map(a=>{
             const stats=poolAvgMap[a.k];
@@ -1398,8 +1920,8 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
             return(
               <div key={a.k} style={{marginBottom:7}}>
                 <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
-                  <span style={{fontSize:10,color:above?T.text:T.dim,fontWeight:above?700:400}}>{a.l}</span>
-                  <span style={{fontSize:10,fontFamily:T.mono,color:above?rc(a.percentile):T.dim}}>
+                  <span style={{fontSize:11,color:above?T.text:T.dim,fontWeight:above?700:400}}>{a.l}</span>
+                  <span style={{fontSize:11,fontFamily:T.mono,color:above?rc(a.percentile):T.dim}}>
                     {a.value?.toFixed(2)} <span style={{color:T.dim,fontWeight:400}}>avg {stats.avg.toFixed(2)}</span>
                   </span>
                 </div>
@@ -1415,7 +1937,7 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
 
 
       {/* Last 10 Games */}
-      <Sec icon="📅" title="Form & Recent Matches" tag={logs?`${Math.min(10,logs.length)} games`:null}>
+      <Sec icon={CalendarBlank} title="Form & Recent Matches" tag={logs?`${Math.min(10,logs.length)} games`:null}>
         {logs?(()=>{
           const last=logs.slice(0,10);
           const tG=last.reduce((s,m)=>s+m.g,0),tA=last.reduce((s,m)=>s+m.a,0),tXG=last.reduce((s,m)=>s+m.xg,0);
@@ -1423,28 +1945,28 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
           return(<>
             <ResponsiveContainer width="100%" height={140}>
               <BarChart data={last.map(m=>({date:m.d.slice(5),goals:m.g,xG:m.xg,opp:`${m.ht} v ${m.at}`})).reverse()}>
-                <XAxis dataKey="date" tick={{fill:T.dim,fontSize:9}} axisLine={false} tickLine={false}/>
-                <YAxis tick={{fill:T.dim,fontSize:9}} axisLine={false} tickLine={false} domain={[0,'auto']}/>
-                <Tooltip contentStyle={{background:T.card,border:`1px solid ${T.border}`,borderRadius:8,fontSize:11,fontFamily:T.font}} labelStyle={{color:T.text}} itemStyle={{color:T.dim}}/>
+                <XAxis dataKey="date" tick={{fill:T.dim,fontSize:11}} axisLine={false} tickLine={false}/>
+                <YAxis tick={{fill:T.dim,fontSize:11}} axisLine={false} tickLine={false} domain={[0,'auto']}/>
+                <Tooltip contentStyle={{background:T.card,border:`1px solid ${T.border}`,borderRadius:8,fontSize:12,fontFamily:T.font}} labelStyle={{color:T.text}} itemStyle={{color:T.dim}}/>
                 <Bar dataKey="goals" fill={T.green} radius={[3,3,0,0]} name="Goals"/>
                 <Bar dataKey="xG" fill={T.accent+'60'} radius={[3,3,0,0]} name="xG"/>
               </BarChart>
             </ResponsiveContainer>
             <div style={{display:'flex',gap:20,marginTop:8,flexWrap:'wrap'}}>
-              {[['🔥',`${tG} goals`,null],['🅰️',`${tA} assists`,null],['📊',`${tXG.toFixed(1)} xG`,null],['✅',`${scored}/${last.length} scored in`,null]].map(([i,v],j)=>(
-                <span key={j} style={{fontSize:12,color:T.dim}}>{i} <b style={{color:T.text}}>{v}</b></span>
+              {[[`${tG} goals`],[`${tA} assists`],[`${tXG.toFixed(1)} xG`],[`${scored}/${last.length} scored in`]].map(([v],j)=>(
+                <span key={j} style={{fontSize:13,color:T.dim}}><b style={{color:T.text}}>{v}</b></span>
               ))}
             </div>
             <div style={{marginTop:12,overflowX:'auto'}}>
-              <table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}>
+              <table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
                 <thead><tr style={{borderBottom:`1px solid ${T.border}`}}>
-                  {['Date','Match','Min','G','A','S','KP','xG','xA'].map(h=><th key={h} style={{padding:'4px 8px',color:T.dim,fontWeight:600,textAlign:'center',fontSize:10}}>{h}</th>)}
+                  {['Date','Match','Min','G','A','S','KP','xG','xA'].map(h=><th key={h} style={{padding:'4px 8px',color:T.dim,fontWeight:600,textAlign:'center',fontSize:11}}>{h}</th>)}
                 </tr></thead>
                 <tbody>{last.map((m,i)=>{
                   const win=m.r==='w',loss=m.r==='l';
                   return(<tr key={i} style={{borderBottom:`1px solid ${T.border}15`,background:win?T.green+'08':loss?T.red+'08':'transparent'}}>
-                    <td style={{padding:'4px 8px',color:T.dim,fontSize:10,fontFamily:T.mono}}>{m.d.slice(5)}</td>
-                    <td style={{padding:'4px 8px',color:T.text,fontSize:10}}>{m.ht} v {m.at}</td>
+                    <td style={{padding:'4px 8px',color:T.dim,fontSize:11,fontFamily:T.mono}}>{m.d.slice(5)}</td>
+                    <td style={{padding:'4px 8px',color:T.text,fontSize:11}}>{m.ht} v {m.at}</td>
                     <td style={{padding:'4px 8px',color:T.dim,textAlign:'center',fontFamily:T.mono}}>{m.t}'</td>
                     <td style={{padding:'4px 8px',textAlign:'center',fontWeight:m.g?800:400,color:m.g?T.green:T.dim,fontFamily:T.mono}}>{m.g}</td>
                     <td style={{padding:'4px 8px',textAlign:'center',fontWeight:m.a?800:400,color:m.a?T.accent:T.dim,fontFamily:T.mono}}>{m.a}</td>
@@ -1457,11 +1979,11 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
               </table>
             </div>
           </>);
-        })():<p style={{color:T.dim,fontSize:12,textAlign:'center',padding:16}}>Match logs not available in bundle</p>}
+        })():<p style={{color:T.dim,fontSize:13,textAlign:'center',padding:16}}>Match logs not available in bundle</p>}
       </Sec>
 
       {/* Shot Map */}
-      <Sec icon="🎯" title="Shot Map" tag={shotData?`${shotData.ts} shots · ${shotData.g} goals`:null}>
+      <Sec icon={Crosshair} title="Shot Map" tag={shotData?`${shotData.ts} shots · ${shotData.g} goals`:null}>
         {shotData?(()=>{
           const shots = shotData.sh || [];
           const goals = shots.filter(s=>s.r==='G');
@@ -1489,7 +2011,7 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
             sy: Math.round(y * PH),
           });
 
-          const dotColor = (r) => r==='G'?'#22d3ee':r==='S'?'#fbbf24':r==='M'?'#f87171':'#94a3b8';
+          const dotColor = (r) => r==='G'?'#1A65D3':r==='S'?'#4F82D6':r==='M'?'#2B4C5E':'#939A9E';
           const dotSize = (xg) => Math.max(4, Math.min(14, xg * 60));
 
           // Shot zone stats
@@ -1511,15 +2033,15 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
                 ['Conversion', `${conversion}%`],
                 ['On Target', saved.length + goals.length],
               ].map(([l,v])=>(
-                <div key={l}><div style={{fontSize:10,color:T.dim}}>{l}</div><div style={{fontSize:16,fontWeight:800,color:T.text,fontFamily:T.mono}}>{v}</div></div>
+                <div key={l}><div style={{fontSize:11,color:T.dim}}>{l}</div><div style={{fontSize:16,fontWeight:800,color:T.text,fontFamily:T.mono}}>{v}</div></div>
               ))}
             </div>
 
             {/* Pitch SVG */}
-            <div style={{background:'#1a3a1a',borderRadius:10,padding:12,marginBottom:12,overflowX:'auto'}}>
+            <div style={{background:'rgba(43,76,94,0.22)',borderRadius:10,padding:12,marginBottom:12,overflowX:'auto'}}>
               <svg viewBox={`0 0 ${PW} ${PH}`} style={{width:'100%',maxWidth:500,display:'block',margin:'0 auto'}}>
                 {/* Pitch markings */}
-                <rect x={0} y={0} width={PW} height={PH} fill="#1e4620" rx={4}/>
+                <rect x={0} y={0} width={PW} height={PH} fill="#2B4C5E" rx={4}/>
                 {/* Penalty box */}
                 <rect x={0} y={(PH-boxH)/2} width={boxW} height={boxH} fill="none" stroke="#ffffff30" strokeWidth={1}/>
                 {/* 6-yard box */}
@@ -1549,17 +2071,17 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
               </svg>
               {/* Legend */}
               <div style={{display:'flex',gap:16,justifyContent:'center',marginTop:8,flexWrap:'wrap'}}>
-                {[['#22d3ee','Goal'],['#fbbf24','Saved'],['#f87171','Missed'],['#94a3b8','Blocked']].map(([c,l])=>(
-                  <div key={l} style={{display:'flex',alignItems:'center',gap:4,fontSize:10,color:'#94a3b8'}}>
-                    <circle/><div style={{width:8,height:8,borderRadius:'50%',background:c}}/><span>{l}</span>
+                {[['#1A65D3','Goal'],['#4F82D6','Saved'],['#2B4C5E','Missed'],['#939A9E','Blocked']].map(([c,l])=>(
+                  <div key={l} style={{display:'flex',alignItems:'center',gap:4,fontSize:11,color:T.dim}}>
+                    <div style={{width:8,height:8,borderRadius:'50%',background:c}}/><span>{l}</span>
                   </div>
                 ))}
-                <span style={{fontSize:10,color:'#94a3b8'}}>Dot size = xG value</span>
+                <span style={{fontSize:11,color:T.dim}}>Dot size = xG value</span>
               </div>
             </div>
 
             {/* Shot zone breakdown */}
-            <div style={{fontSize:11,fontWeight:800,color:T.dim,textTransform:'uppercase',letterSpacing:1,marginBottom:8}}>Shot Zones</div>
+            <div style={{fontSize:12,fontWeight:800,color:T.dim,textTransform:'uppercase',letterSpacing:1,marginBottom:8}}>Shot Zones</div>
             <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
               {Object.entries(zones).map(([zone, zshots])=>{
                 const zgoals = zshots.filter(s=>s.r==='G').length;
@@ -1567,9 +2089,9 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
                 const zpct = zshots.length>0?((zgoals/zshots.length)*100).toFixed(0):0;
                 return(
                   <div key={zone} style={{flex:1,minWidth:80,padding:'8px 10px',background:T.bg,borderRadius:8,border:`1px solid ${T.border}`}}>
-                    <div style={{fontSize:10,color:T.dim,marginBottom:4}}>{zone}</div>
+                    <div style={{fontSize:11,color:T.dim,marginBottom:4}}>{zone}</div>
                     <div style={{fontSize:14,fontWeight:800,color:T.text,fontFamily:T.mono}}>{zshots.length}</div>
-                    <div style={{fontSize:10,color:T.dim}}>{zgoals}G · {zxg}xG · {zpct}%</div>
+                    <div style={{fontSize:11,color:T.dim}}>{zgoals}G · {zxg}xG · {zpct}%</div>
                   </div>
                 );
               })}
@@ -1582,52 +2104,52 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
                 const tg = ts.filter(s=>s.r==='G').length;
                 if(!ts.length) return null;
                 return(
-                  <span key={code} style={{fontSize:12,color:T.dim}}>
+                  <span key={code} style={{fontSize:13,color:T.dim}}>
                     {label}: <b style={{color:T.text}}>{ts.length} shots, {tg} goals</b>
                   </span>
                 );
               })}
             </div>
           </>);
-        })():<p style={{color:T.dim,fontSize:12,textAlign:'center',padding:16}}>Shot map data not available for this player</p>}
+        })():<p style={{color:T.dim,fontSize:13,textAlign:'center',padding:16}}>Shot map data not available for this player</p>}
       </Sec>
 
       {/* Season Trend */}
-      {trend.length>0&&<Sec icon="📈" title="Season-over-Season Trend" accent={T.accent2}>
-        <div style={{display:'flex',gap:6,marginBottom:8,fontSize:10,color:T.dim}}>
+      {trend.length>0&&<Sec icon={ChartLineUp} title="Season-over-Season Trend" accent={T.accent2}>
+        <div style={{display:'flex',gap:6,marginBottom:8,fontSize:11,color:T.dim}}>
           <span style={C.tag(T.accent2)}>{data.meta.previousSeason} → {data.meta.currentSeason}</span>
-          <span>Club: {prevP?.Squad} → {p.Squad}</span>
+          <span style={{display:'inline-flex',alignItems:'center',gap:5}}>Club: <ClubLogo club={prevP?.Squad} size={13}/>{prevP?.Squad} → <ClubLogo club={p.Squad} size={13}/>{p.Squad}</span>
         </div>
         {trend.map(t=>{const up=t.diff>0.05,dn=t.diff<-0.05;return(
           <div key={t.label} style={{display:'flex',alignItems:'center',gap:10,marginBottom:4}}>
-            <span style={{width:80,fontSize:11,color:T.dim}}>{t.label}</span>
-            <span style={{width:50,fontSize:11,color:T.accent2,fontFamily:T.mono,textAlign:'right'}}>{t.prev.toFixed(2)}</span>
-            <span style={{fontSize:12,color:up?T.green:dn?T.red:T.dim}}>{up?'→↑':dn?'→↓':'→'}</span>
-            <span style={{width:50,fontSize:11,color:T.text,fontWeight:700,fontFamily:T.mono}}>{t.cur.toFixed(2)}</span>
-            <span style={{fontSize:10,fontWeight:700,color:up?T.green:dn?T.red:T.dim}}>({t.diff>0?'+':''}{t.diff.toFixed(2)})</span>
+            <span style={{width:80,fontSize:12,color:T.dim}}>{t.label}</span>
+            <span style={{width:50,fontSize:12,color:T.accent2,fontFamily:T.mono,textAlign:'right'}}>{t.prev.toFixed(2)}</span>
+            <span style={{fontSize:13,color:up?T.green:dn?T.red:T.dim}}>{up?'→↑':dn?'→↓':'→'}</span>
+            <span style={{width:50,fontSize:12,color:T.text,fontWeight:700,fontFamily:T.mono}}>{t.cur.toFixed(2)}</span>
+            <span style={{fontSize:11,fontWeight:700,color:up?T.green:dn?T.red:T.dim}}>({t.diff>0?'+':''}{t.diff.toFixed(2)})</span>
           </div>
         );})}
       </Sec>}
 
       {/* Previous Season Deep Profile */}
-      {prevProf.length>0&&<Sec icon="📊" title="Previous Season Deep Profile" tag={data.meta.previousSeason} accent={T.accent2}>
-        <p style={{fontSize:11,color:T.accent2,marginTop:-6,marginBottom:10}}>Advanced stats: progressive passes, aerial duels, take-ons, SCA, pressures</p>
+      {prevProf.length>0&&<Sec icon={ChartBar} title="Previous Season Deep Profile" tag={data.meta.previousSeason} accent={T.accent2}>
+        <p style={{fontSize:12,color:T.accent2,marginTop:-6,marginBottom:10}}>Advanced stats: progressive passes, aerial duels, take-ons, SCA, pressures</p>
         {prevProf.slice(0,12).map(a=>(
           <div key={a.k} style={{display:'flex',alignItems:'center',gap:6,marginBottom:4}}>
-            <span style={{width:16,fontSize:10}}>{a.i}</span>
-            <span style={{width:120,fontSize:10,color:T.dim}}>{a.l}</span>
+            <div style={{width:4,height:4,borderRadius:'50%',background:T.accent2,flexShrink:0}}/>
+            <span style={{width:120,fontSize:11,color:T.dim}}>{a.l}</span>
             <div style={{flex:1,height:5,borderRadius:3,background:T.accent2+'20',overflow:'hidden'}}><div style={{width:`${a.percentile}%`,height:'100%',borderRadius:3,background:rc(a.percentile)}}/></div>
-            <span style={{width:24,fontSize:9,fontWeight:700,color:rc(a.percentile),fontFamily:T.mono}}>{a.percentile}</span>
-            <span style={{width:45,fontSize:9,color:T.dim,fontFamily:T.mono,textAlign:'right'}}>{a.value?.toFixed(2)}</span>
+            <span style={{width:24,fontSize:11,fontWeight:700,color:rc(a.percentile),fontFamily:T.mono}}>{a.percentile}</span>
+            <span style={{width:45,fontSize:11,color:T.dim,fontFamily:T.mono,textAlign:'right'}}>{a.value?.toFixed(2)}</span>
           </div>
         ))}
       </Sec>}
 
       {/* Comparison */}
-      <Sec icon="🔄" title="Comparison"><div>
-        <p style={{fontSize:10,color:T.dim,marginTop:-6,marginBottom:10}}>vs top matches from your search</p>
+      <Sec icon={GitDiff} title="Comparison"><div>
+        <p style={{fontSize:11,color:T.dim,marginTop:-6,marginBottom:10}}>vs top matches from your search</p>
         <div style={{overflowX:'auto'}}>
-          <table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}>
+          <table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
             <thead><tr style={{borderBottom:`2px solid ${T.border}`}}>
               <th style={{padding:'6px 8px',textAlign:'left',color:T.dim}}></th>
               <th style={{padding:'6px 8px',textAlign:'center',color:T.accent,fontWeight:800}}>{p.Player}</th>
@@ -1640,7 +2162,7 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
               {l:'xG/90',f:x=>(+(x.xG_per90||x.npxg_per90||0)).toFixed(2)},
             ].map(r=>(
               <tr key={r.l} style={{borderBottom:`1px solid ${T.border}20`}}>
-                <td style={{padding:'4px 8px',color:T.dim,fontWeight:600,fontSize:10}}>{r.l}</td>
+                <td style={{padding:'4px 8px',color:T.dim,fontWeight:600,fontSize:11}}>{r.l}</td>
                 {[p,...comps].map((x,i)=><td key={i} style={{padding:'4px 8px',textAlign:'center',color:i===0?T.text:T.dim,fontWeight:i===0?700:400,fontFamily:T.mono}}>{r.f(x)}</td>)}
               </tr>
             ))}</tbody>
@@ -1649,16 +2171,17 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
       </div></Sec>
 
       {/* Head-to-Head Comparison */}
-      <Sec icon="⚔️" title="Head-to-Head Comparison" tag="Any player"><div>
+      <Sec icon={GitDiff} title="Head-to-Head Comparison" tag="Any player"><div>
         <div style={{position:'relative',marginBottom:compareP?12:0}}>
           <div style={{display:'flex',gap:8}}>
             <input
+              aria-label={`Compare ${p.Player} against another player`}
               value={compareQ}
               onChange={e=>{setCompareQ(e.target.value);if(!e.target.value)setCompareP(null);}}
               placeholder={`Compare ${p.Player} against any player...`}
               style={{...C.input,flex:1}}
             />
-            {compareP&&<button onClick={()=>{setCompareP(null);setCompareQ('');}} style={{...C.btn(false,'#f43f5e'),padding:'8px 12px',fontSize:10,border:`1px solid ${T.border}`}}>✕ Clear</button>}
+            {compareP&&<button onClick={()=>{setCompareP(null);setCompareQ('');}} style={{...C.btn(false,'#1A65D3'),padding:'8px 12px',fontSize:11,border:`1px solid ${T.border}`}}>✕ Clear</button>}
           </div>
           {/* Dropdown — absolutely positioned so it never shifts page layout */}
           {compareMatches.length>0&&!compareP&&(
@@ -1670,10 +2193,10 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
                   onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
                   <PlayerAvatar name={x.Player} playerId={x._player_id} size={32} style={{borderRadius:4,flexShrink:0}}/>
                   <div>
-                    <div style={{fontSize:12,fontWeight:700,color:T.text}}>{x.Player}</div>
-                    <div style={{fontSize:10,color:T.dim}}>{x.Squad} · {x.league} · {x.Pos||x.position} · {x.Age}y</div>
+                    <div style={{fontSize:13,fontWeight:700,color:T.text}}>{x.Player}</div>
+                    <div style={{display:'flex',alignItems:'center',gap:5,fontSize:11,color:T.dim}}><ClubLogo club={x.Squad} size={13}/><span>{x.Squad} · {x.league} · {x.Pos||x.position} · {x.Age}y</span></div>
                   </div>
-                  <span style={{marginLeft:'auto',fontSize:11,fontWeight:700,color:T.dim,fontFamily:T.mono}}>{mv(x)}</span>
+                  <span style={{marginLeft:'auto',fontSize:12,fontWeight:700,color:T.dim,fontFamily:T.mono}}>{mv(x)}</span>
                 </div>
               ))}
             </div>
@@ -1695,14 +2218,14 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
               {/* Overlay Radar */}
               {compareRadarData.length>=3&&(
                 <div style={{marginBottom:16}}>
-                  <div style={{fontSize:10,color:T.dim,marginBottom:8,display:'flex',gap:16}}>
+                  <div style={{fontSize:11,color:T.dim,marginBottom:8,display:'flex',gap:16}}>
                     <span style={{display:'flex',alignItems:'center',gap:4}}><div style={{width:10,height:10,borderRadius:2,background:T.accent,opacity:0.8}}/>{p.Player}</span>
                     <span style={{display:'flex',alignItems:'center',gap:4}}><div style={{width:10,height:10,borderRadius:2,background:T.accent2,opacity:0.8}}/>{compareP.Player}</span>
                   </div>
                   <ResponsiveContainer width="100%" height={220}>
                     <RadarChart data={compareRadarData}>
                       <PolarGrid stroke={T.border}/>
-                      <PolarAngleAxis dataKey="attr" tick={{fill:T.dim,fontSize:9}}/>
+                      <PolarAngleAxis dataKey="attr" tick={{fill:T.dim,fontSize:11}}/>
                       <PolarRadiusAxis domain={[0,100]} tick={false} axisLine={false}/>
                       <Radar dataKey="me" name={p.Player} stroke={T.accent} fill={T.accent} fillOpacity={0.2} strokeWidth={2}/>
                       <Radar dataKey="them" name={compareP.Player} stroke={T.accent2} fill={T.accent2} fillOpacity={0.2} strokeWidth={2}/>
@@ -1712,11 +2235,11 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
               )}
               {/* Stats table */}
               <div style={{overflowX:'auto'}}>
-                <table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}>
+                <table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
                   <thead><tr style={{borderBottom:`2px solid ${T.border}`}}>
-                    <th style={{padding:'6px 8px',textAlign:'left',color:T.dim,fontSize:10}}></th>
-                    <th style={{padding:'6px 8px',textAlign:'center',color:T.accent,fontWeight:800}}>{p.Player}<div style={{fontSize:9,color:T.dim,fontWeight:400}}>{p.Squad}</div></th>
-                    <th style={{padding:'6px 8px',textAlign:'center',color:T.accent2,fontWeight:800}}>{compareP.Player}<div style={{fontSize:9,color:T.dim,fontWeight:400}}>{compareP.Squad}</div></th>
+                    <th style={{padding:'6px 8px',textAlign:'left',color:T.dim,fontSize:11}}></th>
+                    <th style={{padding:'6px 8px',textAlign:'center',color:T.accent,fontWeight:800}}>{p.Player}<div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:5,fontSize:11,color:T.dim,fontWeight:400}}><ClubLogo club={p.Squad} size={13}/>{p.Squad}</div></th>
+                    <th style={{padding:'6px 8px',textAlign:'center',color:T.accent2,fontWeight:800}}>{compareP.Player}<div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:5,fontSize:11,color:T.dim,fontWeight:400}}><ClubLogo club={compareP.Squad} size={13}/>{compareP.Squad}</div></th>
                   </tr></thead>
                   <tbody>{metrics.map(r=>{
                     const pv=r.f(p),cv=r.f(compareP);
@@ -1725,7 +2248,7 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
                     const cBetter=!isNaN(pn)&&!isNaN(cn)&&r.l!=='Age'&&r.l!=='Value'&&r.l!=='Contract'&&cn>pn;
                     return(
                       <tr key={r.l} style={{borderBottom:`1px solid ${T.border}20`}}>
-                        <td style={{padding:'4px 8px',color:T.dim,fontWeight:600,fontSize:10}}>{r.l}</td>
+                        <td style={{padding:'4px 8px',color:T.dim,fontWeight:600,fontSize:11}}>{r.l}</td>
                         <td style={{padding:'4px 8px',textAlign:'center',fontWeight:pBetter?800:400,color:pBetter?T.green:T.text,fontFamily:T.mono}}>{pv}</td>
                         <td style={{padding:'4px 8px',textAlign:'center',fontWeight:cBetter?800:400,color:cBetter?T.green:T.dim,fontFamily:T.mono}}>{cv}</td>
                       </tr>
@@ -1734,59 +2257,59 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
                 </table>
               </div>
               {/* Contract note */}
-              <p style={{fontSize:10,color:T.dim,marginTop:8,marginBottom:0}}>
-                ⚠ Contract dates shown are from Transfermarkt and reflect the permanent contract. For loaned players, verify directly — loan end dates may differ.
+              <p style={{fontSize:11,color:T.dim,marginTop:8,marginBottom:0}}>
+                Contract dates shown are from Transfermarkt and reflect the permanent contract. For loaned players, verify directly — loan end dates may differ.
               </p>
             </div>
           );
         })()}
-        {!compareP&&!compareQ&&<p style={{fontSize:11,color:T.dim,margin:0}}>Type any player name above to compare head-to-head with overlaid radar and full stats table.</p>}
+        {!compareP&&!compareQ&&<p style={{fontSize:12,color:T.dim,margin:0}}>Type any player name above to compare head-to-head with overlaid radar and full stats table.</p>}
       </div></Sec>
 
       {/* Why This Player */}
-      {compAnalysis.length>0&&<Sec icon="⚖️" title={`Why ${p.Player}?`}><div>
+      {compAnalysis.length>0&&<Sec icon={Question} title={`Why ${p.Player}?`}><div>
         {compAnalysis.map((c,i)=>(
           <div key={i} style={{marginBottom:12,padding:12,background:T.bg,borderRadius:8,border:`1px solid ${T.border}`}}>
-            <div style={{fontSize:12,fontWeight:700,color:T.text,marginBottom:8}}>vs {c.player.Player} <span style={{color:T.dim,fontWeight:400}}>({c.player.Squad}, {c.player.matchScore}/100, {mv(c.player)})</span></div>
-            {c.adv.length>0&&<div style={{marginBottom:6}}><div style={{fontSize:10,fontWeight:800,color:T.green,marginBottom:3}}>✅ ADVANTAGES</div>{c.adv.map((a,j)=><div key={j} style={{fontSize:11,color:T.text,paddingLeft:12,marginBottom:2}}>• {a}</div>)}</div>}
-            {c.dis.length>0&&<div><div style={{fontSize:10,fontWeight:800,color:T.orange,marginBottom:3}}>⚠️ DISADVANTAGES</div>{c.dis.map((d,j)=><div key={j} style={{fontSize:11,color:T.text,paddingLeft:12,marginBottom:2}}>• {d}</div>)}</div>}
-            {!c.adv.length&&!c.dis.length&&<p style={{color:T.dim,fontSize:11}}>Very similar profiles</p>}
+            <div style={{fontSize:13,fontWeight:700,color:T.text,marginBottom:8}}>vs {c.player.Player} <span style={{color:T.dim,fontWeight:400}}>({c.player.Squad}, {c.player.matchScore}/100, {mv(c.player)})</span></div>
+            {c.adv.length>0&&<div style={{marginBottom:6}}><div style={{fontSize:11,fontWeight:800,color:T.green,marginBottom:3}}>ADVANTAGES</div>{c.adv.map((a,j)=><div key={j} style={{fontSize:12,color:T.text,paddingLeft:12,marginBottom:2}}>• {a}</div>)}</div>}
+            {c.dis.length>0&&<div><div style={{fontSize:11,fontWeight:800,color:T.orange,marginBottom:3}}>DISADVANTAGES</div>{c.dis.map((d,j)=><div key={j} style={{fontSize:12,color:T.text,paddingLeft:12,marginBottom:2}}>• {d}</div>)}</div>}
+            {!c.adv.length&&!c.dis.length&&<p style={{color:T.dim,fontSize:12}}>Very similar profiles</p>}
           </div>
         ))}
       </div></Sec>}
 
       {/* ML Similar Players */}
-      {mlSim.length>0&&<Sec icon="🧬" title="ML Player Similarity" tag="Cosine Similarity"><div>
-        <p style={{fontSize:10,color:T.dim,marginTop:-6,marginBottom:10}}>Players with the most similar statistical profiles across all per-90 metrics (machine learning cosine similarity)</p>
+      {mlSim.length>0&&<Sec icon={UsersThree} title="ML Player Similarity" tag="Cosine Similarity"><div>
+        <p style={{fontSize:11,color:T.dim,marginTop:-6,marginBottom:10}}>Players with the most similar statistical profiles across all per-90 metrics (machine learning cosine similarity)</p>
         {mlSim.slice(0,8).map((s,i)=>{
           // Find player in data to get their image
           const simPlayer = data.current?.find(p=>(p.Player||'').toLowerCase().trim()===s.name.toLowerCase().trim());
           return(
           <div key={i} style={{display:'flex',alignItems:'center',gap:10,marginBottom:4,padding:'6px 8px',borderRadius:6,background:i<3?T.accent+'08':'transparent'}}>
-            <span style={{fontSize:10,fontWeight:800,color:T.dim,width:18,fontFamily:T.mono}}>#{i+1}</span>
+            <span style={{fontSize:11,fontWeight:800,color:T.dim,width:18,fontFamily:T.mono}}>#{i+1}</span>
             {/* Mini photo */}
             <PlayerAvatar name={s.name} playerId={simPlayer?._player_id} size={40} style={{borderRadius:6,flexShrink:0}}/>
             <div style={{flex:1}}>
-              <span style={{fontSize:12,fontWeight:600,color:T.text}}>{s.name}</span>
-              <span style={{fontSize:10,color:T.dim,marginLeft:8}}>{s.team} · {s.league}</span>
-              {s.role&&<span style={{fontSize:9,marginLeft:6,padding:'1px 5px',borderRadius:3,background:T.accent+'20',color:T.accent}}>{s.role}</span>}
+              <span style={{fontSize:13,fontWeight:600,color:T.text}}>{s.name}</span>
+              <span style={{display:'inline-flex',alignItems:'center',gap:5,fontSize:11,color:T.dim,marginLeft:8,verticalAlign:'middle'}}><ClubLogo club={s.team} size={13}/>{s.team} · {s.league}</span>
+              {s.role&&<span style={{fontSize:11,marginLeft:6,padding:'1px 5px',borderRadius:3,background:T.accent+'20',color:T.accent}}>{s.role}</span>}
             </div>
             <div style={{width:90,height:6,borderRadius:3,background:T.border,overflow:'hidden'}}>
               <div style={{width:`${s.similarity*100}%`,height:'100%',borderRadius:3,background:s.similarity>0.95?T.green:s.similarity>0.9?T.accent:T.yellow}}/>
             </div>
-            <span style={{fontSize:11,fontWeight:700,color:s.similarity>0.95?T.green:s.similarity>0.9?T.accent:T.yellow,fontFamily:T.mono,width:45,textAlign:'right'}}>{(s.similarity*100).toFixed(1)}%</span>
+            <span style={{fontSize:12,fontWeight:700,color:s.similarity>0.95?T.green:s.similarity>0.9?T.accent:T.yellow,fontFamily:T.mono,width:45,textAlign:'right'}}>{(s.similarity*100).toFixed(1)}%</span>
           </div>
           );
         })}
       </div></Sec>}
 
       {/* ML Role Classification */}
-      {mlRole&&<Sec icon="🏷️" title="Player Archetype" tag="K-Means Clustering"><div>
+      {mlRole&&<Sec icon={Brain} title="Player Archetype" tag="K-Means Clustering"><div>
         <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:12}}>
           <div style={{padding:'8px 16px',borderRadius:8,background:T.accent+'15',border:`1px solid ${T.accent}30`}}>
             <div style={{fontSize:16,fontWeight:800,color:T.accent}}>{mlRole.role}</div>
           </div>
-          <div style={{fontSize:11,color:T.dim}}>
+          <div style={{fontSize:12,color:T.dim}}>
             Automatically classified by ML based on statistical profile.
             <br/>Cluster determined by k-means analysis of 13 per-90 metrics across {data.ml?.modelInfo?.total_players_clustered||'1700'} players.
           </div>
@@ -1796,24 +2319,24 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
           const topZ=Object.entries(rp.z_scores).filter(([k,v])=>v>0.3).sort((a,b)=>b[1]-a[1]).slice(0,5);
           return topZ.length>0?(
             <div>
-              <div style={{fontSize:10,fontWeight:700,color:T.dim,marginBottom:6}}>DEFINING CHARACTERISTICS OF THIS ROLE:</div>
+              <div style={{fontSize:11,fontWeight:700,color:T.dim,marginBottom:6}}>DEFINING CHARACTERISTICS OF THIS ROLE:</div>
               {topZ.map(([k,v])=>(
                 <div key={k} style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
-                  <span style={{width:130,fontSize:10,color:T.dim}}>{k.replace(/_per90/g,'').replace(/_/g,' ')}</span>
+                  <span style={{width:130,fontSize:11,color:T.dim}}>{k.replace(/_per90/g,'').replace(/_/g,' ')}</span>
                   <div style={{flex:1,height:5,borderRadius:3,background:T.border,overflow:'hidden'}}>
                     <div style={{width:`${Math.min(100,50+v*20)}%`,height:'100%',borderRadius:3,background:v>1?T.green:T.accent}}/>
                   </div>
-                  <span style={{fontSize:9,fontWeight:700,color:v>1?T.green:T.accent,fontFamily:T.mono}}>{v>0?'+':''}{v.toFixed(2)}σ</span>
+                  <span style={{fontSize:11,fontWeight:700,color:v>1?T.green:T.accent,fontFamily:T.mono}}>{v>0?'+':''}{v.toFixed(2)}σ</span>
                 </div>
               ))}
-              <p style={{fontSize:10,color:T.dim,marginTop:6}}>Cluster size: {rp.size} players with similar profiles</p>
+              <p style={{fontSize:11,color:T.dim,marginTop:6}}>Cluster size: {rp.size} players with similar profiles</p>
             </div>
           ):null;
         })()}
       </div></Sec>}
 
       {/* Value & Contract */}
-      <Sec icon="💰" title="Value & Contract Analysis"><div>
+      <Sec icon={Scales} title="Value & Contract Analysis"><div>
         {/* Key metrics */}
         <div style={{display:'flex',gap:16,flexWrap:'wrap',marginBottom:16}}>
           {[
@@ -1821,14 +2344,14 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
             ['Goals/€M', vmv>0?(goals/(vmv/1e6)).toFixed(2):'—'],
             ['Score/€M', vmv>0?(p.matchScore/(vmv/1e6)).toFixed(1):'—'],
           ].map(([l,v])=>(
-            <div key={l}><div style={{fontSize:10,color:T.dim}}>{l}</div><div style={{fontSize:18,fontWeight:800,color:T.text,fontFamily:T.mono}}>{v}</div></div>
+            <div key={l}><div style={{fontSize:11,color:T.dim}}>{l}</div><div style={{fontSize:18,fontWeight:800,color:T.text,fontFamily:T.mono}}>{v}</div></div>
           ))}
         </div>
 
         {/* Contract Bargain Alert */}
         {(()=>{
           const exp = p.contract_expires;
-          if (!exp) return <p style={{fontSize:11,color:T.dim}}>Contract expiry data unavailable</p>;
+          if (!exp) return <p style={{fontSize:12,color:T.dim}}>Contract expiry data unavailable</p>;
 
           const expDate = new Date(exp);
           const today = new Date();
@@ -1839,33 +2362,28 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
           const within12 = monthsLeft > 6 && monthsLeft <= 12;
           const within18 = monthsLeft > 12 && monthsLeft <= 18;
 
-          let alertColor, alertIcon, alertTitle, alertMsg;
+          let alertColor, alertTitle, alertMsg;
 
           if (expired || expiresThisSummer) {
             alertColor = T.red;
-            alertIcon = '🔴';
             alertTitle = expired ? 'CONTRACT EXPIRED' : 'CONTRACT EXPIRES THIS SUMMER';
             alertMsg = expired
               ? `Contract expired in ${exp}. Player is a free agent or on temporary extension. Available for zero transfer fee.`
               : `Contract ends ${exp}. Player available for free this summer. No transfer fee required — only wages.`;
           } else if (within6) {
             alertColor = T.orange;
-            alertIcon = '🟠';
             alertTitle = 'EXPIRING IN UNDER 6 MONTHS';
             alertMsg = `Contract ends ${exp} (${monthsLeft} months). Club must sell now or lose player for free. Strong negotiating position for buyer.`;
           } else if (within12) {
             alertColor = T.yellow;
-            alertIcon = '🟡';
             alertTitle = 'EXPIRING IN UNDER 12 MONTHS';
             alertMsg = `Contract ends ${exp} (${monthsLeft} months). Player entering final year — selling club likely to accept below market value rather than risk losing for free.`;
           } else if (within18) {
             alertColor = T.accent;
-            alertIcon = '🔵';
             alertTitle = 'EXPIRING IN UNDER 18 MONTHS';
             alertMsg = `Contract ends ${exp} (${monthsLeft} months). Pre-contract discussions could begin in ~6 months. Window to negotiate at discount.`;
           } else {
             alertColor = T.green;
-            alertIcon = '🟢';
             alertTitle = 'CONTRACT SECURED';
             alertMsg = `Contract runs until ${exp} (${monthsLeft} months). Full market value applies. No leverage from contract situation.`;
           }
@@ -1873,14 +2391,14 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
           return (
             <div style={{padding:14,borderRadius:8,background:alertColor+'10',border:`1px solid ${alertColor}30`}}>
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
-                <span style={{fontSize:14}}>{alertIcon}</span>
-                <span style={{fontSize:11,fontWeight:800,color:alertColor,textTransform:'uppercase',letterSpacing:0.8}}>{alertTitle}</span>
+                <div style={{width:8,height:8,borderRadius:'50%',background:alertColor,flexShrink:0}}/>
+                <span style={{fontSize:12,fontWeight:800,color:alertColor,textTransform:'uppercase',letterSpacing:0.8}}>{alertTitle}</span>
               </div>
-              <p style={{fontSize:12,color:T.text,margin:0,lineHeight:1.6}}>{alertMsg}</p>
+              <p style={{fontSize:13,color:T.text,margin:0,lineHeight:1.6}}>{alertMsg}</p>
               {(expired||expiresThisSummer||within6)&&vmv>0&&(
                 <div style={{marginTop:10,padding:'8px 12px',background:alertColor+'15',borderRadius:6}}>
-                  <span style={{fontSize:11,fontWeight:700,color:alertColor}}>
-                    💡 Estimated saving: €{(vmv/1e6).toFixed(0)}M–€{(vmv*0.7/1e6).toFixed(0)}M vs full market value
+                  <span style={{fontSize:12,fontWeight:700,color:alertColor}}>
+                    Estimated saving: €{(vmv/1e6).toFixed(0)}M–€{(vmv*0.7/1e6).toFixed(0)}M vs full market value
                   </span>
                 </div>
               )}
@@ -1898,16 +2416,16 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
         const hasInjData=totalInj>0||totalDays>0;
         if(!hasInjData) return null;
         return(
-          <Sec icon="🏥" title="Injury History">
+          <Sec icon={Heartbeat} title="Injury History">
             <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
               {[
-                ['Career Injuries',totalInj,totalInj>=10?'#f43f5e':totalInj>=5?'#eab308':T.text],
-                ['Career Days Missed',totalDays,totalDays>=200?'#f43f5e':totalDays>=90?'#eab308':T.text],
-                ['Recent Injuries (2yr)',recentInj,recentInj>=4?'#f43f5e':recentInj>=2?'#eab308':T.text],
-                ['Recent Days Missed',recentDays,recentDays>=90?'#f43f5e':recentDays>=30?'#eab308':T.text],
+                ['Career Injuries',totalInj,totalInj>=10?'#1A65D3':totalInj>=5?'#6E7E8A':T.text],
+                ['Career Days Missed',totalDays,totalDays>=200?'#1A65D3':totalDays>=90?'#6E7E8A':T.text],
+                ['Recent Injuries (2yr)',recentInj,recentInj>=4?'#1A65D3':recentInj>=2?'#6E7E8A':T.text],
+                ['Recent Days Missed',recentDays,recentDays>=90?'#1A65D3':recentDays>=30?'#6E7E8A':T.text],
               ].map(([l,v,c])=>(
                 <div key={l} style={{flex:1,minWidth:100,padding:'8px 10px',background:T.bg,borderRadius:8,border:`1px solid ${T.border}`}}>
-                  <div style={{fontSize:9,color:T.dim,marginBottom:2}}>{l}</div>
+                  <div style={{fontSize:11,color:T.dim,marginBottom:2}}>{l}</div>
                   <div style={{fontSize:16,fontWeight:800,color:c,fontFamily:T.mono}}>{v}</div>
                 </div>
               ))}
@@ -1919,10 +2437,10 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
       {/* Verdict */}
       <div style={{...C.card,border:`2px solid ${verdict.c}40`,background:verdict.c+'08'}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
-          <span style={{fontSize:14}}>📋</span>
-          <span style={{fontSize:12,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1}}>Scout's Verdict</span>
+          <div style={{width:2,height:16,borderRadius:999,background:verdict.c,flexShrink:0}}/>
+          <span style={{fontSize:13,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1}}>Scout's Verdict</span>
         </div>
-        <div style={{marginBottom:10}}><span style={{fontSize:14}}>{verdict.s}</span><span style={{fontWeight:900,color:verdict.c,marginLeft:8,fontSize:15}}>{verdict.r}</span></div>
+        <div style={{marginBottom:10}}><span style={{fontWeight:900,color:verdict.c,fontSize:15}}>{verdict.r}</span></div>
         <p style={{fontSize:13,color:T.text,lineHeight:1.7}}>
           {p.Player} scores {p.matchScore}/100.{str.length?` Key strengths: ${str.map(s=>s.l.toLowerCase()).join(', ')}.`:''}{weak.length?` Areas to develop: ${weak.map(w=>w.l.toLowerCase()).join(', ')}.`:''} {verdict.a}
         </p>
@@ -1938,31 +2456,33 @@ function ShortlistView({data,shortlist,onToggle,onSelect,onBack}){
     <div style={{maxWidth:920,margin:'0 auto',padding:20,fontFamily:T.font}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16}}>
         <div>
-          <motion.button whileHover={{x:-3}} whileTap={{scale:0.95}} transition={{duration:0.15}} onClick={onBack} style={{background:'none',border:'none',color:T.accent,cursor:'pointer',fontSize:12,padding:0,marginBottom:6,fontFamily:T.font}}>← Back</motion.button>
-          <h2 style={{fontSize:20,fontWeight:800,color:T.text,margin:0}}>⭐ Shortlist</h2>
-          <p style={{color:T.dim,fontSize:12,marginTop:2}}>{players.length} saved player{players.length!==1?'s':''}</p>
+          <motion.button whileHover={{x:-3}} whileTap={{scale:0.95}} transition={{duration:0.15}} onClick={onBack} style={{background:'none',border:'none',color:T.accent,cursor:'pointer',fontSize:13,padding:0,marginBottom:6,fontFamily:T.font}}>← Back</motion.button>
+          <h2 style={{fontSize:20,fontWeight:800,color:T.text,margin:0}}>Shortlist</h2>
+          <p style={{color:T.dim,fontSize:13,marginTop:2}}>{players.length} saved player{players.length!==1?'s':''}</p>
         </div>
       </div>
       {players.length===0&&<div style={{...C.card,textAlign:'center',padding:40}}>
-        <div style={{fontSize:32,marginBottom:12}}>⭐</div>
+        <Star size={40} style={{color:T.dim,marginBottom:12}}/>
         <p style={{color:T.dim,fontSize:14}}>No players shortlisted yet. Hit the star on any result card or player report.</p>
       </div>}
       {players.map((p,i)=>(
         <div key={p.Player} style={{display:'flex',alignItems:'center',gap:14,padding:12,marginBottom:4,background:T.card,border:`1px solid ${T.border}`,borderRadius:10}}>
           <PlayerAvatar name={p.Player} playerId={p._player_id} size={48} style={{borderRadius:7,flexShrink:0}}/>
-          <div style={{flex:1,minWidth:0,cursor:'pointer'}} onClick={()=>onSelect(p,i)}>
+          <div className="scout-card-btn" role="button" tabIndex={0} aria-label={`Open scout report for ${p.Player}`}
+            style={{flex:1,minWidth:0,cursor:'pointer',borderRadius:6}} onClick={()=>onSelect(p,i)}
+            onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onSelect(p,i);}}}>
             <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
               <span style={{fontWeight:700,color:T.text,fontSize:14}}>{p.Player}</span>
-              {p._trajectory&&<span style={{fontSize:10,fontWeight:700,color:TRJ[p._trajectory]?.c}}>{TRJ[p._trajectory]?.i} {p._trajectory}</span>}
-              {p._injury_risk&&p._injury_risk!=='Low'&&<span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:IRK[p._injury_risk]?.c+'20',color:IRK[p._injury_risk]?.c,fontWeight:700}}>{p._injury_risk} Risk</span>}
+              {p._trajectory&&<span style={{fontSize:11,fontWeight:700,color:TRJ[p._trajectory]?.c}}>{TRJ[p._trajectory]?.i} {p._trajectory}</span>}
+              {p._injury_risk&&p._injury_risk!=='Low'&&<span style={{fontSize:11,padding:'1px 6px',borderRadius:4,background:IRK[p._injury_risk]?.c+'20',color:IRK[p._injury_risk]?.c,fontWeight:700}}>{p._injury_risk} Risk</span>}
             </div>
-            <div style={{fontSize:11,color:T.dim,marginTop:2}}>{p.Squad} · {p.league} · {p._ml_role||p.Pos||p.position} · {p.Age}y</div>
+            <div style={{display:'flex',alignItems:'center',gap:6,fontSize:12,color:T.dim,marginTop:2}}><ClubLogo club={p.Squad} size={14}/><span>{p.Squad} · {p.league} · {p._ml_role||p.Pos||p.position} · {p.Age}y</span></div>
           </div>
           <div style={{textAlign:'right',marginRight:8}}>
             <div style={{fontSize:13,fontWeight:700,color:T.text,fontFamily:T.mono}}>{mv(p)}</div>
-            <div style={{fontSize:10,color:T.dim}}>{p.contract_expires||'—'}</div>
+            <div style={{fontSize:11,color:T.dim}}>{p.contract_expires||'—'}</div>
           </div>
-          <button onClick={()=>onToggle(p)} style={{background:'none',border:'none',cursor:'pointer',fontSize:20,color:T.yellow,padding:4,lineHeight:1}}>★</button>
+          <button onClick={()=>onToggle(p)} aria-label={`Remove ${p.Player} from shortlist`} aria-pressed={true} style={{background:'none',border:'none',cursor:'pointer',color:T.yellow,padding:4,display:'inline-flex',alignItems:'center'}}><Star size={20} weight="fill"/></button>
         </div>
       ))}
     </div>
@@ -1971,13 +2491,10 @@ function ShortlistView({data,shortlist,onToggle,onSelect,onBack}){
 
 // ─── APP ───
 export default function App(){
+  const navigate=useNavigate();
   const[data,setData]=useState(null);
   const[teamReports,setTeamReports]=useState(null);
   const[view,setView]=useState('upload');
-  const[results,setResults]=useState([]);
-  const[sel,setSel]=useState(null);
-  const[selIdx,setSelIdx]=useState(0);
-  const[req,setReq]=useState(null);
   const[clubCtx,setClubCtx]=useState(null);
   const[shortlist,setShortlist]=useState(()=>{try{return JSON.parse(localStorage.getItem('scoutlab_shortlist')||'[]');}catch{return[];}});
   const toggleShortlist=useCallback(player=>{
@@ -2099,24 +2616,20 @@ export default function App(){
     setView('club');
   };
 
-  const handleClubSelect=ctx=>{setClubCtx(ctx);setView('clubreport');};
-  const handleClubSkip=()=>{setClubCtx(null);setView('search');};
-  const handleSearch=r=>{setReq(r);const pool=clubCtx?data.current.filter(p=>p.Squad!==clubCtx.team):data.current;setResults(search(pool,r));setView('results');};
+  const handleClubSelect=ctx=>{setClubCtx(ctx);setView('main');};
+  const handleClubSkip=()=>{setClubCtx(null);setView('main');};
 
   const renderView=()=>{
     switch(view){
-      case 'upload':     return <Upload onLoad={handleLoad}/>;
-      case 'club':       return <ClubSelect teamReports={teamReports} onSelect={handleClubSelect} onSkip={handleClubSkip}/>;
-      case 'clubreport': return data&&clubCtx?<ClubReport clubCtx={clubCtx} data={data} teamReports={teamReports} onSearch={handleSearch} onBack={()=>setView('club')}/>:null;
-      case 'search':     return data?<Search data={data} clubCtx={clubCtx} onSearch={handleSearch}/>:null;
-      case 'results':    return <Results results={results} req={req} shortlist={shortlist} onToggleShortlist={toggleShortlist} onSelect={(p,i)=>{setSel(p);setSelIdx(i);setView('report');}} onBack={()=>clubCtx?setView('clubreport'):setView('search')} onShortlist={()=>setView('shortlist')}/>;
-      case 'report':     return sel?<Report player={sel} idx={selIdx} results={results} data={data} req={req} shortlist={shortlist} onToggleShortlist={toggleShortlist} onBack={()=>setView('results')} onShortlist={()=>setView('shortlist')}/>:null;
-      case 'shortlist':  return data?<ShortlistView data={data} shortlist={shortlist} onToggle={toggleShortlist} onSelect={(p,i)=>{setSel(p);setSelIdx(i);setView('report');}} onBack={()=>setView(results.length?'results':'search')}/>:null;
-      default:           return null;
+      case 'upload':    return <Upload onLoad={handleLoad}/>;
+      case 'club':      return <ClubSelect teamReports={teamReports} onSelect={handleClubSelect} onSkip={handleClubSkip}/>;
+      case 'main':      return data?<MainLayout data={data} clubCtx={clubCtx} teamReports={teamReports} shortlist={shortlist} onToggleShortlist={toggleShortlist} onBackToClubs={()=>setView('club')} onShortlistView={()=>setView('shortlist')}/>:null;
+      case 'shortlist': return data?<ShortlistView data={data} shortlist={shortlist} onToggle={toggleShortlist} onSelect={p=>navigate('/scout-report',{state:{player:{name:p.Player,position:p._ml_role||p.Pos||'—',club:p.Squad||'—',nationality:p.citizenship||'—',age:+(p.Age||0),rating:Math.min(10,(+(p.matchScore||50))/10),xg:+(p.xG||p.npxG||0),xa:+(p.xAG||p.xA||0),apps:Math.round(+(p['90s']||0)),goals:+(p.goals||p.Gls||0),assists:+(p.Ast||0),minutesPlayed:+(p.Min||0),recentInjuries:+(p.recent_injuries||0),recentDaysMissed:+(p.recent_days_missed||0),playerId:p._player_id||null}}})} onBack={()=>setView('main')}/>:null;
+      default:          return null;
     }
   };
   return(
-    <div style={{background:T.bg,color:T.text,minHeight:'100%'}}>
+    <div className="scoutlab-root" role="main" aria-label="Scout Lab player search" style={{background:T.bg,color:T.text,minHeight:'100%'}}>
       <AnimatePresence mode="wait">
         <motion.div
           key={view}

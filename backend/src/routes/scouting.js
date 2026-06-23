@@ -4,6 +4,16 @@ const { docClient } = require('../db');
 
 const router = Router();
 
+// In-memory cache — scouting data changes rarely; cache for 10 min per key
+const cache = new Map();
+const CACHE_TTL = 10 * 60 * 1000;
+function getCached(key) {
+  const entry = cache.get(key);
+  if (entry && Date.now() - entry.ts < CACHE_TTL) return entry.data;
+  return null;
+}
+function setCached(key, data) { cache.set(key, { data, ts: Date.now() }); }
+
 // Helper: paginated full-table scan
 async function scanAll(TableName) {
   const items = [];
@@ -77,6 +87,11 @@ router.get('/debug-sample', async (req, res) => {
 
 // GET /api/scouting/primary — fast bundle (no shot-maps / match-logs)
 router.get('/primary', async (req, res) => {
+  const cached = getCached('primary');
+  if (cached) {
+    res.set('Cache-Control', 'public, max-age=600');
+    return res.json(cached);
+  }
   try {
     const [current, previous, metaItems, mlItems] = await Promise.all([
       scanAll('scouting-current').catch(() => []),
@@ -84,14 +99,17 @@ router.get('/primary', async (req, res) => {
       scanAll('scouting-meta').catch(() => []),
       scanAll('scouting-ml').catch(() => []),
     ]);
-    res.json({
+    const payload = {
       current,
       previous,
       meta: parseMeta(metaItems),
       ml: assembleML(mlItems),
       shotMaps: {},
       matchLogs: {},
-    });
+    };
+    setCached('primary', payload);
+    res.set('Cache-Control', 'public, max-age=600');
+    res.json(payload);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -99,6 +117,11 @@ router.get('/primary', async (req, res) => {
 
 // GET /api/scouting/extras — shot-maps + match-logs (lazy-loaded after primary)
 router.get('/extras', async (req, res) => {
+  const cached = getCached('extras');
+  if (cached) {
+    res.set('Cache-Control', 'public, max-age=600');
+    return res.json(cached);
+  }
   try {
     const [shotMapItems, matchLogItems] = await Promise.all([
       scanAll('scouting-shot-maps').catch((e) => { console.error('shot-maps scan error:', e.message); return []; }),
@@ -116,7 +139,10 @@ router.get('/extras', async (req, res) => {
       const k = String(item.player_id ?? item.player_squad ?? item.player_key ?? item.playerKey ?? '').toLowerCase().trim();
       if (k) matchLogs[k] = { m: item.logs?.m ?? item.matches ?? item.m ?? [] };
     }
-    res.json({ shotMaps, matchLogs });
+    const payload = { shotMaps, matchLogs };
+    setCached('extras', payload);
+    res.set('Cache-Control', 'public, max-age=600');
+    res.json(payload);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

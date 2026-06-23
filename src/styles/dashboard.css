@@ -486,10 +486,18 @@
   .player-profile-avatar { width: 100%; height: 200px; margin-right: 0; margin-bottom: 16px; }
 }
 
-/* ── Scout search filter row ── */
-@media (max-width: 640px) {
-  .scout-filter-row { flex-wrap: wrap !important; }
-  .scout-filter-row > * { flex: 1 1 100% !important; }
+/* ── Scout filter grid — 4-col fixed alignment ── */
+.scout-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 10px;
+}
+@media (max-width: 900px) {
+  .scout-filter-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 540px) {
+  .scout-filter-grid { grid-template-columns: 1fr; }
 }
 
 /* ── Match predictions table ── */
@@ -515,6 +523,61 @@
   .payment-info-grid { grid-template-columns: 1fr !important; }
   .payment-card-grid { grid-template-columns: 1fr !important; }
 }
+
+/* ── ScoutLab sticky 2-column layout ── */
+.scoutlab-layout {
+  display: flex;
+  position: relative;
+  min-height: 70vh;
+}
+.scoutlab-sidebar {
+  width: 65%;
+  flex-shrink: 0;
+  border-left: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.scoutlab-content {
+  flex: 1;
+  min-width: 0;
+  min-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Stack vertically below 1024px — at 65% sidebar the right panel is too
+   narrow for the result cards on tablets/small laptops, so collapse early. */
+@media (max-width: 1024px) {
+  .scoutlab-layout   { flex-direction: column !important; min-height: unset !important; }
+  .scoutlab-sidebar  { width: 100% !important; position: static !important; height: auto !important; overflow: visible !important; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .scoutlab-content  { min-height: unset !important; overflow: visible !important; }
+}
+
+/* ── ClubSelect row hover effects ── */
+.club-row { position: relative; transition: background 0.14s; }
+.club-row:hover { background: rgba(26,101,211,0.07) !important; }
+.club-row .club-row-accent { opacity: 0; transition: opacity 0.14s; }
+.club-row:hover .club-row-accent { opacity: 1; }
+/* Keyboard focus ring for all scout interactive rows/cards */
+.club-row:focus-visible,
+.scout-card-btn:focus-visible {
+  outline: 2px solid #1A65D3;
+  outline-offset: -2px;
+  background: rgba(26,101,211,0.07) !important;
+}
+.scout-card-btn:focus-visible .club-row-accent { opacity: 1; }
+
+@media (max-width: 640px) {
+  .scoutlab-clubs-grid { grid-template-columns: 1fr !important; }
+  .club-row { border-right: none !important; }
+}
+
+/* ── Player drawer: responsive width, never overflow mobile ── */
+.scout-player-drawer { width: min(400px, 100vw); max-width: 100vw; }
 
 /* ── Responsive grid utilities ── */
 .layout-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }

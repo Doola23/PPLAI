@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useReveal } from '../../hooks/useReveal';
+import { useAuth } from '../../hooks/useAuth';
 
 const ROLES = ['Head Coaches', 'Analysts', 'Scouts', 'Physios', 'Sporting Directors'];
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -41,6 +42,7 @@ function CyclingPill({ words, color }: { words: string[]; color: string }) {
 
 export default function ProblemSection() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const headRef = useRef<HTMLDivElement>(null);
   const btnsRef = useRef<HTMLDivElement>(null);
   useReveal(headRef as React.RefObject<HTMLElement>, 0.2);
@@ -71,7 +73,7 @@ export default function ProblemSection() {
           className="lreveal"
           style={{ '--reveal-y': '24px', '--reveal-blur': '6px', '--reveal-delay': '150ms', display: 'flex', justifyContent: 'center', gap: 16, marginTop: 40 } as React.CSSProperties}
         >
-          <button className="lbtn" onClick={() => { navigate('/signup'); window.scrollTo(0, 0); }}>Signup</button>
+          {!isAuthenticated && <button className="lbtn" onClick={() => { navigate('/signup'); window.scrollTo(0, 0); }}>Signup</button>}
           <button className="lbtn lbtn--outline" onClick={() => { navigate('/features'); window.scrollTo(0, 0); }}>Explore</button>
         </div>
 
