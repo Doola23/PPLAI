@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { ChartLine, MagnifyingGlass, User, Heartbeat, ListBullets } from '@phosphor-icons/react';
 import { useAuth } from '../../hooks/useAuth';
 
 function addRipple(e: React.MouseEvent<HTMLButtonElement>) {
@@ -77,10 +78,43 @@ export default function CTASection() {
           ))}
         </motion.div>
 
-        <motion.div {...fadeUp(0.56)} className="lcta2__btns" style={{ justifyContent: 'center' }}>
-          {!isAuthenticated && <button className="lbtn" onClick={() => navigate('/signup')}>Signup</button>}
-          <button className="lbtn lbtn--outline" onClick={() => { navigate('/features'); window.scrollTo(0, 0); }}>Explore</button>
-        </motion.div>
+        {isAuthenticated ? (
+          <motion.div {...fadeUp(0.56)} style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
+            {([
+              { icon: ChartLine,     label: 'Match Predictions', path: '/match-predictions' },
+              { icon: MagnifyingGlass, label: 'Scout Search',    path: '/scout-search'      },
+              { icon: User,          label: 'Player Stats',      path: '/player-stats'      },
+              { icon: Heartbeat,     label: 'Injury Risk',       path: '/injury-risk'       },
+              { icon: ListBullets,   label: 'Table Predictions', path: '/table-predictions' },
+            ] as const).map(({ icon: Icon, label, path }, i) => (
+              <motion.button
+                key={path}
+                onClick={() => navigate(path)}
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={visible ? { opacity: 1, y: 0, scale: 1 } : {}}
+                transition={{ duration: 0.4, ease: EASE, delay: 0.56 + i * 0.06 }}
+                whileHover={{ y: -2, scale: 1.04, transition: { duration: 0.14 } }}
+                whileTap={{ scale: 0.97 }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 7,
+                  padding: '10px 18px', borderRadius: 999,
+                  background: 'rgba(26,101,211,0.10)',
+                  border: '1px solid rgba(26,101,211,0.28)',
+                  color: '#F2F2F2', fontSize: 13, fontWeight: 700, fontFamily: 'inherit',
+                  cursor: 'pointer',
+                }}
+              >
+                <Icon size={15} weight="bold" color="#1A65D3" aria-hidden="true" />
+                {label}
+              </motion.button>
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div {...fadeUp(0.56)} className="lcta2__btns" style={{ justifyContent: 'center' }}>
+            <button className="lbtn" onClick={() => navigate('/signup')}>Signup</button>
+            <button className="lbtn lbtn--outline" onClick={() => { navigate('/features'); window.scrollTo(0, 0); }}>Explore</button>
+          </motion.div>
+        )}
 
         <motion.p {...fadeUp(0.68)} className="lcta2__footnote" style={{ textAlign: 'center' }}>
           No card required · Cancel anytime

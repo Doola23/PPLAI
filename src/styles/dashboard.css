@@ -415,6 +415,10 @@
 
 /* ── Page layout utilities (sidebar+main patterns) ── */
 .layout-main-split    { display: grid; grid-template-columns: 1fr 420px; gap: 0; min-height: calc(100vh - 160px); max-width: 1200px; margin: 0 auto; padding: 0 24px 48px; }
+.scout-results-view   { max-width: 1200px; margin: 0 auto; padding: 0 24px 60px; }
+.scout-results-grid   { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 960px) { .scout-results-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .scout-results-grid { grid-template-columns: 1fr; } .scout-results-view { padding: 0 16px 40px; } }
 .layout-sidebar-right { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
 .layout-sidebar-left  { display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: start; }
 .layout-sidebar-sm    { display: grid; grid-template-columns: 1fr 280px; gap: 16px; }

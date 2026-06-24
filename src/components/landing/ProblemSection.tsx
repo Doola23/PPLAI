@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { ChartLine, MagnifyingGlass, User, Heartbeat, ListBullets } from '@phosphor-icons/react';
 import { useReveal } from '../../hooks/useReveal';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -71,10 +72,42 @@ export default function ProblemSection() {
         <div
           ref={btnsRef}
           className="lreveal"
-          style={{ '--reveal-y': '24px', '--reveal-blur': '6px', '--reveal-delay': '150ms', display: 'flex', justifyContent: 'center', gap: 16, marginTop: 40 } as React.CSSProperties}
+          style={{ '--reveal-y': '24px', '--reveal-blur': '6px', '--reveal-delay': '150ms', display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 12, marginTop: 40 } as React.CSSProperties}
         >
-          {!isAuthenticated && <button className="lbtn" onClick={() => { navigate('/signup'); window.scrollTo(0, 0); }}>Signup</button>}
-          <button className="lbtn lbtn--outline" onClick={() => { navigate('/features'); window.scrollTo(0, 0); }}>Explore</button>
+          {isAuthenticated ? (
+            <>
+              {([
+                { Icon: ChartLine,      label: 'Match Predictions', path: '/match-predictions' },
+                { Icon: MagnifyingGlass, label: 'Scout Search',     path: '/scout-search'      },
+                { Icon: User,           label: 'Player Stats',      path: '/player-stats'      },
+                { Icon: Heartbeat,      label: 'Injury Risk',       path: '/injury-risk'       },
+                { Icon: ListBullets,    label: 'Table Predictions', path: '/table-predictions' },
+              ] as const).map(({ Icon, label, path }) => (
+                <button
+                  key={path}
+                  onClick={() => navigate(path)}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                    padding: '10px 18px', borderRadius: 999,
+                    background: 'rgba(26,101,211,0.12)',
+                    border: '1px solid rgba(26,101,211,0.3)',
+                    color: '#F2F2F2', fontSize: 13, fontWeight: 700, fontFamily: 'inherit',
+                    cursor: 'pointer', transition: 'background 150ms, transform 150ms',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(26,101,211,0.22)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(26,101,211,0.12)'; e.currentTarget.style.transform = 'none'; }}
+                >
+                  <Icon size={15} weight="bold" color="#1A65D3" aria-hidden="true" />
+                  {label}
+                </button>
+              ))}
+            </>
+          ) : (
+            <>
+              <button className="lbtn" onClick={() => { navigate('/signup'); window.scrollTo(0, 0); }}>Signup</button>
+              <button className="lbtn lbtn--outline" onClick={() => { navigate('/features'); window.scrollTo(0, 0); }}>Explore</button>
+            </>
+          )}
         </div>
 
       </div>

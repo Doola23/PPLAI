@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, SoccerBall, Sparkle, Wind, PaperPlaneTilt, ShieldChevron, Barbell, HandPalm, TrendUp, TrendDown, Warning, ChartBar, ChartLineUp, CalendarBlank, Crosshair, Scales, UsersThree, Brain, Heartbeat, GitDiff, Question, CaretDown, MagnifyingGlass, SlidersHorizontal } from "@phosphor-icons/react";
+import { Star, SoccerBall, Sparkle, Wind, PaperPlaneTilt, ShieldChevron, Barbell, HandPalm, TrendUp, TrendDown, Warning, ChartBar, ChartLineUp, CalendarBlank, Crosshair, Scales, UsersThree, Brain, Heartbeat, GitDiff, Question, CaretDown, MagnifyingGlass, SlidersHorizontal, CaretRight, X, ArrowRight, ArrowLeft, Funnel, CheckCircle, Buildings } from "@phosphor-icons/react";
 
 // Phosphor icon for each attribute category (replaces former emoji)
 const CAT_ICON = {
@@ -121,9 +121,29 @@ const ATTR_CATS = [
   ]},
 ];
 const ALL_A = ATTR_CATS.flatMap(g=>g.attrs);
+
+// Per-threshold input config: {min, max, step} matched to real football data ranges
+function thresholdCfg(key){
+  if(!key) return {min:0,step:0.1};
+  if(key==='pass_success_pct')       return {min:0,max:100,step:1,placeholder:'e.g. 80'};
+  if(key==='Save%')                  return {min:0,max:100,step:1,placeholder:'e.g. 68'};
+  if(key==='CS%')                    return {min:0,max:100,step:1,placeholder:'e.g. 35'};
+  if(key==='GA90')                   return {min:0,max:4,step:0.1,placeholder:'e.g. 1.2'};
+  if(key==='xg_over_raw')            return {min:-2,max:2,step:0.1,placeholder:'e.g. 0.1'};
+  if(key==='aerial_won_per_game')    return {min:0,max:10,step:0.1,placeholder:'e.g. 2.5'};
+  if(key==='goals_per90')            return {min:0,max:2,step:0.05,placeholder:'e.g. 0.4'};
+  if(key==='shots_per90')            return {min:0,max:8,step:0.1,placeholder:'e.g. 2.5'};
+  if(key==='xA_per90')               return {min:0,max:1,step:0.05,placeholder:'e.g. 0.2'};
+  if(key==='key_passes_per90')       return {min:0,max:6,step:0.1,placeholder:'e.g. 1.5'};
+  if(key==='successful_takeons_per90') return {min:0,max:6,step:0.1,placeholder:'e.g. 1.0'};
+  if(key==='tackles_per90')          return {min:0,max:8,step:0.1,placeholder:'e.g. 2.0'};
+  if(key==='interceptions_per90')    return {min:0,max:5,step:0.1,placeholder:'e.g. 1.0'};
+  return {min:0,step:0.1,placeholder:'Min value'};
+}
+
 const PRI = {required:4,high:3,medium:2,low:1,none:0};
-const PRI_C = {required:"#1A65D3",high:"#4F82D6",medium:"#2B4C5E",low:"#6E7E8A",none:"#939A9E"};
-const PRI_LABELS = {required:"Required",high:"High",medium:"Medium",low:"Low",none:"None"};
+const PRI_C = {required:"#1A65D3",high:"#3B82F6",medium:"#2B4C5E",low:"#4B5563",none:"transparent"};
+const PRI_LABELS = {required:"Required",high:"High",medium:"Med",low:"Low",none:"Off"};
 
 const BUDGET = [
   {l:"Any",v:""},{l:"€100K",v:1e5},{l:"€500K",v:5e5},{l:"€1M",v:1e6},
@@ -358,9 +378,9 @@ const C = {
     boxShadow:'0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07)',
     overflow:'hidden',
   },
-  label:{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'1.2px',color:T.dim,marginBottom:6,display:'block'},
-  input:{width:'100%',padding:'9px 16px',borderRadius:999,border:'1px solid rgba(255,255,255,0.12)',background:'rgba(0,0,0,0.35)',color:T.text,fontSize:13,fontFamily:T.font,boxSizing:'border-box',outline:'none'},
-  btn:(active,color=T.accent)=>({padding:'5px 14px',borderRadius:999,border:active?'none':'1px solid rgba(255,255,255,0.12)',cursor:'pointer',fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.5px',background:active?color:'rgba(255,255,255,0.06)',color:active?'#F2F2F2':T.dim,transition:'all 0.15s'}),
+  label:{fontSize:12,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',color:T.dim,marginBottom:7,display:'block'},
+  input:{width:'100%',padding:'10px 16px',borderRadius:999,border:'1px solid rgba(255,255,255,0.12)',background:'rgba(0,0,0,0.35)',color:T.text,fontSize:15,fontFamily:T.font,boxSizing:'border-box',outline:'none'},
+  btn:(active,color=T.accent)=>({padding:'6px 15px',borderRadius:999,border:active?'none':'1px solid rgba(255,255,255,0.12)',cursor:'pointer',fontSize:12,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.5px',background:active?color:'rgba(255,255,255,0.06)',color:active?'#F2F2F2':T.dim,transition:'all 0.15s'}),
   tag:(color=T.accent)=>({display:'inline-flex',alignItems:'center',gap:4,padding:'3px 10px',borderRadius:999,fontSize:11,fontWeight:700,background:color+'22',color:color==='#1A65D3'?'#F2F2F2':color,letterSpacing:'0.5px',border:`1px solid ${color}40`}),
 };
 
@@ -439,15 +459,17 @@ function ClubSelect({teamReports,onSelect,onSkip}){
         style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',marginBottom:28,flexWrap:'wrap',gap:14}}
       >
         <div>
-          <div style={{fontSize:9,fontWeight:800,letterSpacing:'0.32em',color:T.accent,textTransform:'uppercase',marginBottom:10}}>2024 / 25 Premier League</div>
-          <h2 style={{fontSize:26,fontWeight:900,color:T.text,margin:0,lineHeight:1.1,letterSpacing:'-0.01em'}}>Which club are you scouting for?</h2>
-          <p style={{color:T.dim,fontSize:12,margin:'6px 0 0',letterSpacing:'0.02em'}}>Select a club to load their season report and AI recruitment needs</p>
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+            <img src="/pl-badge.svg" alt="Premier League" style={{width:20,height:22,objectFit:'contain',flexShrink:0}}/>
+            <span style={{fontSize:11,fontWeight:800,letterSpacing:'0.28em',color:T.accent,textTransform:'uppercase'}}>Premier League 2024/25</span>
+          </div>
+          <h2 style={{fontSize:28,fontWeight:900,color:T.text,margin:0,lineHeight:1.1,letterSpacing:'-0.02em'}}>Select your club</h2>
         </div>
         <motion.button
-          whileHover={{borderColor:'rgba(255,255,255,0.25)'}} whileTap={{scale:0.97}}
+          whileHover={{borderColor:'rgba(255,255,255,0.3)',color:T.text}} whileTap={{scale:0.97}}
           onClick={onSkip}
-          style={{padding:'10px 22px',borderRadius:999,border:`1px solid rgba(255,255,255,0.1)`,background:'transparent',color:T.dim,fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:'inherit',letterSpacing:'0.08em',textTransform:'uppercase',flexShrink:0,transition:'border-color 0.15s'}}
-        >Skip — No Club Context</motion.button>
+          style={{display:'flex',alignItems:'center',gap:6,padding:'9px 18px',borderRadius:999,border:`1px solid rgba(255,255,255,0.1)`,background:'transparent',color:T.dim,fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'inherit',flexShrink:0,transition:'all 0.15s'}}
+        >No club context <ArrowRight size={13} weight="bold"/></motion.button>
       </motion.div>
 
       {/* 2-col row list */}
@@ -465,12 +487,15 @@ function ClubSelect({teamReports,onSelect,onSkip}){
             <motion.div
               key={team}
               className="club-row"
-              initial={{opacity:0}} animate={{opacity:1}}
-              transition={{duration:0.25,ease:EASE,delay:0.12+i*0.018}}
+              initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}
+              whileHover={{background:'rgba(26,101,211,0.05)'}}
+              whileTap={{scale:0.99}}
+              transition={{type:'spring',stiffness:90,damping:20,delay:0.08+i*0.022}}
               role="button" tabIndex={0} aria-label={`Scout for ${team}`}
               onClick={()=>doSelect(team)}
               onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();doSelect(team);}}}
               style={{
+                position:'relative',
                 display:'flex',alignItems:'center',gap:13,padding:'13px 18px',
                 cursor:'pointer',background:'transparent',
                 borderBottom:isLastRow?'none':'1px solid rgba(255,255,255,0.05)',
@@ -480,18 +505,15 @@ function ClubSelect({teamReports,onSelect,onSkip}){
               {/* Left Celtic Blue accent bar */}
               <div className="club-row-accent" style={{position:'absolute',left:0,top:'50%',transform:'translateY(-50%)',width:3,height:32,borderRadius:2,background:T.accent}}/>
 
-              {/* Rank */}
-              <span style={{fontSize:10,fontWeight:700,color:'rgba(147,154,158,0.4)',fontFamily:T.mono,width:18,textAlign:'right',flexShrink:0}}>{i+1}</span>
-
               {/* Logo */}
-              <ClubLogo club={team} size={34} style={{flexShrink:0}}/>
+              <ClubLogo club={team} size={36} style={{flexShrink:0}}/>
 
               {/* Name + meta */}
               <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:13,fontWeight:800,color:T.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{team}</div>
-                <div style={{display:'flex',alignItems:'center',gap:5,marginTop:2}}>
-                  <span style={{fontSize:9,fontWeight:700,letterSpacing:'0.06em',color:T.accent,textTransform:'uppercase',background:'rgba(26,101,211,0.12)',padding:'1px 6px',borderRadius:4}}>{rep?.formation||meta.formation}</span>
-                  <span style={{fontSize:9,color:T.dim,fontWeight:600,letterSpacing:'0.04em',textTransform:'uppercase'}}>{rep?.style||meta.style}</span>
+                <div style={{fontSize:14,fontWeight:800,color:T.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{team}</div>
+                <div style={{display:'flex',alignItems:'center',gap:5,marginTop:3}}>
+                  <span style={{fontSize:10,fontWeight:700,color:T.accent,background:'rgba(26,101,211,0.12)',padding:'1px 7px',borderRadius:999}}>{rep?.formation||meta.formation}</span>
+                  <span style={{fontSize:10,color:T.dim,fontWeight:500}}>{rep?.style||meta.style}</span>
                 </div>
               </div>
 
@@ -799,22 +821,28 @@ function ClubReport({clubCtx,data,teamReports,onSearch,onBack}){
 
       {/* Strengths & Weaknesses */}
       {rep&&(rep.positives?.length>0||rep.negatives?.length>0)&&(
-        <div style={{display:'flex',gap:16,marginBottom:16}}>
+        <div style={{display:'flex',gap:12,marginBottom:16,flexWrap:'wrap'}}>
           {rep.positives?.length>0&&(
-            <div style={{...C.card,flex:1,marginBottom:0,border:`1px solid ${T.green}30`,background:T.green+'06'}}>
-              <div style={{fontSize:12,fontWeight:800,color:T.green,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>Strengths</div>
+            <div style={{...C.card,flex:1,minWidth:180,marginBottom:0,border:`1px solid ${T.green}28`,background:T.green+'05'}}>
+              <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:8}}>
+                <TrendUp size={13} weight="bold" color={T.accent} aria-hidden="true"/>
+                <div style={{fontSize:11,fontWeight:800,color:T.accent,textTransform:'uppercase',letterSpacing:1}}>Strengths</div>
+              </div>
               {rep.positives.map((s,i)=>{
-                const[title,...rest]=s.split(':');
-                return(<div key={i} style={{marginBottom:8}}><div style={{fontSize:12,fontWeight:700,color:T.text}}>{title}</div><div style={{fontSize:12,color:T.dim,lineHeight:1.5}}>{rest.join(':').trim()}</div></div>);
+                const[title]=s.split(':');
+                return(<div key={i} style={{fontSize:12,fontWeight:600,color:T.text,padding:'3px 0',borderBottom:i<rep.positives.length-1?`1px solid ${T.border}`:'none'}}>{title}</div>);
               })}
             </div>
           )}
           {rep.negatives?.length>0&&(
-            <div style={{...C.card,flex:1,marginBottom:0,border:`1px solid ${T.red}30`,background:T.red+'06'}}>
-              <div style={{fontSize:12,fontWeight:800,color:T.red,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>Weaknesses</div>
+            <div style={{...C.card,flex:1,minWidth:180,marginBottom:0,border:`1px solid rgba(43,76,94,0.4)`,background:'rgba(43,76,94,0.06)'}}>
+              <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:8}}>
+                <TrendDown size={13} weight="bold" color={T.dim} aria-hidden="true"/>
+                <div style={{fontSize:11,fontWeight:800,color:T.dim,textTransform:'uppercase',letterSpacing:1}}>Weaknesses</div>
+              </div>
               {rep.negatives.map((s,i)=>{
-                const[title,...rest]=s.split(':');
-                return(<div key={i} style={{marginBottom:8}}><div style={{fontSize:12,fontWeight:700,color:T.text}}>{title}</div><div style={{fontSize:12,color:T.dim,lineHeight:1.5}}>{rest.join(':').trim()}</div></div>);
+                const[title]=s.split(':');
+                return(<div key={i} style={{fontSize:12,fontWeight:600,color:T.dim,padding:'3px 0',borderBottom:i<rep.negatives.length-1?`1px solid ${T.border}`:'none'}}>{title}</div>);
               })}
             </div>
           )}
@@ -824,44 +852,33 @@ function ClubReport({clubCtx,data,teamReports,onSearch,onBack}){
       {/* Suggestions */}
       {sugs.length>0&&(
         <div style={{marginBottom:16}}>
-          <div style={{fontSize:13,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>Recruitment Priorities</div>
-          <p style={{fontSize:12,color:T.dim,marginBottom:12}}>Based on 24/25 season analysis — click a role to pre-fill the search below</p>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(340px,1fr))',gap:12}}>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:10}}>
             {sugs.map((s,i)=>{
               const active=selSug?.role===s.role;
               return(
-                <div key={i} onClick={()=>pickSug(s)} style={{
-                  padding:16,borderRadius:12,border:`2px solid ${active?s.color:T.border}`,
-                  background:active?s.color+'10':T.card,cursor:'pointer',transition:'all 0.15s'}}
-                  onMouseEnter={e=>{if(!active){e.currentTarget.style.borderColor=s.color+'80';}}}
-                  onMouseLeave={e=>{if(!active){e.currentTarget.style.borderColor=T.border;}}}>
-                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
-                    <div style={{width:3,height:20,borderRadius:999,background:s.color,flexShrink:0}}/>
-
-                    <div>
-                      <div style={{fontSize:14,fontWeight:800,color:active?s.color:T.text}}>{s.role}</div>
-                      <div style={{fontSize:11,color:T.dim}}>{POS[s.posGroup]?.label} · {POS[s.posGroup]?.sub}</div>
+                <motion.div key={i} onClick={()=>pickSug(s)} role="button" tabIndex={0}
+                  aria-pressed={active} aria-label={`${active?'Deselect':'Select'} ${s.role}`}
+                  onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pickSug(s);}}}
+                  animate={{borderColor:active?s.color:T.border,background:active?s.color+'0A':'rgba(255,255,255,0.02)'}}
+                  whileHover={{borderColor:active?s.color:s.color+'60',background:active?s.color+'14':'rgba(255,255,255,0.04)',y:-2}}
+                  whileTap={{scale:0.985}}
+                  transition={{type:'spring',stiffness:220,damping:22}}
+                  style={{padding:14,borderRadius:12,border:`2px solid ${T.border}`,cursor:'pointer'}}
+                >
+                  <div style={{display:'flex',alignItems:'flex-start',gap:10,marginBottom:10}}>
+                    <div style={{width:3,alignSelf:'stretch',minHeight:32,borderRadius:999,background:s.color,flexShrink:0}}/>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:14,fontWeight:800,color:active?s.color:T.text,lineHeight:1.2,marginBottom:2}}>{s.role}</div>
+                      <div style={{fontSize:11,color:T.dim,fontWeight:600}}>{POS[s.posGroup]?.label}</div>
                     </div>
-                    {active&&<span style={{marginLeft:'auto',fontSize:11,fontWeight:800,padding:'2px 8px',borderRadius:4,background:s.color,color:'#000'}}>SELECTED</span>}
+                    {active&&<CheckCircle size={15} weight="fill" color={s.color} style={{flexShrink:0}} aria-hidden="true"/>}
                   </div>
-                  {/* Attribute bars */}
-                  <div style={{marginBottom:10}}>
-                    {s.attrs.map(a=>(
-                      <div key={a.k} style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
-                        <span style={{width:140,fontSize:11,color:T.dim,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{a.l}</span>
-                        <div style={{flex:1,height:5,borderRadius:3,background:T.border,overflow:'hidden'}}>
-                          <div style={{width:`${PRI_W[a.p]/4*100}%`,height:'100%',borderRadius:3,background:PRI_C2[a.p]}}/>
-                        </div>
-                        <span style={{width:52,fontSize:11,fontWeight:800,color:PRI_C2[a.p],textAlign:'right',textTransform:'uppercase'}}>{a.p}</span>
-                      </div>
+                  <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+                    {s.attrs.slice(0,4).map(a=>(
+                      <span key={a.k} style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:999,background:PRI_C2[a.p]+'18',color:PRI_C2[a.p],border:`1px solid ${PRI_C2[a.p]}30`}}>{a.l.split(' ')[0]}</span>
                     ))}
                   </div>
-                  {/* Because */}
-                  <div style={{fontSize:12,color:T.dim,lineHeight:1.6,borderTop:`1px solid ${T.border}`,paddingTop:8}}>
-                    <span style={{fontSize:11,fontWeight:700,color:T.dim,textTransform:'uppercase',letterSpacing:0.5}}>Why: </span>
-                    {s.because}
-                  </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
@@ -869,14 +886,14 @@ function ClubReport({clubCtx,data,teamReports,onSearch,onBack}){
       )}
 
       {/* Divider */}
-      <div ref={searchRef} style={{borderTop:`2px solid ${T.border}`,marginBottom:20,paddingTop:20}}>
-        <div style={{fontSize:13,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>
-          Player Search {selSug?`— ${selSug.role} for ${team}`:''}
+      <div ref={searchRef} style={{borderTop:`1px solid ${T.border}`,marginBottom:20,paddingTop:20}}>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <MagnifyingGlass size={14} weight="bold" color={T.accent} aria-hidden="true"/>
+          <div style={{fontSize:13,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1}}>
+            {selSug?selSug.role:'Player Search'}
+          </div>
+          {selSug&&<span style={C.tag(selSug.color||T.accent)}>{POS[selSug.posGroup]?.label}</span>}
         </div>
-        {selSug
-          ?<p style={{fontSize:12,color:T.dim,marginBottom:0}}>Pre-filled from your selection — adjust any criteria then search</p>
-          :<p style={{fontSize:12,color:T.dim,marginBottom:0}}>No role selected — set your own criteria below or click a recommendation above</p>
-        }
       </div>
 
       {/* Embedded Search */}
@@ -900,15 +917,15 @@ function Collapsible({title,summary,badge,defaultOpen=false,icon,children}){
       <button onClick={()=>setOpen(o=>!o)} aria-expanded={open} style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'15px 18px',background:'transparent',border:'none',cursor:'pointer',textAlign:'left',fontFamily:'inherit'}}>
         {Icon&&<Icon size={16} weight="bold" color={T.accent} aria-hidden="true"/>}
         <div style={{flex:1,minWidth:0}}>
-          <div style={{fontSize:12,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1}}>{title}</div>
-          {!open&&summary&&<div style={{fontSize:11,color:T.dim,marginTop:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{summary}</div>}
+          <div style={{fontSize:14,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:0.8}}>{title}</div>
+          {!open&&summary&&<div style={{fontSize:13,color:T.dim,marginTop:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{summary}</div>}
         </div>
         {badge!=null&&badge>0&&<span style={C.tag(T.accent)}>{badge}</span>}
         <CaretDown size={16} weight="bold" color={T.dim} aria-hidden="true" style={{transform:open?'rotate(180deg)':'none',transition:'transform 0.22s ease',flexShrink:0}}/>
       </button>
       <AnimatePresence initial={false}>
         {open&&(
-          <motion.div initial={{height:0,opacity:0}} animate={{height:'auto',opacity:1}} exit={{height:0,opacity:0}} transition={{duration:0.28,ease:EASE}} style={{overflow:'hidden'}}>
+          <motion.div initial={{height:0,opacity:0}} animate={{height:'auto',opacity:1}} exit={{height:0,opacity:0}} transition={{type:'spring',stiffness:130,damping:22,opacity:{duration:0.18}}} style={{overflow:'hidden'}}>
             <div style={{padding:'0 18px 18px'}}>{children}</div>
           </motion.div>
         )}
@@ -918,67 +935,118 @@ function Collapsible({title,summary,badge,defaultOpen=false,icon,children}){
 }
 
 // Single attribute category — collapsible to tame the priorities wall
+// Segmented priority control — replaces 5 scattered buttons
+const PRI_SEG=[
+  {k:'none',   label:'Off',  short:'—'},
+  {k:'low',    label:'Low',  short:'L'},
+  {k:'medium', label:'Med',  short:'M'},
+  {k:'high',   label:'High', short:'H'},
+  {k:'required',label:'Must',short:'!'},
+];
+const PRI_SEG_C={required:'#1A65D3',high:'#3B82F6',medium:'#2B4C5E',low:'#374151',none:'transparent'};
+const PRI_SEG_TEXT={required:'#F2F2F2',high:'#F2F2F2',medium:'#93C5FD',low:'#9CA3AF',none:'#6B7280'};
+
+function PrioritySegment({attrKey,label,value,onChange}){
+  return(
+    <div style={{display:'flex',background:'rgba(255,255,255,0.04)',borderRadius:8,border:'1px solid rgba(255,255,255,0.08)',overflow:'hidden',flexShrink:0}}>
+      {PRI_SEG.map((seg,i)=>{
+        const active=value===seg.k;
+        return(
+          <button key={seg.k}
+            onClick={()=>onChange(attrKey,active?'none':seg.k)}
+            aria-label={`Set ${label} to ${seg.label}`}
+            aria-pressed={active}
+            title={seg.label}
+            style={{
+              padding:'7px 13px',
+              fontSize:12,fontWeight:700,
+              background:active?PRI_SEG_C[seg.k]:'transparent',
+              color:active?PRI_SEG_TEXT[seg.k]:'#555',
+              border:'none',
+              borderRight:i<PRI_SEG.length-1?'1px solid rgba(255,255,255,0.06)':'none',
+              cursor:'pointer',fontFamily:'inherit',
+              transition:'all 0.12s',
+              letterSpacing:0.3,
+              minWidth:38,
+              lineHeight:1,
+            }}
+          >{seg.short}</button>
+        );
+      })}
+    </div>
+  );
+}
+
 function AttrCategory({g,priorities,thresholds,uP,uT,gP,tooltip,setTooltip,defaultOpen}){
   const[open,setOpen]=useState(defaultOpen);
   const active=g.attrs.filter(a=>priorities[a.k]&&priorities[a.k]!=='none').length;
+  const reqCount=g.attrs.filter(a=>priorities[a.k]==='required').length;
   const Icon=CAT_ICON[g.cat];
   return(
     <div style={{borderTop:`1px solid ${T.border}`}}>
-      <button onClick={()=>setOpen(o=>!o)} aria-expanded={open} style={{width:'100%',display:'flex',alignItems:'center',gap:8,padding:'11px 0',background:'transparent',border:'none',cursor:'pointer',fontFamily:'inherit',textAlign:'left'}}>
-        {Icon&&<Icon size={15} weight="bold" color={active?T.accent:T.dim} aria-hidden="true"/>}
-        <span style={{flex:1,fontSize:12,fontWeight:800,color:active?T.text:T.dim,letterSpacing:0.5}}>{g.cat}</span>
-        {g.note&&<span style={{fontSize:11,color:T.dim}}>{g.note}</span>}
-        {active>0&&<span style={C.tag(T.accent)}>{active}</span>}
-        <CaretDown size={14} weight="bold" color={T.dim} aria-hidden="true" style={{transform:open?'rotate(180deg)':'none',transition:'transform 0.22s ease'}}/>
+      <button onClick={()=>setOpen(o=>!o)} aria-expanded={open} style={{width:'100%',display:'flex',alignItems:'center',gap:8,padding:'12px 0',background:'transparent',border:'none',cursor:'pointer',fontFamily:'inherit',textAlign:'left'}}>
+        {Icon&&<Icon size={14} weight="bold" color={active?T.accent:T.dim} aria-hidden="true"/>}
+        <span style={{flex:1,fontSize:15,fontWeight:700,color:active?T.text:T.dim,letterSpacing:0.2}}>{g.cat}</span>
+        {g.note&&<span style={{fontSize:10,color:T.dim}}>{g.note}</span>}
+        {reqCount>0&&<span style={{fontSize:9,fontWeight:800,padding:'2px 6px',borderRadius:4,background:'#1A65D3',color:'#F2F2F2',letterSpacing:0.5}}>{reqCount}×!</span>}
+        {active>0&&!reqCount&&<span style={{fontSize:9,fontWeight:800,padding:'2px 6px',borderRadius:4,background:'rgba(59,130,246,0.2)',color:'#3B82F6'}}>{active}</span>}
+        <CaretDown size={12} weight="bold" color={T.dim} aria-hidden="true" style={{transform:open?'rotate(180deg)':'none',transition:'transform 0.22s ease'}}/>
       </button>
       <AnimatePresence initial={false}>
         {open&&(
-          <motion.div initial={{height:0,opacity:0}} animate={{height:'auto',opacity:1}} exit={{height:0,opacity:0}} transition={{duration:0.24,ease:EASE}} style={{overflow:'hidden'}}>
-            <div style={{paddingBottom:12}}>
-              <div style={{display:'flex',gap:4,marginBottom:10}}>
-                <button onClick={()=>gP(g,'required')} style={{...C.btn(false,T.accent),fontSize:10,padding:'3px 9px'}}>All Req</button>
-                <button onClick={()=>gP(g,'high')} style={{...C.btn(false,T.accent),fontSize:10,padding:'3px 9px'}}>All High</button>
-                <button onClick={()=>gP(g,'none')} style={{...C.btn(false),fontSize:10,padding:'3px 9px'}}>Clear</button>
+          <motion.div initial={{height:0,opacity:0}} animate={{height:'auto',opacity:1}} exit={{height:0,opacity:0}} transition={{type:'spring',stiffness:140,damping:22,opacity:{duration:0.16}}} style={{overflow:'hidden'}}>
+            <div style={{paddingBottom:14}}>
+              {/* Bulk actions */}
+              <div style={{display:'flex',gap:4,marginBottom:12,alignItems:'center',justifyContent:'flex-end'}}>
+                <span style={{fontSize:10,color:'rgba(255,255,255,0.2)',fontWeight:600,marginRight:4}}>All:</span>
+                {[['!','required','Set all Must'],['H','high','Set all High'],['—','none','Clear all']].map(([lbl,val,title])=>(
+                  <button key={val} onClick={()=>gP(g,val)} title={title} aria-label={title}
+                    style={{padding:'3px 9px',fontSize:10,fontWeight:800,borderRadius:999,border:`1px solid ${val==='none'?T.border:'rgba(255,255,255,0.12)'}`,background:val==='required'?'#1A65D3':val==='high'?'rgba(59,130,246,0.15)':'rgba(255,255,255,0.04)',color:val==='required'?'#F2F2F2':val==='high'?'#3B82F6':T.dim,cursor:'pointer',fontFamily:'inherit',minWidth:28,textAlign:'center'}}
+                  >{lbl}</button>
+                ))}
               </div>
-              {g.attrs.map(a=>(
-                <div key={a.k} style={{marginBottom:8}}>
-                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:a.thresholdKey&&priorities[a.k]&&priorities[a.k]!=='none'?4:0}}>
-                    <div style={{flex:1}}>
-                      <div style={{display:'flex',alignItems:'center',gap:6}}>
-                        <span style={{fontSize:13,color:T.text,fontWeight:500}}>{a.l}</span>
-                        {a.desc&&(
-                          <span role="button" tabIndex={0} aria-label={a.desc}
-                            style={{fontSize:11,color:T.dim,cursor:'help',position:'relative'}}
-                            onMouseEnter={()=>setTooltip(a.k)} onMouseLeave={()=>setTooltip(null)}
-                            onFocus={()=>setTooltip(a.k)} onBlur={()=>setTooltip(null)}
-                          >ⓘ{tooltip===a.k&&(
-                            <span style={{position:'absolute',bottom:'120%',left:0,width:220,background:T.card2,border:`1px solid ${T.border}`,borderRadius:6,padding:'6px 8px',fontSize:11,color:T.text,lineHeight:1.4,zIndex:100,pointerEvents:'none',whiteSpace:'normal'}}>{a.desc}</span>
-                          )}</span>
-                        )}
+              {g.attrs.map(a=>{
+                const pri=priorities[a.k]||'none';
+                const isActive=pri&&pri!=='none';
+                return(
+                  <div key={a.k} style={{marginBottom:8}}>
+                    <div style={{display:'flex',alignItems:'center',gap:10}}>
+                      {/* Color bar indicator */}
+                      <div style={{width:2,height:16,borderRadius:999,background:isActive?PRI_SEG_C[pri]:'rgba(255,255,255,0.08)',flexShrink:0,transition:'background 0.15s'}}/>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{display:'flex',alignItems:'center',gap:5}}>
+                          <span style={{fontSize:15,color:isActive?T.text:T.dim,fontWeight:isActive?600:400,transition:'color 0.15s',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{a.l}</span>
+                          {a.desc&&(
+                            <span role="button" tabIndex={0} aria-label={a.desc}
+                              style={{fontSize:10,color:T.dim,cursor:'help',position:'relative',flexShrink:0}}
+                              onMouseEnter={()=>setTooltip(a.k)} onMouseLeave={()=>setTooltip(null)}
+                              onFocus={()=>setTooltip(a.k)} onBlur={()=>setTooltip(null)}
+                            >ⓘ{tooltip===a.k&&(
+                              <span style={{position:'absolute',bottom:'120%',left:0,width:220,background:T.card2,border:`1px solid ${T.border}`,borderRadius:6,padding:'6px 8px',fontSize:11,color:T.text,lineHeight:1.4,zIndex:100,pointerEvents:'none',whiteSpace:'normal'}}>{a.desc}</span>
+                            )}</span>
+                          )}
+                        </div>
                       </div>
+                      <PrioritySegment attrKey={a.k} label={a.l} value={pri} onChange={uP}/>
                     </div>
-                    <div style={{display:'flex',gap:2}}>
-                      {Object.keys(PRI).map(p=>{
-                        const plabel=p==='required'?'Required':p==='none'?'Ignored':p.charAt(0).toUpperCase()+p.slice(1);
-                        return(
-                        <button key={p} onClick={()=>uP(a.k,p)}
-                          aria-label={`Set ${a.l} priority to ${plabel}`} aria-pressed={priorities[a.k]===p} title={plabel}
-                          style={{...C.btn(priorities[a.k]===p,PRI_C[p]),fontSize:11,padding:'3px 8px',minHeight:24,border:priorities[a.k]===p?'none':`1px solid ${T.border}30`}}
-                        >{p==='required'?'REQ':p==='none'?'—':p.charAt(0).toUpperCase()+p.slice(1)}</button>
-                      );})}
-                    </div>
+                    {a.thresholdKey&&isActive&&(()=>{
+                      const tc=thresholdCfg(a.thresholdKey);
+                      return(
+                      <div style={{display:'flex',alignItems:'center',gap:8,marginLeft:18,marginTop:4}}>
+                        <span style={{fontSize:11,color:T.dim,minWidth:70,flexShrink:0}}>{a.thresholdLabel}:</span>
+                        <input aria-label={`${a.thresholdLabel} for ${a.l}`} type="number"
+                          min={tc.min} max={tc.max} step={tc.step}
+                          value={thresholds[a.thresholdKey]||''}
+                          onChange={e=>uT(a.thresholdKey,e.target.value)}
+                          placeholder={tc.placeholder||'Min'}
+                          style={{...C.input,width:110,padding:'3px 10px',fontSize:11,border:`1px solid ${thresholds[a.thresholdKey]?'#1A65D3':T.border}`}}/>
+                        {thresholds[a.thresholdKey]&&<span style={{fontSize:10,color:'#1A65D3',fontWeight:800,letterSpacing:0.5}}>KNOCKOUT</span>}
+                      </div>
+                      );
+                    })()}
                   </div>
-                  {a.thresholdKey&&priorities[a.k]&&priorities[a.k]!=='none'&&(
-                    <div style={{display:'flex',alignItems:'center',gap:8,marginLeft:24,marginTop:2}}>
-                      <span style={{fontSize:11,color:T.dim,minWidth:80}}>{a.thresholdLabel}:</span>
-                      <input aria-label={`${a.thresholdLabel} for ${a.l}`} type="number" step="0.01" value={thresholds[a.thresholdKey]||''}
-                        onChange={e=>uT(a.thresholdKey,e.target.value)} placeholder="Min (optional)"
-                        style={{...C.input,width:120,padding:'4px 12px',fontSize:12,border:`1px solid ${thresholds[a.thresholdKey]?'#1A65D3':T.border}`}}/>
-                      {thresholds[a.thresholdKey]&&<span style={{fontSize:11,color:'#1A65D3',fontWeight:700}}>KNOCKOUT</span>}
-                    </div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </motion.div>
         )}
@@ -1051,193 +1119,225 @@ function Search({data,onSearch,clubCtx,forceValues,sidebar}){
   const reqc=Object.values(f.priorities).filter(v=>v==='required').length;
   const hc=Object.values(f.priorities).filter(v=>v==='high').length;
 
+  const inputSt={...C.input,padding:'8px 12px',fontSize:13};
+  const labelSt={...C.label,fontSize:11,marginBottom:4};
+  const hasActiveFilters=reqc>0||Object.values(f.thresholds).some(v=>v)||f.contractBefore||f.contractAfter||f.mlRole?.length>0||f.nationality||f.subPos||f.potentialTier;
   return(
-    <div style={{...(sidebar?{padding:'14px 14px 120px'}:{maxWidth:860,margin:'0 auto',padding:'20px 20px 40px'}),fontFamily:T.font}}>
-      {/* Sidebar: compact position pills at top */}
-      {sidebar&&<div style={{marginBottom:14}}>
-        <div style={C.label}>Position</div>
-        <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
-          {Object.entries(POS).map(([k,v])=>(
-            <motion.button key={k} onClick={()=>applyPreset(k)} whileTap={{scale:0.93}} animate={{background:f.posGroup===k?T.accent:'transparent',color:f.posGroup===k?'#F2F2F2':T.dim}} transition={{duration:0.18}} style={{padding:'5px 10px',fontSize:11,borderRadius:999,border:`1px solid ${f.posGroup===k?T.accent:T.border+'80'}`,cursor:'pointer',fontFamily:'inherit',fontWeight:700,letterSpacing:'0.5px',textTransform:'uppercase'}}>{v.label}</motion.button>
-          ))}
-        </div>
-      </div>}
-      {/* Full-page: header with title + position pills */}
-      {!sidebar&&<div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
-        <div>
-          <div style={{fontSize:11,fontWeight:800,letterSpacing:3,color:T.accent,textTransform:'uppercase'}}>ScoutLab</div>
-          <h1 style={{fontSize:22,fontWeight:800,color:T.text,margin:'4px 0 0',letterSpacing:'-0.3px'}}>Player Search</h1>
-          <p style={{color:T.dim,fontSize:13,marginTop:2}}>{data.current.length} players · {data.meta.currentSeason} season</p>
-          {clubCtx&&<div style={{display:'inline-flex',alignItems:'center',gap:8,marginTop:6,padding:'5px 12px',borderRadius:999,background:clubCtx.color+'15',border:`1px solid ${clubCtx.color}30`}}>
-            <ClubLogo club={clubCtx.team} size={16}/>
-            <span style={{fontSize:12,fontWeight:700,color:clubCtx.color}}>{clubCtx.team}</span>
-            <span style={{fontSize:11,color:T.dim}}>{clubCtx.formation} · {clubCtx.style}</span>
-          </div>}
-        </div>
-        <div style={{display:'flex',gap:4,flexWrap:'wrap',justifyContent:'flex-end'}}>
-          {Object.entries(POS).map(([k,v])=>(
-            <motion.button key={k} onClick={()=>applyPreset(k)} whileTap={{scale:0.93}} animate={{background:f.posGroup===k?T.accent:'transparent',color:f.posGroup===k?'#F2F2F2':T.dim}} transition={{duration:0.18}} style={{padding:'8px 14px',fontSize:12,borderRadius:999,border:`1px solid ${f.posGroup===k?T.accent:T.border+'60'}`,cursor:'pointer',fontFamily:'inherit',fontWeight:700,letterSpacing:'0.5px',textTransform:'uppercase'}}>{v.label}</motion.button>
-          ))}
-        </div>
-      </div>}
+    <div style={{...(sidebar?{padding:'14px 14px 120px'}:{maxWidth:860,margin:'0 auto',padding:'24px 20px 40px'}),fontFamily:T.font}}>
 
-      {/* Sub-position filter for DF and WG */}
+      {/* ── Position selector ── */}
+      {sidebar&&(
+        <div style={{marginBottom:20}}>
+          <div style={labelSt}>Position</div>
+          <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+            {Object.entries(POS).map(([k,v])=>(
+              <motion.button key={k} onClick={()=>applyPreset(k)} whileTap={{scale:0.93}} animate={{background:f.posGroup===k?T.accent:'transparent',color:f.posGroup===k?'#F2F2F2':T.dim}} transition={{duration:0.15}} aria-pressed={f.posGroup===k} style={{padding:'5px 12px',fontSize:11,borderRadius:999,border:`1px solid ${f.posGroup===k?T.accent:'rgba(255,255,255,0.1)'}`,cursor:'pointer',fontFamily:'inherit',fontWeight:700}}>{v.label}</motion.button>
+            ))}
+          </div>
+        </div>
+      )}
+      {!sidebar&&(
+        <div style={{marginBottom:22}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14,flexWrap:'wrap'}}>
+            {clubCtx?(
+              <div style={{display:'flex',alignItems:'center',gap:7,padding:'5px 12px',borderRadius:999,background:clubCtx.color+'14',border:`1px solid ${clubCtx.color}28`}}>
+                <ClubLogo club={clubCtx.team} size={14}/>
+                <span style={{fontSize:12,fontWeight:700,color:clubCtx.color}}>{clubCtx.team}</span>
+                <span style={{fontSize:11,color:T.dim}}>· {clubCtx.formation}</span>
+              </div>
+            ):(
+              <div style={{display:'flex',alignItems:'center',gap:6,padding:'4px 11px',borderRadius:999,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
+                <MagnifyingGlass size={12} weight="bold" color={T.accent} aria-hidden="true"/>
+                <span style={{fontSize:12,fontWeight:600,color:T.dim}}>All Clubs</span>
+              </div>
+            )}
+            <span style={{fontSize:12,color:'rgba(255,255,255,0.25)'}}>{data.current.length.toLocaleString()} players · {data.meta.currentSeason}</span>
+          </div>
+          <div role="group" aria-label="Filter by position" style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+            {Object.entries(POS).map(([k,v])=>(
+              <motion.button key={k} onClick={()=>applyPreset(k)} whileTap={{scale:0.95}}
+                animate={{background:f.posGroup===k?T.accent:'rgba(255,255,255,0.04)',color:f.posGroup===k?'#F2F2F2':T.dim,borderColor:f.posGroup===k?T.accent:'rgba(255,255,255,0.09)'}}
+                transition={{type:'spring',stiffness:200,damping:22}} aria-pressed={f.posGroup===k}
+                style={{padding:'8px 18px',fontSize:13,borderRadius:999,border:'1px solid',cursor:'pointer',fontFamily:'inherit',fontWeight:700}}
+              >{v.label}</motion.button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Sub-position (DF / WG only) ── */}
       {(f.posGroup==='DF'||f.posGroup==='WG')&&(
-        <div style={{...C.card,marginBottom:12}}>
-          <div style={{fontSize:12,fontWeight:800,color:T.dim,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>
-            {f.posGroup==='DF'?'Defender Type':'Winger Side'}
+        <div style={{marginBottom:20,paddingBottom:20,borderBottom:`1px solid ${T.border}`}}>
+          <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:10}}>
+            <Funnel size={12} weight="bold" color={T.dim} aria-hidden="true"/>
+            <span style={labelSt}>{f.posGroup==='DF'?'Defender Type':'Winger Side'}</span>
           </div>
           <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
             {(f.posGroup==='DF'
-              ?[['','All Defenders'],['LB','Left Back'],['RB','Right Back'],['CB','Centre-Back']]
-              :[['','All Wingers'],['LW','Left Winger'],['RW','Right Winger']]
+              ?[['','All'],['CB','Centre-Back'],['LB','Left Back'],['RB','Right Back']]
+              :[['','All'],['LW','Left'],['RW','Right']]
             ).map(([val,label])=>(
-              <button key={val} onClick={()=>u('subPos',val)} style={{
-                ...C.btn(f.subPos===val,T.green),
-                padding:'7px 16px',fontSize:11,borderRadius:999,
-                border:f.subPos===val?'none':`1px solid ${T.border}30`,
-              }}>{label}</button>
+              <button key={val} onClick={()=>u('subPos',val)} aria-pressed={f.subPos===val}
+                style={{...C.btn(f.subPos===val),padding:'6px 14px',fontSize:12,borderRadius:999}}>{label}</button>
             ))}
           </div>
         </div>
       )}
 
-      {/* GK-specific stat filters */}
+      {/* ── GK thresholds ── */}
       {f.posGroup==='GK'&&(
-        <div style={{...C.card,marginBottom:12}}>
-          <div style={{fontSize:12,fontWeight:800,color:T.dim,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>Goalkeeper Thresholds</div>
-          <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
-            <div style={{flex:1,minWidth:100}}>
-              <label style={C.label}>Min Save %</label>
-              <input aria-label="Minimum Save percentage" type="number" value={f.gkMinSave} onChange={e=>u('gkMinSave',+e.target.value||'')} style={C.input} placeholder="e.g. 68"/>
+        <div style={{marginBottom:20,paddingBottom:20,borderBottom:`1px solid ${T.border}`}}>
+          <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:12}}>
+            <HandPalm size={13} weight="bold" color={T.dim} aria-hidden="true"/>
+            <span style={labelSt}>Goalkeeper Thresholds</span>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10}} className="scout-filter-grid">
+            <div>
+              <label style={labelSt}>Min Save %</label>
+              <input aria-label="Minimum Save percentage" type="number" min="50" max="100" step="1" value={f.gkMinSave} onChange={e=>u('gkMinSave',+e.target.value||'')} style={inputSt} placeholder="e.g. 68"/>
             </div>
-            <div style={{flex:1,minWidth:100}}>
-              <label style={C.label}>Max GA / 90</label>
-              <input aria-label="Maximum Goals Against per 90" type="number" step="0.1" value={f.gkMaxGA} onChange={e=>u('gkMaxGA',+e.target.value||'')} style={C.input} placeholder="e.g. 1.2"/>
+            <div>
+              <label style={labelSt}>Max GA / 90</label>
+              <input aria-label="Maximum Goals Against per 90" type="number" min="0" max="4" step="0.1" value={f.gkMaxGA} onChange={e=>u('gkMaxGA',+e.target.value||'')} style={inputSt} placeholder="e.g. 1.2"/>
             </div>
-            <div style={{flex:1,minWidth:100}}>
-              <label style={C.label}>Min Clean Sheet %</label>
-              <input aria-label="Minimum Clean Sheet percentage" type="number" value={f.gkMinCS} onChange={e=>u('gkMinCS',+e.target.value||'')} style={C.input} placeholder="e.g. 30"/>
+            <div>
+              <label style={labelSt}>Min Clean Sheet %</label>
+              <input aria-label="Minimum Clean Sheet percentage" type="number" min="0" max="60" step="1" value={f.gkMinCS} onChange={e=>u('gkMinCS',+e.target.value||'')} style={inputSt} placeholder="e.g. 30"/>
             </div>
           </div>
         </div>
       )}
 
-      {/* Filters */}
-      <Collapsible title="Basic Requirements" icon={SlidersHorizontal} defaultOpen={false}
-        summary={`Age ${f.ageMin}–${f.ageMax} · ${f.minMinutes}+ mins${f.budgetMax?` · up to €${(f.budgetMax/1e6).toFixed(0)}M`:''}${f.nationality?` · ${f.nationality}`:''}`}>
-        <div className="scout-filter-grid">
-          <div><label style={C.label}>Age Min</label><input aria-label="Age Min" type="number" value={f.ageMin} onChange={e=>u('ageMin',+e.target.value||'')} style={C.input}/></div>
-          <div><label style={C.label}>Age Max</label><input aria-label="Age Max" type="number" value={f.ageMax} onChange={e=>u('ageMax',+e.target.value||'')} style={C.input}/></div>
-          <div><label style={C.label}>Budget Min</label><select aria-label="Budget Min" value={f.budgetMin} onChange={e=>u('budgetMin',e.target.value?+e.target.value:'')} style={C.input}>{BUDGET.map(b=><option key={`mn${b.v}`} value={b.v}>{b.l}</option>)}</select></div>
-          <div><label style={C.label}>Budget Max</label><select aria-label="Budget Max" value={f.budgetMax} onChange={e=>u('budgetMax',e.target.value?+e.target.value:'')} style={C.input}>{BUDGET.map(b=><option key={`mx${b.v}`} value={b.v}>{b.l}</option>)}</select></div>
-          <div><label style={C.label}>Height Min (cm)</label><input aria-label="Height Min in centimetres" type="number" value={f.heightMin} onChange={e=>u('heightMin',+e.target.value||'')} style={C.input} placeholder="e.g. 180"/></div>
-          <div><label style={C.label}>Height Max (cm)</label><input aria-label="Height Max in centimetres" type="number" value={f.heightMax} onChange={e=>u('heightMax',+e.target.value||'')} style={C.input} placeholder="e.g. 195"/></div>
-          <div><label style={C.label}>Preferred Foot</label><select aria-label="Preferred Foot" value={f.foot} onChange={e=>u('foot',e.target.value)} style={C.input}>{['Any','Right','Left','Both'].map(x=><option key={x}>{x}</option>)}</select></div>
-          <div><label style={C.label}>Min Minutes</label><input aria-label="Minimum minutes played" type="number" value={f.minMinutes} onChange={e=>u('minMinutes',+e.target.value||0)} style={C.input}/></div>
-          <div><label style={C.label}>Nationality</label><input aria-label="Nationality" value={f.nationality} onChange={e=>u('nationality',e.target.value)} style={C.input} placeholder="e.g. Spanish, French"/></div>
-          <div><label style={C.label}>Potential</label><select aria-label="Potential tier" value={f.potentialTier} onChange={e=>u('potentialTier',e.target.value)} style={C.input}><option value=''>Any</option><option value='Developing'>Developing (50+)</option><option value='High Potential'>High Potential (65+)</option><option value='Elite Prospect'>Elite Prospect (80+)</option></select></div>
-          <div><label style={C.label}>Contract Expires Before</label><input aria-label="Contract Expires Before" type="date" value={f.contractBefore} onChange={e=>u('contractBefore',e.target.value)} style={C.input}/></div>
-          <div><label style={C.label}>Contract Expires After</label><input aria-label="Contract Expires After" type="date" value={f.contractAfter} onChange={e=>u('contractAfter',e.target.value)} style={C.input}/></div>
+      {/* ── Filters — always visible ── */}
+      <div style={{marginBottom:20,paddingBottom:20,borderBottom:`1px solid ${T.border}`}}>
+        <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:14}}>
+          <SlidersHorizontal size={13} weight="bold" color={T.dim} aria-hidden="true"/>
+          <span style={labelSt}>Filters</span>
         </div>
-        <div style={{display:'flex',gap:6,marginBottom:10}}>
-          {[['Free Agents',()=>{const d=new Date();d.setMonth(d.getMonth()+3);u('contractBefore',d.toISOString().slice(0,10));}],['Expiring 12m',()=>{const d=new Date();d.setMonth(d.getMonth()+12);u('contractBefore',d.toISOString().slice(0,10));}],['Clear',()=>{u('contractBefore','');u('contractAfter','');}]].map(([l,fn])=>(
-            <button key={l} onClick={fn} style={{...C.btn(false,T.accent2),padding:'8px 10px',fontSize:11,border:`1px solid ${T.border}`}}>{l}</button>
-          ))}
-        </div>
-        <label style={C.label}>Leagues</label>
-        <div style={{display:'flex',flexWrap:'wrap',gap:6}}>{leagues.map(l=><button key={l} onClick={()=>tL(l)} style={C.btn(f.leagues.includes(l))}>{l}</button>)}</div>
-      </Collapsible>
 
-      {/* Attribute Priorities */}
-      <div style={C.card}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-          <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-            <span style={{fontSize:12,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1}}>Attribute Priorities</span>
-            {reqc>0&&<span style={C.tag('#1A65D3')}>{reqc} required</span>}
-            {hc>0&&<span style={C.tag(T.accent)}>{hc} high</span>}
-            <span style={C.tag(ac?T.dim:T.red)}>{ac} active</span>
+        {/* Row 1: Age / Budget / Minutes */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:10,marginBottom:10}} className="scout-filter-grid">
+          <div><label style={labelSt}>Age Min</label><input aria-label="Age Min" type="number" min="15" max="45" step="1" value={f.ageMin} onChange={e=>u('ageMin',+e.target.value||'')} style={inputSt} placeholder="18"/></div>
+          <div><label style={labelSt}>Age Max</label><input aria-label="Age Max" type="number" min="15" max="45" step="1" value={f.ageMax} onChange={e=>u('ageMax',+e.target.value||'')} style={inputSt} placeholder="35"/></div>
+          <div><label style={labelSt}>Budget Max</label><select aria-label="Budget Max" value={f.budgetMax} onChange={e=>u('budgetMax',e.target.value?+e.target.value:'')} style={inputSt}>{BUDGET.map(b=><option key={`mx${b.v}`} value={b.v}>{b.l}</option>)}</select></div>
+          <div><label style={labelSt}>Min Minutes</label><select aria-label="Minimum minutes played" value={f.minMinutes} onChange={e=>u('minMinutes',+e.target.value)} style={inputSt}>
+            {[[0,'Any'],[450,'450+'],[900,'900+'],[1350,'1350+'],[1800,'1800+'],[2520,'Full season'],[3240,'Near full']].map(([v,l])=><option key={v} value={v}>{l}</option>)}
+          </select></div>
+        </div>
+
+        {/* Row 2: Nationality / Foot / Height / Potential */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:10,marginBottom:12}} className="scout-filter-grid">
+          <div><label style={labelSt}>Nationality</label><input aria-label="Nationality" value={f.nationality} onChange={e=>u('nationality',e.target.value)} style={inputSt} placeholder="e.g. Spanish"/></div>
+          <div><label style={labelSt}>Foot</label><select aria-label="Preferred Foot" value={f.foot} onChange={e=>u('foot',e.target.value)} style={inputSt}>{['Any','Right','Left','Both'].map(x=><option key={x}>{x}</option>)}</select></div>
+          <div><label style={labelSt}>Height Min (cm)</label><input aria-label="Height Min" type="number" min="155" max="215" step="1" value={f.heightMin} onChange={e=>u('heightMin',+e.target.value||'')} style={inputSt} placeholder="e.g. 175"/></div>
+          <div><label style={labelSt}>Potential</label><select aria-label="Potential tier" value={f.potentialTier} onChange={e=>u('potentialTier',e.target.value)} style={inputSt}><option value=''>Any</option><option value='Developing'>Developing</option><option value='High Potential'>High Potential</option><option value='Elite Prospect'>Elite Prospect</option></select></div>
+        </div>
+
+        {/* Contract shortcuts */}
+        <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap',marginBottom:12}}>
+          <span style={{fontSize:11,color:'rgba(255,255,255,0.25)',fontWeight:600}}>Contract:</span>
+          {[['Free Agents',()=>{const d=new Date();d.setMonth(d.getMonth()+3);u('contractBefore',d.toISOString().slice(0,10));}],['Expiring 12m',()=>{const d=new Date();d.setMonth(d.getMonth()+12);u('contractBefore',d.toISOString().slice(0,10));}],['Any',()=>{u('contractBefore','');u('contractAfter','');}]].map(([l,fn])=>(
+            <button key={l} onClick={fn} style={{...C.btn(l==='Any'&&!f.contractBefore&&!f.contractAfter),padding:'5px 12px',fontSize:11,borderRadius:999,border:`1px solid ${T.border}`}}>{l}</button>
+          ))}
+          {f.contractBefore&&<span style={{fontSize:11,color:T.dim}}>before {f.contractBefore}</span>}
+        </div>
+
+        {/* Leagues */}
+        <div>
+          <span style={{fontSize:11,color:'rgba(255,255,255,0.25)',fontWeight:600,marginRight:6}}>Leagues:</span>
+          <div style={{display:'inline-flex',flexWrap:'wrap',gap:5,marginTop:4}}>
+            {leagues.map(l=><button key={l} onClick={()=>tL(l)} aria-pressed={f.leagues.includes(l)} style={{...C.btn(f.leagues.includes(l)),padding:'4px 11px',fontSize:11,borderRadius:999}}>{l}</button>)}
           </div>
-          <button onClick={()=>applyPreset(f.posGroup)} style={{...C.btn(false),border:`1px solid ${T.border}`,fontSize:11}}>↻ Reset</button>
         </div>
-
-        {/* Legend */}
-        <div style={{display:'flex',gap:12,marginBottom:12,padding:'8px 10px',background:T.bg,borderRadius:8,flexWrap:'wrap'}}>
-          {Object.entries(PRI_LABELS).map(([k,l])=>(
-            <div key={k} style={{display:'flex',alignItems:'center',gap:5,fontSize:11}}>
-              <div style={{width:8,height:8,borderRadius:2,background:PRI_C[k]}}/>
-              <span style={{color:T.dim,fontWeight:600}}>{l}</span>
-              <span style={{color:T.dim,opacity:0.6}}>—</span>
-              <span style={{color:T.dim,fontSize:11}}>{k==='required'?'Must be ≥ avg · 4× weight':k==='high'?'Major weight (3×)':k==='medium'?'Standard weight (2×)':k==='low'?'Minor weight (1×)':'Ignored'}</span>
-            </div>
-          ))}
-        </div>
-
-        {ac===0&&<div style={{background:T.red+'15',border:`1px solid ${T.red}30`,borderRadius:8,padding:10,marginBottom:12,fontSize:13,color:T.red}}>No attributes set — all players will score equally. Set at least 2-3 attributes.</div>}
-
-        {availCats.map((g,gi)=>(
-          <AttrCategory key={g.cat} g={g} priorities={f.priorities} thresholds={f.thresholds}
-            uP={uP} uT={uT} gP={gP} tooltip={tooltip} setTooltip={setTooltip} defaultOpen={gi===0}/>
-        ))}
       </div>
 
-      {/* ML Role Archetype — advanced knockout filter */}
+      {/* ── Attribute Priorities ── */}
+      <div style={{marginBottom:20}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <span style={{fontSize:13,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:0.8}}>Priorities</span>
+            {reqc>0&&<span style={C.tag('#1A65D3')}>{reqc}!</span>}
+            {hc>0&&<span style={C.tag(T.accent)}>{hc}H</span>}
+            {ac>0&&<span style={{fontSize:11,color:T.dim}}>{ac} set</span>}
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            {/* Legend dots */}
+            <div style={{display:'flex',gap:8,alignItems:'center'}}>
+              {PRI_SEG.filter(s=>s.k!=='none').reverse().map(seg=>(
+                <div key={seg.k} style={{display:'flex',alignItems:'center',gap:3}}>
+                  <div style={{width:8,height:8,borderRadius:999,background:PRI_SEG_C[seg.k],flexShrink:0}}/>
+                  <span style={{fontSize:10,color:'rgba(255,255,255,0.3)'}}>{seg.label}</span>
+                </div>
+              ))}
+            </div>
+            <button onClick={()=>applyPreset(f.posGroup)} title="Reset" aria-label="Reset attribute priorities" style={{...C.btn(false),padding:'4px 10px',fontSize:11,border:`1px solid ${T.border}`,display:'flex',alignItems:'center',gap:3}}>
+              <X size={9} weight="bold" aria-hidden="true"/> Reset
+            </button>
+          </div>
+        </div>
+
+        {ac===0&&(
+          <div style={{display:'flex',alignItems:'center',gap:8,padding:'10px 14px',borderRadius:8,background:'rgba(26,101,211,0.06)',border:'1px solid rgba(26,101,211,0.2)',marginBottom:14}}>
+            <Warning size={14} weight="fill" color={T.accent} aria-hidden="true"/>
+            <span style={{fontSize:12,color:T.dim}}>No attributes active — all players will score equally</span>
+          </div>
+        )}
+
+        <div style={{border:`1px solid ${T.border}`,borderRadius:12,overflow:'hidden',background:'rgba(255,255,255,0.01)'}}>
+          {availCats.map((g,gi)=>(
+            <AttrCategory key={g.cat} g={g} priorities={f.priorities} thresholds={f.thresholds}
+              uP={uP} uT={uT} gP={gP} tooltip={tooltip} setTooltip={setTooltip} defaultOpen={gi===0}/>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Advanced: Role Archetype + Team Context ── */}
       {availMlRoles.length>0&&(
-        <Collapsible title="Player Role Archetype" icon={Brain} badge={f.mlRole.length} defaultOpen={false}
-          summary={f.mlRole.length>0?`${f.mlRole.join(', ')} · knockout filter`:'Optional — narrow to specific ML archetypes'}>
-          {f.mlRole.length>0&&<button onClick={()=>u('mlRole',[])} style={{...C.btn(false),fontSize:11,padding:'3px 10px',marginBottom:10,border:`1px solid ${T.border}`}}>Clear selection</button>}
+        <Collapsible title="Role Archetype" icon={Brain} badge={f.mlRole.length} defaultOpen={false}
+          summary={f.mlRole.length>0?f.mlRole.join(', '):'Optional ML filter'}>
+          {f.mlRole.length>0&&<button onClick={()=>u('mlRole',[])} style={{...C.btn(false),fontSize:11,padding:'3px 10px',marginBottom:10,border:`1px solid ${T.border}`}}>Clear</button>}
           <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
             {availMlRoles.map(r=>{
               const on=f.mlRole.includes(r);
-              return(
-                <button key={r} onClick={()=>u('mlRole',on?f.mlRole.filter(x=>x!==r):[...f.mlRole,r])} style={{
-                  ...C.btn(on,T.accent2),
-                  padding:'6px 14px',fontSize:11,borderRadius:999,
-                  border:on?'none':`1px solid ${T.border}30`,
-                }}>{r}</button>
-              );
+              return(<button key={r} onClick={()=>u('mlRole',on?f.mlRole.filter(x=>x!==r):[...f.mlRole,r])} aria-pressed={on} style={{...C.btn(on,T.accent2),padding:'5px 13px',fontSize:11,borderRadius:999,border:on?'none':`1px solid ${T.border}`}}>{r}</button>);
             })}
           </div>
-          <p style={{fontSize:11,color:T.dim,marginTop:10,marginBottom:0}}>Select one or more roles — only players the ML model classified in those archetypes will appear.</p>
         </Collapsible>
       )}
 
-      {/* Context */}
       <Collapsible title="Team Context" icon={UsersThree} defaultOpen={false}
-        summary={`${f.teamFormation}${f.teamStyle?` · ${f.teamStyle}`:''}${f.similarTo?` · like ${f.similarTo}`:''}`}>
-        <div style={{display:'flex',gap:10,marginBottom:10}}>
-          <div style={{flex:1}}><label style={C.label}>Formation</label><select aria-label="Team Formation" value={f.teamFormation} onChange={e=>u('teamFormation',e.target.value)} style={C.input}>{['4-3-3','4-2-3-1','3-5-2','4-4-2','3-4-3','5-3-2','4-1-4-1'].map(x=><option key={x}>{x}</option>)}</select></div>
-          <div style={{flex:1}}><label style={C.label}>Playing Style</label><select aria-label="Team Playing Style" value={f.teamStyle} onChange={e=>u('teamStyle',e.target.value)} style={C.input}><option value="">Any</option>{['Possession','Counter-attack','High Press','Direct Play','Gegenpressing'].map(x=><option key={x}>{x}</option>)}</select></div>
+        summary={`${f.teamFormation}${f.teamStyle?` · ${f.teamStyle}`:''}${f.similarTo?` · similar to ${f.similarTo}`:''}`}>
+        <div style={{display:'flex',gap:10,marginBottom:12}} className="scout-filter-grid">
+          <div style={{flex:1}}><label style={labelSt}>Formation</label><select aria-label="Team Formation" value={f.teamFormation} onChange={e=>u('teamFormation',e.target.value)} style={inputSt}>{['4-3-3','4-2-3-1','3-5-2','4-4-2','3-4-3','5-3-2','4-1-4-1'].map(x=><option key={x}>{x}</option>)}</select></div>
+          <div style={{flex:1}}><label style={labelSt}>Playing Style</label><select aria-label="Team Playing Style" value={f.teamStyle} onChange={e=>u('teamStyle',e.target.value)} style={inputSt}><option value="">Any</option>{['Possession','Counter-attack','High Press','Direct Play','Gegenpressing'].map(x=><option key={x}>{x}</option>)}</select></div>
         </div>
-        <label style={C.label}>Similar to Existing Player</label><input aria-label="Similar to Existing Player" value={f.similarTo} onChange={e=>u('similarTo',e.target.value)} placeholder="e.g. Pedri, Salah, Haaland — boosts attributes matching their profile" style={C.input}/>
+        <label style={labelSt}>Similar to player</label>
+        <input aria-label="Similar to Existing Player" value={f.similarTo} onChange={e=>u('similarTo',e.target.value)} placeholder="e.g. Pedri, Salah, Haaland" style={inputSt}/>
       </Collapsible>
 
-      {/* Active filters summary */}
-      {(reqc>0||Object.values(f.thresholds).some(v=>v)||f.contractBefore||f.contractAfter||f.mlRole?.length>0||f.nationality||f.subPos||f.potentialTier)&&(
-        <div style={{...C.card,border:`1px solid #1A65D340`,background:'#1A65D308',marginBottom:12}}>
-          <div style={{fontSize:12,fontWeight:800,color:'#1A65D3',marginBottom:8}}>KNOCKOUT FILTERS ACTIVE</div>
-          <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-            {reqc>0&&<span style={C.tag('#1A65D3')}>{reqc} Required attributes — must be ≥ pool average</span>}
-            {Object.entries(f.thresholds).filter(([,v])=>v).map(([k,v])=>(
-              <span key={k} style={C.tag('#1A65D3')}>{k.replace(/_per90/,'').replace(/_/g,' ')} ≥ {v}</span>
-            ))}
-            {f.subPos&&<span style={C.tag('#1A65D3')}>Position: {f.subPos==='LB'?'Left Back':f.subPos==='RB'?'Right Back':f.subPos==='CB'?'Centre-Back':f.subPos==='LW'?'Left Winger':f.subPos==='RW'?'Right Winger':f.subPos}</span>}
-            {f.mlRole?.length>0&&<span style={C.tag('#1A65D3')}>Roles: {f.mlRole.join(', ')}</span>}
-            {f.nationality&&<span style={C.tag('#1A65D3')}>Nationality: {f.nationality}</span>}
-            {f.potentialTier&&<span style={C.tag(PTL[f.potentialTier]?.c||T.accent)}>{f.potentialTier}</span>}
-            {f.contractBefore&&<span style={C.tag('#1A65D3')}>Contract expires ≤ {f.contractBefore}</span>}
-            {f.contractAfter&&<span style={C.tag('#1A65D3')}>Contract expires ≥ {f.contractAfter}</span>}
-          </div>
-          <p style={{fontSize:11,color:T.dim,marginTop:6,marginBottom:0}}>Players not meeting these thresholds are excluded entirely from results, regardless of other attributes.</p>
+      {/* ── Knockout filters summary ── */}
+      {hasActiveFilters&&(
+        <div style={{display:'flex',flexWrap:'wrap',gap:5,padding:'10px 14px',borderRadius:8,background:'rgba(26,101,211,0.06)',border:'1px solid rgba(26,101,211,0.18)',marginBottom:12,marginTop:8}}>
+          <span style={{fontSize:11,fontWeight:800,color:T.accent,marginRight:4,flexShrink:0}}>KNOCKOUT:</span>
+          {reqc>0&&<span style={C.tag('#1A65D3')}>{reqc} required attrs</span>}
+          {Object.entries(f.thresholds).filter(([,v])=>v).map(([k,v])=>(
+            <span key={k} style={C.tag('#1A65D3')}>{k.replace(/_per90/,'').replace(/_/g,' ')} ≥ {v}</span>
+          ))}
+          {f.subPos&&<span style={C.tag('#1A65D3')}>{f.subPos==='LB'?'Left Back':f.subPos==='RB'?'Right Back':f.subPos==='CB'?'CB':f.subPos==='LW'?'LW':f.subPos==='RW'?'RW':f.subPos}</span>}
+          {f.mlRole?.length>0&&<span style={C.tag('#1A65D3')}>{f.mlRole.join(' / ')}</span>}
+          {f.nationality&&<span style={C.tag('#1A65D3')}>{f.nationality}</span>}
+          {f.potentialTier&&<span style={C.tag(PTL[f.potentialTier]?.c||T.accent)}>{f.potentialTier}</span>}
+          {f.contractBefore&&<span style={C.tag('#1A65D3')}>≤ {f.contractBefore}</span>}
         </div>
       )}
 
-      <div style={{position:'sticky',bottom:16,zIndex:20,marginTop:8}}>
-        <motion.button onClick={()=>onSearch(f)} whileHover={{scale:1.01}} whileTap={{scale:0.98}}
-          style={{width:'100%',padding:'15px 24px',borderRadius:999,border:'none',cursor:'pointer',background:T.accent,color:'#F2F2F2',fontSize:16,fontWeight:800,letterSpacing:0.3,fontFamily:'inherit',display:'flex',alignItems:'center',justifyContent:'center',gap:10,boxShadow:'0 10px 36px rgba(26,101,211,0.5)'}}>
-          <MagnifyingGlass size={18} weight="bold" aria-hidden="true"/>
+      {/* ── Search button ── */}
+      <div style={{position:'sticky',bottom:16,zIndex:20,marginTop:10}}>
+        <motion.button onClick={()=>onSearch(f)} whileHover={{scale:1.02,boxShadow:'0 12px 40px rgba(26,101,211,0.55)'}} whileTap={{scale:0.97}} transition={{type:'spring',stiffness:300,damping:22}}
+          style={{width:'100%',padding:'16px 24px',borderRadius:999,border:'none',cursor:'pointer',background:T.accent,color:'#F2F2F2',fontSize:15,fontWeight:800,letterSpacing:0.3,fontFamily:'inherit',display:'flex',alignItems:'center',justifyContent:'center',gap:10,boxShadow:'0 8px 32px rgba(26,101,211,0.40)'}}>
+          <MagnifyingGlass size={17} weight="bold" aria-hidden="true"/>
           Search Players
-          {ac>0&&<span style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:999,background:'rgba(255,255,255,0.2)'}}>{ac} attribute{ac>1?'s':''}</span>}
+          {ac>0&&<span style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:999,background:'rgba(255,255,255,0.18)'}}>{ac} attribute{ac>1?'s':''}</span>}
         </motion.button>
       </div>
     </div>
@@ -1292,26 +1392,31 @@ function Results({results,req,shortlist,onToggleShortlist,onSelect,onBack,onShor
         return(
         <motion.div
           key={`${p.Player}-${i}`}
-          initial={{opacity:0,x:-16,filter:'blur(4px)'}}
+          initial={{opacity:0,x:-12,filter:'blur(3px)'}}
           animate={{opacity:1,x:0,filter:'blur(0px)'}}
-          transition={{duration:0.4,ease:EASE,delay:Math.min(i*0.04,1)}}
-          whileHover={{x:5,borderColor:T.accent,transition:{duration:0.15}}}
-          style={{display:'flex',alignItems:'center',gap:14,padding:12,marginBottom:4,background:i===0?T.accent+'10':T.card,border:`1px solid ${i===0?T.accent+'40':T.border}`,borderRadius:10,cursor:'pointer'}}>
-          <span style={{fontSize:11,fontWeight:700,color:T.dim,width:22,textAlign:'center',fontFamily:T.mono}}>#{i+1}</span>
+          transition={{type:'spring',stiffness:100,damping:20,delay:Math.min(i*0.038,0.9)}}
+          whileHover={{x:4,borderColor:i===0?T.accent+'80':'rgba(255,255,255,0.14)'}}
+          whileTap={{scale:0.995}}
+          style={{display:'flex',alignItems:'center',gap:14,padding:'12px 14px',marginBottom:5,background:i===0?T.accent+'0C':T.card,border:`1px solid ${i===0?T.accent+'40':T.border}`,borderRadius:12,cursor:'pointer'}}>
+          <span style={{fontSize:10,fontWeight:800,color:i<3?T.accent:T.dim,width:20,textAlign:'center',fontFamily:T.mono,letterSpacing:'-0.02em'}}>{i+1}</span>
           {/* Player photo */}
           <div style={{flexShrink:0,cursor:'pointer'}} onClick={()=>onSelect(p,i)}>
             <PlayerAvatar name={p.Player} playerId={p._player_id} size={52} style={{borderRadius:8}}/>
           </div>
           {/* Score badge — match score in normal mode, potential score in dev mode */}
           {devMode?(
-            <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,flexShrink:0,cursor:'pointer'}} onClick={()=>onSelect(p,i)}>
-              <div style={{width:34,height:34,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',background:T.accent,color:'#fff',fontWeight:900,fontSize:13,fontFamily:T.mono}}>{p._potential_score}</div>
-              <div style={{fontSize:10,color:T.accent,fontWeight:700}}>POT</div>
+            <div style={{flexShrink:0,cursor:'pointer',position:'relative'}} onClick={()=>onSelect(p,i)}>
+              <div style={{width:42,height:42,borderRadius:999,display:'flex',alignItems:'center',justifyContent:'center',background:T.accent,color:'#F2F2F2',fontWeight:900,fontSize:14,fontFamily:T.mono,boxShadow:`0 0 0 2px rgba(0,0,0,0.5),0 0 0 3.5px ${T.accent}50`,flexDirection:'column',gap:0}}>
+                <span style={{lineHeight:1}}>{p._potential_score}</span>
+                <span style={{fontSize:7,fontWeight:800,letterSpacing:'0.05em',color:'rgba(255,255,255,0.7)',lineHeight:1,marginTop:1}}>POT</span>
+              </div>
             </div>
           ):(
-            <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,flexShrink:0,cursor:'pointer'}} onClick={()=>onSelect(p,i)}>
-              <div style={{width:34,height:34,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',background:sc(p.matchScore),color:'#F2F2F2',fontWeight:900,fontSize:13,fontFamily:T.mono}}>{p.matchScore}</div>
-              <div style={{fontSize:10,color:T.dim,fontWeight:700}}>FIT</div>
+            <div style={{flexShrink:0,cursor:'pointer'}} onClick={()=>onSelect(p,i)}>
+              <div style={{width:42,height:42,borderRadius:999,display:'flex',alignItems:'center',justifyContent:'center',background:sc(p.matchScore),color:'#F2F2F2',fontWeight:900,fontSize:14,fontFamily:T.mono,boxShadow:`0 0 0 2px rgba(0,0,0,0.5),0 0 0 3.5px ${sc(p.matchScore)}45`,flexDirection:'column',gap:0}}>
+                <span style={{lineHeight:1}}>{p.matchScore}</span>
+                <span style={{fontSize:7,fontWeight:800,letterSpacing:'0.05em',color:'rgba(255,255,255,0.7)',lineHeight:1,marginTop:1}}>FIT</span>
+              </div>
             </div>
           )}
           <div style={{flex:1,minWidth:0,cursor:'pointer'}} onClick={()=>onSelect(p,i)}>
@@ -1457,10 +1562,6 @@ function PlayerDrawer({player:p,data,req,shortlist,onToggle,onClose,onViewFull})
 
       {/* Sticky action buttons */}
       <div style={{padding:'16px 22px 28px',marginTop:'auto',flexShrink:0,borderTop:'1px solid rgba(255,255,255,0.06)'}}>
-        <motion.button onClick={onViewFull} whileHover={{scale:1.02}} whileTap={{scale:0.97}}
-          style={{width:'100%',padding:'13px 20px',borderRadius:999,border:'none',cursor:'pointer',background:T.accent,color:'#F2F2F2',fontSize:14,fontWeight:800,fontFamily:'inherit',display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:8,boxShadow:'0 8px 28px rgba(26,101,211,0.45)'}}>
-          Full Scout Report →
-        </motion.button>
         <motion.button onClick={()=>onToggle(p)} whileHover={{scale:1.01}} whileTap={{scale:0.97}}
           style={{width:'100%',padding:'11px 20px',borderRadius:999,cursor:'pointer',fontSize:13,fontWeight:700,fontFamily:'inherit',display:'flex',alignItems:'center',justifyContent:'center',gap:6,background:starred?'rgba(250,204,21,0.08)':'rgba(255,255,255,0.04)',color:starred?'#facc15':T.dim,border:`1px solid ${starred?'rgba(250,204,21,0.25)':'rgba(255,255,255,0.09)'}`}}>
           <Star size={13} weight={starred?'fill':'regular'}/> {starred?'Shortlisted — Remove':'Add to Shortlist'}
@@ -1475,7 +1576,10 @@ function PlayerDrawer({player:p,data,req,shortlist,onToggle,onClose,onViewFull})
 // Right panel content before search runs — club recruitment priorities
 function SuggestionsPanel({clubCtx,teamReports,selSug,onPickSug,onBackToClubs}){
   const BackToClubs=()=>(
-    <button onClick={onBackToClubs} aria-label="Back to all clubs" style={{background:'none',border:'none',color:T.accent,cursor:'pointer',fontSize:12,padding:0,fontFamily:'inherit',fontWeight:700,display:'flex',alignItems:'center',gap:4,marginBottom:14}}>← All Clubs</button>
+    <button onClick={onBackToClubs} aria-label="Back to all clubs" style={{background:'none',border:'none',color:T.dim,cursor:'pointer',fontSize:12,padding:0,fontFamily:'inherit',fontWeight:600,display:'flex',alignItems:'center',gap:5,marginBottom:16,transition:'color 0.15s'}} onMouseEnter={e=>e.currentTarget.style.color=T.accent} onMouseLeave={e=>e.currentTarget.style.color=T.dim}>
+      <CaretRight size={12} weight="bold" style={{transform:'rotate(180deg)'}} aria-hidden="true"/>
+      <span>All Clubs</span>
+    </button>
   );
   const leagueCtx=useMemo(()=>computeLeagueCtx(teamReports),[teamReports]);
   const rep=clubCtx?teamReports?.[clubCtx.team]:null;
@@ -1487,11 +1591,13 @@ function SuggestionsPanel({clubCtx,teamReports,selSug,onPickSug,onBackToClubs}){
       <div style={{display:'flex',flexDirection:'column',height:'100%',minHeight:360,padding:'24px 28px'}}>
         <BackToClubs/>
         <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center'}}>
-        <div style={{textAlign:'center',maxWidth:300}}>
-          <MagnifyingGlass size={36} weight="thin" color={T.dim} style={{marginBottom:14}}/>
-          <h3 style={{fontSize:16,fontWeight:800,color:T.text,margin:'0 0 8px'}}>Configure & Search</h3>
-          <p style={{color:T.dim,fontSize:13,lineHeight:1.6,margin:0}}>Set position and attribute priorities in the sidebar, then search for matching players.</p>
-        </div>
+          <div style={{textAlign:'center',maxWidth:260}}>
+            <div style={{width:48,height:48,borderRadius:999,background:'rgba(26,101,211,0.1)',border:'1px solid rgba(26,101,211,0.2)',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 16px'}}>
+              <MagnifyingGlass size={22} weight="duotone" color={T.accent} aria-hidden="true"/>
+            </div>
+            <div style={{fontSize:15,fontWeight:800,color:T.text,marginBottom:6}}>Ready to search</div>
+            <p style={{color:T.dim,fontSize:13,lineHeight:1.6,margin:0}}>Set position and priorities below, then hit Search.</p>
+          </div>
         </div>
       </div>
     );
@@ -1504,8 +1610,8 @@ function SuggestionsPanel({clubCtx,teamReports,selSug,onPickSug,onBackToClubs}){
       <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:10,flexWrap:'wrap'}}>
         <ClubLogo club={clubCtx.team} size={44}/>
         <div style={{flex:1,minWidth:0}}>
-          <h2 style={{fontSize:20,fontWeight:900,color:T.text,margin:'0 0 2px'}}>{clubCtx.team}</h2>
-          <p style={{color:T.dim,fontSize:12,margin:0}}>{clubCtx.formation} · {clubCtx.style} · 2024/25 Season</p>
+          <h2 style={{fontSize:22,fontWeight:900,color:T.text,margin:'0 0 2px'}}>{clubCtx.team}</h2>
+          <p style={{color:T.dim,fontSize:14,margin:0}}>{clubCtx.formation} · {clubCtx.style} · 2024/25 Season</p>
         </div>
         {rep&&<div style={{display:'flex',gap:14,flexShrink:0}}>
           {[['W',rep.w,T.accent],['D',rep.d,T.dim],['L',rep.l,T.text]].map(([l,v,c])=>(
@@ -1516,16 +1622,20 @@ function SuggestionsPanel({clubCtx,teamReports,selSug,onPickSug,onBackToClubs}){
           ))}
         </div>}
       </div>
-      {rep&&<div style={{display:'flex',gap:14,marginBottom:22,fontSize:12,color:T.dim,borderBottom:'1px solid rgba(255,255,255,0.06)',paddingBottom:14,flexWrap:'wrap'}}>
-        {rep.topScorer&&<span>Top Scorer: <b style={{color:T.text}}>{rep.topScorer}</b></span>}
-        {rep.topAssister&&<span>Top Assister: <b style={{color:T.text}}>{rep.topAssister}</b></span>}
-        {rep.gf!==undefined&&<span>GF: <b style={{color:T.text}}>{rep.gf}</b> · GA: <b style={{color:T.text}}>{rep.ga}</b></span>}
+      {rep&&<div style={{display:'flex',gap:16,marginBottom:20,borderBottom:'1px solid rgba(255,255,255,0.06)',paddingBottom:16,flexWrap:'wrap',alignItems:'center'}}>
+        <div style={{display:'flex',gap:12}}>
+          {[['W',rep.w,T.accent],['D',rep.d,T.dim],['L',rep.l,'rgba(255,255,255,0.3)']].map(([l,v,c])=>(
+            <div key={l} style={{display:'flex',alignItems:'center',gap:4}}>
+              <span style={{fontSize:15,fontWeight:900,color:c,lineHeight:1}}>{v}</span>
+              <span style={{fontSize:10,color:'rgba(255,255,255,0.3)',fontWeight:700,textTransform:'uppercase'}}>{l}</span>
+            </div>
+          ))}
+        </div>
+        {rep.gf!==undefined&&<span style={{fontSize:12,color:T.dim,marginLeft:'auto'}}><b style={{color:T.text}}>{rep.gf}</b> GF · <b style={{color:T.text}}>{rep.ga}</b> GA</span>}
       </div>}
 
       {sugs.length>0&&<>
-        <div style={{fontSize:10,fontWeight:800,letterSpacing:2.5,color:T.accent,textTransform:'uppercase',marginBottom:6}}>Recruitment Priorities</div>
-        <p style={{fontSize:12,color:T.dim,marginBottom:16}}>Click a role to pre-fill your search filters</p>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:12}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:10}}>
           {sugs.map((s,i)=>{
             const active=selSug?.role===s.role;
             return(
@@ -1533,23 +1643,23 @@ function SuggestionsPanel({clubCtx,teamReports,selSug,onPickSug,onBackToClubs}){
                 aria-pressed={active} aria-label={`${active?'Deselect':'Select'} recruitment role ${s.role}`}
                 onClick={()=>onPickSug(active?null:s)}
                 onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onPickSug(active?null:s);}}}
-                style={{padding:16,borderRadius:12,border:`2px solid ${active?s.color:T.border}`,background:active?s.color+'08':'rgba(255,255,255,0.02)',cursor:'pointer',transition:'all 0.13s'}}
-                onMouseEnter={e=>{if(!active)e.currentTarget.style.borderColor=s.color+'45';}}
-                onMouseLeave={e=>{if(!active)e.currentTarget.style.borderColor=T.border;}}>
-                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
-                  <div style={{width:3,height:18,borderRadius:999,background:s.color,flexShrink:0}}/>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:13,fontWeight:800,color:active?s.color:T.text}}>{s.role}</div>
-                    <div style={{fontSize:11,color:T.dim}}>{POS[s.posGroup]?.label} · {POS[s.posGroup]?.sub}</div>
+                style={{padding:14,borderRadius:12,border:`2px solid ${active?s.color:T.border}`,background:active?s.color+'0A':'rgba(255,255,255,0.02)',cursor:'pointer',transition:'all 0.13s',position:'relative'}}
+                onMouseEnter={e=>{if(!active){e.currentTarget.style.borderColor=s.color+'60';e.currentTarget.style.background='rgba(255,255,255,0.04)';}}}
+                onMouseLeave={e=>{if(!active){e.currentTarget.style.borderColor=T.border;e.currentTarget.style.background='rgba(255,255,255,0.02)';}}}
+              >
+                <div style={{display:'flex',alignItems:'flex-start',gap:10,marginBottom:10}}>
+                  <div style={{width:3,alignSelf:'stretch',minHeight:36,borderRadius:999,background:s.color,flexShrink:0}}/>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:15,fontWeight:800,color:active?s.color:T.text,lineHeight:1.2,marginBottom:2}}>{s.role}</div>
+                    <div style={{fontSize:11,color:T.dim,fontWeight:600}}>{POS[s.posGroup]?.label}</div>
                   </div>
-                  {active&&<span style={{fontSize:10,fontWeight:800,padding:'2px 8px',borderRadius:4,background:s.color,color:'#000',flexShrink:0}}>SELECTED</span>}
+                  {active&&<CheckCircle size={16} weight="fill" color={s.color} style={{flexShrink:0,marginTop:1}} aria-hidden="true"/>}
                 </div>
-                <div style={{display:'flex',gap:5,flexWrap:'wrap',marginBottom:8}}>
-                  {s.attrs?.slice(0,3).map(a=>(
-                    <span key={a.k} style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:999,background:PRI_C2[a.p]+'20',color:PRI_C2[a.p],textTransform:'uppercase'}}>{a.l.split('/')[0]}: {a.p}</span>
+                <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+                  {s.attrs?.slice(0,4).map(a=>(
+                    <span key={a.k} style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:999,background:PRI_C2[a.p]+'18',color:PRI_C2[a.p],border:`1px solid ${PRI_C2[a.p]}30`}}>{a.l.split(' ')[0]}</span>
                   ))}
                 </div>
-                <p style={{fontSize:11,color:T.dim,lineHeight:1.55,margin:0}}>{s.because?.slice(0,160)}{(s.because?.length||0)>160?'…':''}</p>
               </div>
             );
           })}
@@ -1571,6 +1681,7 @@ function MainLayout({data,clubCtx,teamReports,shortlist,onToggleShortlist,onBack
   const[req,setReq]=useState(null);
   const[sel,setSel]=useState(null);
   const[selSug,setSelSug]=useState(null);
+  const searchRef=useRef(null);
 
   const handleSearch=useCallback(f=>{
     setReq(f);
@@ -1578,6 +1689,16 @@ function MainLayout({data,clubCtx,teamReports,shortlist,onToggleShortlist,onBack
     setResults(search(pool,f));
     setSel(null);
   },[data,clubCtx]);
+
+  const handlePickSug=useCallback(s=>{
+    setSelSug(s);
+    setResults(null);
+    if(s){
+      setTimeout(()=>{
+        searchRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
+      },80);
+    }
+  },[]);
 
   const viewFullReport=useCallback(p=>{
     navigate('/scout-report',{state:{player:{
@@ -1599,112 +1720,144 @@ function MainLayout({data,clubCtx,teamReports,shortlist,onToggleShortlist,onBack
     }}});
   },[navigate]);
 
+  const showResults=results!==null;
+
   return(
-    <div className="scoutlab-layout" style={{fontFamily:T.font}}>
-      {/* ── Left panel: suggestions or results ── */}
-      <div className="scoutlab-content">
-        {results===null?(
-          <SuggestionsPanel clubCtx={clubCtx} teamReports={teamReports} selSug={selSug} onPickSug={setSelSug} onBackToClubs={onBackToClubs}/>
-        ):(
-          <div style={{padding:'20px 24px'}}>
-            {/* Results header */}
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14,flexWrap:'wrap',gap:8}}>
-              <div>
-                <button onClick={()=>setResults(null)} style={{background:'none',border:'none',color:T.accent,cursor:'pointer',fontSize:12,padding:0,fontFamily:'inherit',fontWeight:700,marginBottom:5,display:'flex',alignItems:'center',gap:4}}>← Recruitment Priorities</button>
-                <div style={{fontSize:17,fontWeight:800,color:T.text}}>Search Results</div>
-              </div>
-              <div style={{display:'flex',gap:10,alignItems:'center'}}>
-                <div style={{textAlign:'right'}}>
-                  <div style={{fontSize:18,fontWeight:800,color:T.accent}}>{results.length}</div>
-                  <div style={{fontSize:10,color:T.dim,textTransform:'uppercase',letterSpacing:0.5}}>matches</div>
-                </div>
-                <button onClick={onShortlistView} style={{...C.btn(false),padding:'7px 14px',fontSize:11,border:`1px solid ${T.border}`,borderRadius:999,display:'flex',alignItems:'center',gap:4}}>
-                  <Star size={11} weight="fill" style={{verticalAlign:'middle'}}/> Shortlist {shortlist?.length>0?`(${shortlist.length})`:''}
-                </button>
-              </div>
+    <div style={{fontFamily:T.font}}>
+
+      {/* ── Pre-search: 2-column split ── */}
+      <AnimatePresence mode="wait">
+        {!showResults&&(
+          <motion.div key="search-layout" className="layout-main-split" style={{alignItems:'start'}}
+            initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0,x:40}}
+            transition={{type:'spring',stiffness:140,damping:24}}
+          >
+            {/* LEFT: Club context + role suggestions */}
+            <div style={{minWidth:0,borderRight:'1px solid rgba(255,255,255,0.06)'}}>
+              <SuggestionsPanel clubCtx={clubCtx} teamReports={teamReports} selSug={selSug} onPickSug={handlePickSug} onBackToClubs={onBackToClubs}/>
             </div>
 
-            {/* Active filter pills */}
-            <div style={{display:'flex',gap:5,marginBottom:14,flexWrap:'wrap'}}>
-              <span style={C.tag()}>{POS[req?.posGroup]?.label||'All'}</span>
-              {req?.ageMin&&<span style={C.tag()}>{req.ageMin}–{req.ageMax} yrs</span>}
-              {req?.budgetMax&&<span style={C.tag()}>up to €{(req.budgetMax/1e6).toFixed(0)}M</span>}
-              {req?.nationality&&<span style={C.tag()}>{req.nationality}</span>}
-              {req?.similarTo&&<span style={C.tag(T.accent2)}>Like: {req.similarTo}</span>}
+            {/* RIGHT: Search form — sticky */}
+            <div ref={searchRef} style={{position:'sticky',top:64,maxHeight:'calc(100dvh - 64px)',overflowY:'auto',minWidth:0,scrollbarWidth:'none'}}>
+              <Search
+                data={data}
+                clubCtx={clubCtx?{...clubCtx,autoWeights:selSug?.weights||{}}:null}
+                forceValues={selSug?{posGroup:selSug.posGroup,priorities:selSug.weights,thresholds:selSug.thresholds||{}}:null}
+                onSearch={handleSearch}
+                sidebar={true}
+              />
             </div>
-
-            {/* Compact player cards */}
-            {results.slice(0,50).map((p,i)=>{
-              const starred=shortlist?.includes(p.Player);
-              const isSelected=sel?.Player===p.Player;
-              return(
-                <motion.div
-                  key={`${p.Player}-${i}`}
-                  className="scout-card-btn"
-                  role="button" tabIndex={0}
-                  aria-pressed={isSelected}
-                  aria-label={`${p.Player}, ${p.Squad}, match score ${p.matchScore}. View details`}
-                  initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}
-                  transition={{duration:0.22,ease:EASE,delay:Math.min(i*0.022,0.55)}}
-                  onClick={()=>setSel(isSelected?null:p)}
-                  onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setSel(isSelected?null:p);}}}
-                  style={{
-                    display:'flex',alignItems:'center',gap:11,padding:'9px 13px',marginBottom:4,
-                    background:isSelected?T.accent+'12':i===0?T.accent+'07':'rgba(255,255,255,0.02)',
-                    border:`1px solid ${isSelected?T.accent+'55':i===0?T.accent+'20':T.border}`,
-                    borderRadius:10,cursor:'pointer',transition:'all 0.1s',
-                  }}
-                >
-                  <span style={{fontSize:10,fontWeight:700,color:T.dim,width:20,textAlign:'center',flexShrink:0}}>#{i+1}</span>
-                  <PlayerAvatar name={p.Player} playerId={p._player_id} size={38} style={{borderRadius:7,flexShrink:0}}/>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{display:'flex',alignItems:'center',gap:5,flexWrap:'wrap'}}>
-                      <span style={{fontWeight:700,color:T.text,fontSize:13}}>{p.Player}</span>
-                      {p._trajectory&&<span style={{fontSize:10,color:TRJ[p._trajectory]?.c,fontWeight:700}}>{TRJ[p._trajectory]?.i}</span>}
-                      {p._injury_risk&&p._injury_risk!=='Low'&&<span style={{fontSize:9,padding:'1px 5px',borderRadius:3,background:IRK[p._injury_risk]?.c+'18',color:IRK[p._injury_risk]?.c,fontWeight:700}}>{p._injury_risk} Risk</span>}
-                    </div>
-                    <div style={{display:'flex',alignItems:'center',gap:5,fontSize:11,color:T.dim,marginTop:2,flexWrap:'wrap'}}>
-                      <ClubLogo club={p.Squad} size={11}/>
-                      <span>{p.Squad}</span>
-                      <span>·</span><span>{p._ml_role||p.Pos}</span>
-                      <span>·</span><span>{p.Age}y</span>
-                      <span>·</span><span>{mv(p)}</span>
-                    </div>
-                  </div>
-                  {/* Key stats */}
-                  <div style={{display:'flex',gap:10,flexShrink:0}}>
-                    {[[+(p.goals||p.Gls||0),'G'],[+(p.Ast||0),'A'],[(+(p.xG||p.npxG||0)).toFixed(1),'xG']].map(([v,l])=>(
-                      <div key={l} style={{textAlign:'center',minWidth:26}}>
-                        <div style={{fontSize:12,fontWeight:800,color:T.text,lineHeight:1}}>{v}</div>
-                        <div style={{fontSize:9,color:T.dim,fontWeight:700,textTransform:'uppercase',marginTop:1}}>{l}</div>
-                      </div>
-                    ))}
-                  </div>
-                  {/* Match score */}
-                  <div style={{width:30,height:30,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center',background:sc(p.matchScore),color:'#F2F2F2',fontWeight:900,fontSize:11,flexShrink:0}}>{p.matchScore}</div>
-                  {/* Shortlist star */}
-                  <button onClick={e=>{e.stopPropagation();onToggleShortlist(p);}} aria-label={starred?`Remove ${p.Player} from shortlist`:`Add ${p.Player} to shortlist`}
-                    style={{background:'none',border:'none',cursor:'pointer',color:starred?'#facc15':T.dim,padding:'3px',flexShrink:0,display:'flex',alignItems:'center'}}
-                  ><Star size={14} weight={starred?'fill':'regular'}/></button>
-                </motion.div>
-              );
-            })}
-          </div>
+          </motion.div>
         )}
-      </div>
 
-      {/* ── Right sidebar: filter panel ── */}
-      <div className="scoutlab-sidebar">
-        <div style={{flex:1,overflow:'auto'}}>
-          <Search
-            data={data}
-            clubCtx={clubCtx?{...clubCtx,autoWeights:selSug?.weights||{}}:null}
-            forceValues={selSug?{posGroup:selSug.posGroup,priorities:selSug.weights,thresholds:selSug.thresholds||{}}:null}
-            onSearch={handleSearch}
-            sidebar={true}
-          />
-        </div>
-      </div>
+        {/* ── Post-search: full-width results grid ── */}
+        {showResults&&(
+          <motion.div key="results-layout" className="scout-results-view"
+            initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} exit={{opacity:0}}
+            transition={{type:'spring',stiffness:120,damping:22}}
+          >
+            {/* Results header */}
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,flexWrap:'wrap',gap:12,paddingTop:24}}>
+              <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+                <button onClick={()=>setResults(null)} style={{display:'flex',alignItems:'center',gap:6,padding:'7px 14px',borderRadius:999,background:'rgba(255,255,255,0.04)',border:`1px solid ${T.border}`,color:T.dim,fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>
+                  <ArrowLeft size={13} weight="bold"/>
+                  Modify search
+                </button>
+                <div style={{display:'flex',alignItems:'baseline',gap:5}}>
+                  <span style={{fontSize:26,fontWeight:900,color:T.accent,lineHeight:1}}>{results.length}</span>
+                  <span style={{fontSize:13,color:T.dim,fontWeight:600}}>matches</span>
+                </div>
+                <span style={C.tag()}>{POS[req?.posGroup]?.label||'All'}</span>
+                {req?.ageMin&&req.ageMin!==18&&<span style={C.tag()}>{req.ageMin}–{req.ageMax}y</span>}
+                {req?.budgetMax&&<span style={C.tag()}>≤€{(req.budgetMax/1e6).toFixed(0)}M</span>}
+                {req?.nationality&&<span style={C.tag()}>{req.nationality}</span>}
+              </div>
+              <button onClick={onShortlistView} style={{...C.btn(shortlist?.length>0,T.accent),padding:'7px 16px',fontSize:12,border:`1px solid ${shortlist?.length>0?T.accent:T.border}`,borderRadius:999,display:'flex',alignItems:'center',gap:6}}>
+                <Star size={13} weight={shortlist?.length>0?'fill':'regular'} aria-hidden="true"/>
+                {shortlist?.length>0?`Shortlist (${shortlist.length})`:'Shortlist'}
+              </button>
+            </div>
+
+            {/* Player grid */}
+            <div className="scout-results-grid">
+              {results.slice(0,50).map((p,i)=>{
+                const starred=shortlist?.includes(p.Player);
+                const isSelected=sel?.Player===p.Player;
+                return(
+                  <motion.div
+                    key={`${p.Player}-${i}`}
+                    role="button" tabIndex={0}
+                    aria-pressed={isSelected}
+                    aria-label={`${p.Player}, ${p.Squad}, match score ${p.matchScore}. View details`}
+                    initial={{opacity:0,y:10,scale:0.97}} animate={{opacity:1,y:0,scale:1}}
+                    transition={{type:'spring',stiffness:110,damping:20,delay:Math.min(i*0.028,0.7)}}
+                    whileHover={{y:-3,borderColor:isSelected?T.accent+'88':T.accent+'40'}}
+                    whileTap={{scale:0.98}}
+                    onClick={()=>setSel(isSelected?null:p)}
+                    onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setSel(isSelected?null:p);}}}
+                    style={{
+                      display:'flex',flexDirection:'column',alignItems:'center',gap:12,
+                      padding:'18px 16px 14px',
+                      background:isSelected?T.accent+'10':i===0?T.accent+'06':'rgba(255,255,255,0.02)',
+                      border:`1px solid ${isSelected?T.accent+'55':i===0?T.accent+'22':T.border}`,
+                      borderRadius:14,cursor:'pointer',
+                      transition:'border-color 0.12s,background 0.12s',
+                      position:'relative',minWidth:0,
+                    }}
+                  >
+                    {/* Rank + score row */}
+                    <div style={{position:'absolute',top:12,left:14,fontSize:10,fontWeight:900,color:i<3?T.accent:T.dim}}>
+                      #{i+1}
+                    </div>
+                    <div style={{position:'absolute',top:10,right:10,width:34,height:34,borderRadius:999,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',background:sc(p.matchScore),boxShadow:`0 0 0 2px rgba(0,0,0,0.5),0 0 0 3.5px ${sc(p.matchScore)}45`}}>
+                      <span style={{fontSize:11,fontWeight:900,color:'#F2F2F2',lineHeight:1}}>{p.matchScore}</span>
+                      <span style={{fontSize:7,fontWeight:800,color:'rgba(255,255,255,0.7)',letterSpacing:0.3}}>FIT</span>
+                    </div>
+
+                    {/* Avatar */}
+                    <PlayerAvatar name={p.Player} playerId={p._player_id} size={62} style={{borderRadius:999,border:`2px solid ${isSelected?T.accent+'60':'rgba(255,255,255,0.08)'}`}}/>
+
+                    {/* Name + badges */}
+                    <div style={{textAlign:'center',minWidth:0,width:'100%'}}>
+                      <div style={{fontWeight:800,color:T.text,fontSize:14,lineHeight:1.2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',paddingInline:4}}>{p.Player}</div>
+                      <div style={{display:'flex',alignItems:'center',gap:4,justifyContent:'center',marginTop:4,flexWrap:'wrap'}}>
+                        {p._trajectory&&<span style={{fontSize:9,color:TRJ[p._trajectory]?.c,fontWeight:800}}>{TRJ[p._trajectory]?.i}</span>}
+                        {p._injury_risk&&p._injury_risk!=='Low'&&<span style={{fontSize:8,padding:'1px 5px',borderRadius:3,background:IRK[p._injury_risk]?.c+'18',color:IRK[p._injury_risk]?.c,fontWeight:800}}>{p._injury_risk} Risk</span>}
+                      </div>
+                    </div>
+
+                    {/* Club + position */}
+                    <div style={{display:'flex',alignItems:'center',gap:5,fontSize:11,color:T.dim}}>
+                      <ClubLogo club={p.Squad} size={12}/>
+                      <span style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:100}}>{p.Squad}</span>
+                      <span>·</span>
+                      <span>{p.Age}y</span>
+                    </div>
+
+                    {/* Stats row */}
+                    <div style={{display:'flex',gap:14,justifyContent:'center',borderTop:`1px solid ${T.border}`,paddingTop:10,width:'100%'}}>
+                      {[[+(p.goals||p.Gls||0),'G'],[+(p.Ast||0),'A'],[(+(p.xG||p.npxG||0)).toFixed(1),'xG']].map(([v,l])=>(
+                        <div key={l} style={{textAlign:'center'}}>
+                          <div style={{fontSize:14,fontWeight:900,color:T.text,lineHeight:1}}>{v}</div>
+                          <div style={{fontSize:9,color:T.dim,fontWeight:700,textTransform:'uppercase',marginTop:2}}>{l}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Value + shortlist row */}
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%'}}>
+                      <span style={{fontSize:11,color:T.dim,fontWeight:600}}>{mv(p)}</span>
+                      <button onClick={e=>{e.stopPropagation();onToggleShortlist(p);}} aria-label={starred?`Remove ${p.Player} from shortlist`:`Add ${p.Player} to shortlist`}
+                        style={{background:'none',border:'none',cursor:'pointer',color:starred?'#facc15':T.dim,padding:'4px',display:'flex',alignItems:'center'}}
+                      ><Star size={15} weight={starred?'fill':'regular'}/></button>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Player drawer overlay ── */}
       <AnimatePresence>

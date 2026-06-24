@@ -17,7 +17,6 @@ const PRODUCT_SECTIONS = [
     items: [
       { label: 'Injury Risk',    desc: 'Squad fitness radar',       icon: Heartbeat,   path: '/injury-risk'    },
       { label: 'Player Stats',   desc: 'Deep performance metrics',  icon: ChartBar,    path: '/player-stats'   },
-      { label: 'Player Profile', desc: 'Individual player dossier', icon: User,        path: '/player-profile' },
     ],
   },
   {
@@ -31,7 +30,6 @@ const PRODUCT_SECTIONS = [
 
 const NAV_LINKS = [
   { label: 'Teams',     path: '/teams'    },
-  { label: 'Community', path: '/features' },
   { label: 'Support',   path: '/support'  },
   { label: 'Pricing',   path: '/pricing'  },
 ];
@@ -140,7 +138,7 @@ export default function Navbar({ showFeaturesDropdown = false }: NavbarProps) {
                 aria-expanded={showFeaturesDropdown ? productOpen : undefined}
                 style={{ display: 'flex', alignItems: 'center', gap: 4 }}
               >
-                Product
+                Features
                 {showFeaturesDropdown && (
                   <svg
                     xmlns="http://www.w3.org/2000/svg" width="10" height="10"
@@ -452,7 +450,7 @@ export default function Navbar({ showFeaturesDropdown = false }: NavbarProps) {
                   onClick={() => setMobileProduct(o => !o)}
                   aria-expanded={mobileProduct}
                 >
-                  <span>Product</span>
+                  <span>Features</span>
                   <CaretDown
                     size={14}
                     weight="bold"
