@@ -1,0 +1,51 @@
+# Render Blueprint — defines both services so you can deploy via New → Blueprint.
+# Secrets and cross-service URLs are marked `sync: false`: Render will prompt you to
+# enter them in the dashboard (they are never stored in this file / the repo).
+#
+# After the first deploy, set the two URL vars to the addresses Render assigns:
+#   pplai-web  static site  ->  used as the backend's FRONTEND_URL
+#   pplai-api  web service  ->  used as the frontend's VITE_API_URL
+# (Re-deploy the frontend after setting VITE_API_URL — it's baked in at build time.)
+
+services:
+  # ── Backend: Node/Express API ───────────────────────────────────────────────
+  - type: web
+    name: pplai-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node src/index.js
+    healthCheckPath: /health
+    envVars:
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_REGION
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      # The deployed frontend URL, e.g. https://pplai-web.onrender.com — required for CORS.
+      - key: FRONTEND_URL
+        sync: false
+      # Optional: live gameweek mapping. Leave unset to use the bundled 2024/25 schedule.
+      - key: FOOTBALL_DATA_API_KEY
+        sync: false
+
+  # ── Frontend: Vite static site ──────────────────────────────────────────────
+  - type: web
+    name: pplai-web
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    pullRequestPreviewsEnabled: false
+    routes:
+      # SPA fallback so React Router routes resolve on refresh / deep links.
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      # The deployed backend URL, e.g. https://pplai-api.onrender.com
+      - key: VITE_API_URL
+        sync: false
