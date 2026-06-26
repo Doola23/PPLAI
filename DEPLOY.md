@@ -33,6 +33,22 @@ FOOTBALL_DATA_API_KEY=...                         # optional: live gameweek mapp
 CORS allows `FRONTEND_URL`, localhost, and private-LAN origins (dev). Without `FRONTEND_URL`
 the deployed frontend's requests will be blocked.
 
+## No-credit-card option: Vercel (frontend) + Koyeb (backend)
+
+**Frontend on Vercel** (`vercel.json` is included):
+1. vercel.com → New Project → import `Doola23/PPLAI`.
+2. Framework: Vite (auto). Build/output come from `vercel.json` (`npm run build` → `dist`).
+3. Add env var `VITE_API_URL` = the Koyeb backend URL → Deploy.
+4. (Re-deploy after changing `VITE_API_URL` — it's baked in at build time.)
+
+**Backend on Koyeb** (`backend/Dockerfile` is included, no card required):
+1. koyeb.com → Create Service → GitHub → `Doola23/PPLAI`.
+2. Builder: **Dockerfile**, Dockerfile path `backend/Dockerfile`, work directory `backend`.
+3. Instance: Free. Port: `8000` (Koyeb injects `PORT`; the app reads `process.env.PORT`).
+4. Env vars: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `JWT_SECRET`,
+   and `FRONTEND_URL` = the Vercel URL.
+5. Deploy → copy the service URL → set it as `VITE_API_URL` on Vercel and redeploy the frontend.
+
 ## Must serve over HTTPS
 
 Share, clipboard copy, and PDF export rely on a secure context — they work on HTTPS (and
