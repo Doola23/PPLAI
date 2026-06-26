@@ -27,7 +27,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-[100dvh] w-full flex overflow-hidden bg-bg-black" style={gridStyle}>
 
-      <section className="w-full md:w-[52%] lg:w-[48%] flex flex-col justify-between px-10 py-10 md:px-14 lg:px-20">
+      <section className="w-full md:w-[52%] lg:w-[48%] flex flex-col justify-between px-6 py-10 md:px-14 lg:px-20">
 
         <motion.div {...stagger(0)} className="flex items-center justify-between">
           <Logo height={20} />

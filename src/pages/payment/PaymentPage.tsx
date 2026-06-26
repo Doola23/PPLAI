@@ -285,7 +285,7 @@ export default function PaymentPage() {
                   </div>
 
                   <SectionLabel text="Personal Info" accent={plan.accent} />
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 32 }}>
+                  <div className="payment-info-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 32 }}>
                     <FieldInput label="Full Name" placeholder="Erling Haaland" value={form.name} onChange={v => set('name', v)} error={errors.name} accent={plan.accent} />
                     <FieldInput label="Email" type="email" placeholder="erling@cityfc.com" value={form.email} onChange={v => set('email', v)} error={errors.email} accent={plan.accent} />
                   </div>

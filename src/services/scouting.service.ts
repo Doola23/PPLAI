@@ -64,6 +64,13 @@ export const scoutingService = {
     return data.items ?? [];
   },
 
+  // Returns EVERY current player. /current is a single un-paginated scan (caps at ~1MB),
+  // so use /primary, which paginates the full table — needed so all shortlisted players appear.
+  async getAll(): Promise<ScoutPlayer[]> {
+    const { data } = await api.get<{ current: ScoutPlayer[] }>('/api/scouting/primary');
+    return data.current ?? [];
+  },
+
   async getPlayer(playerSquad: string): Promise<ScoutPlayer> {
     const { data } = await api.get<ScoutPlayer>(
       `/api/scouting/current/${encodeURIComponent(playerSquad)}`

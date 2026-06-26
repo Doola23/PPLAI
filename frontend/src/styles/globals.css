@@ -237,6 +237,43 @@ canvas {
 }
 .skip-link:focus { top: 16px; }
 
+/* ── Global mobile safety net ──
+   Stop any single wide element from forcing the whole page to scroll sideways, and keep
+   media from blowing past the viewport. `clip` (not `hidden`) so position:sticky still works.
+   Inner horizontal-scroll regions (.table-scroll-x) keep their own overflow. */
+@media (max-width: 768px) {
+  html, body, #root { overflow-x: clip; max-width: 100%; }
+  img, video { max-width: 100%; }
+}
+
+/* ── PageBanner responsive collapse ── */
+@media (max-width: 768px) {
+  .page-banner-inner {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    padding: 48px 20px 36px !important;
+    gap: 20px !important;
+  }
+  .page-banner-stats {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    gap: 20px !important;
+  }
+}
+
+/* ── ScoutLab: restore focus rings overridden by inline outline:none ── */
+.scoutlab-root *:focus-visible {
+  outline: 2px solid #1A65D3 !important;
+  outline-offset: 2px !important;
+  border-radius: 4px;
+}
+.scoutlab-root button:focus-visible {
+  border-radius: 999px;
+}
+
 /* prefers-reduced-motion — disable all non-essential animations */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

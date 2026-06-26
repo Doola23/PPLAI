@@ -181,7 +181,6 @@ export default function PlayerStatsPage() {
   const [allPlayers, setAllPlayers] = useState<DisplayPlayer[]>([]);
   const [loading, setLoading]     = useState(true);
   const [playerIdx, setPlayerIdx] = useState(0);
-  const [season, setSeason]       = useState<'2024/25' | '2023/24' | '2022/23'>('2024/25');
   const [predictions, setPredictions] = useState<PlayerPrediction[]>([]);
   const [search, setSearch] = useState('');
 
@@ -302,21 +301,6 @@ export default function PlayerStatsPage() {
               </div>
             </motion.button>
           ))}
-
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-            {(['2024/25', '2023/24', '2022/23'] as const).map(s => (
-              <button
-                key={s} onClick={() => setSeason(s)}
-                style={{
-                  padding: '8px 12px', borderRadius: 999,
-                  border: `1px solid ${s === season ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.07)'}`,
-                  background: s === season ? 'rgba(255,255,255,0.07)' : 'transparent',
-                  color: s === season ? '#F2F2F2' : '#939A9E',
-                  fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-                }}
-              >{s}</button>
-            ))}
-          </div>
         </div>
 
         {!player && (
@@ -335,7 +319,7 @@ export default function PlayerStatsPage() {
             transition={{ duration: 0.4, ease: E }}
             className="layout-sidebar-left" style={{ marginTop: 20 }}
           >
-            <div style={{
+            <div className="ps-identity-card" style={{
               position: 'sticky', top: 56, height: 'fit-content',
               background: 'var(--surface-card)',
               border: '1px solid rgba(255,255,255,0.07)',

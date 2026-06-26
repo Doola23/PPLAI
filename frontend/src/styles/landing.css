@@ -937,9 +937,18 @@
   .lhero-cinema__sky { padding-top: 72px; min-height: 280px; }
   .lhero-cinema__content .lhero__title { font-size: clamp(34px, 10vw, 56px); }
 
-  /* Spline: compact on mobile */
-  .lspline-box { height: 300px !important; }
-  .lspline-pill { display: none !important; }
+  /* Robot centred; the five pills frame it from the corners + bottom-centre, clear of the
+     wide arms that span the middle. */
+  .lspline-box { height: 480px !important; }
+  .lspline-pill { padding: 10px 14px !important; }
+  .lspline-pill > div { font-size: 12px !important; }
+  .lspline-mobile-pills { display: none !important; }
+
+  .lspline-pill--0 { top: 8% !important;  bottom: auto !important; left: 0 !important;  right: auto !important; }   /* top-left      */
+  .lspline-pill--1 { top: 8% !important;  bottom: auto !important; right: 0 !important; left: auto !important; }   /* top-right     */
+  .lspline-pill--2 { top: 48% !important; bottom: auto !important; left: 0 !important;  right: auto !important; }   /* middle-left   */
+  .lspline-pill--3 { top: 48% !important; bottom: auto !important; right: 0 !important; left: auto !important; }   /* middle-right  */
+  .lspline-pill--4 { top: 88% !important; bottom: auto !important; left: 50% !important; right: auto !important; margin-left: -76px !important; }  /* bottom-centre */
 
   /* Match fixture row: shrink fixed cols */
   .lmatch__head,
@@ -958,6 +967,7 @@
 
 /* ── Spline showcase box ── */
 .lspline-box { height: 580px; }
+
 
 /* ── Checkout layout (payment page) ── */
 .checkout-grid {
@@ -2271,11 +2281,43 @@
     word-break: break-word;
     hyphens: auto;
   }
-  /* Stack player zones vertically on very small screens */
-  .lhero-player-zone {
-    bottom: auto;
-    top: auto;
+  /* The hero image is a wide montage of all three players; portrait 'cover' crops the
+     side two away, leaving only Haaland. Give the image layer the image's own aspect
+     ratio as a band at the bottom so the whole montage (all 3 players) shows, then sit
+     each name pill under its player. */
+  .lhero-cinema {
+    min-height: unset !important;
+    height: calc(250px + 94vw) !important;
+    /* Match the image's night-sky tone behind the navbar + title so the header area
+       blends into the photo instead of sitting on a flat black block. */
+    background: linear-gradient(to bottom, #05070e 0%, #0a1426 60%, #0d1a32 100%) !important;
   }
+  .lhero-cinema__img--reveal {
+    left: 0 !important;
+    top: auto !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 94vw !important;
+    /* Fade the top edge of the photo band into the sky-tone background — no hard seam. */
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 11%) !important;
+    mask-image: linear-gradient(to bottom, transparent 0, #000 11%) !important;
+  }
+  .lhero-cinema__img--reveal img {
+    object-fit: cover !important;
+    object-position: center !important;
+  }
+  /* The top overlay is tuned for a full-bleed image; on the band it just muddies the
+     blend, so lighten it and drop the bottom-to-black vignette. */
+  .lhero-cinema__overlay { background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.10) 40%, rgba(0,0,0,0) 70%) !important; }
+  .lhero-cinema__overlay::after { display: none !important; }
+  .lhero-player-zone {
+    top: auto !important;
+    bottom: 0 !important;
+    height: 94vw !important;
+  }
+  /* Mobile shows just the player photos — no name pills (laptop keeps the hover pills). */
+  .lhero-player-zone__pill { display: none !important; }
+  .lhero-player-zone__glow { display: none; }
 }
 
 /* ═══════════════════════════════════════════════════════════════

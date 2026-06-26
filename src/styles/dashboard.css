@@ -418,7 +418,12 @@
 .scout-results-view   { max-width: 1200px; margin: 0 auto; padding: 0 24px 60px; }
 .scout-results-grid   { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 @media (max-width: 960px) { .scout-results-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 600px) { .scout-results-grid { grid-template-columns: 1fr; } .scout-results-view { padding: 0 16px 40px; } }
+@media (max-width: 600px) {
+  /* Keep two players side-by-side on mobile, with tighter gap + smaller cards to fit. */
+  .scout-results-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
+  .scout-results-view { padding: 0 12px 40px; }
+  .scout-result-card  { padding: 14px 8px 12px !important; gap: 9px !important; }
+}
 .layout-sidebar-right { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
 .layout-sidebar-left  { display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: start; }
 .layout-sidebar-sm    { display: grid; grid-template-columns: 1fr 280px; gap: 16px; }
@@ -442,6 +447,8 @@
   .dash-grid-2       { grid-template-columns: 1fr !important; }
   .dash-grid-2-eq    { grid-template-columns: 1fr !important; }
   .dash-two-col-grid { grid-template-columns: 1fr !important; }
+  .role-hero         { grid-template-columns: 1fr !important; }
+  .role-hero > button { justify-content: center; }
   .dash-page-content { padding: 16px; }
   .dash-topbar-sticky { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
   .dash-topbar-sticky > div:last-child { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -456,6 +463,10 @@
   .layout-payment-split,
   .layout-sys-split,
   .layout-injury-split  { grid-template-columns: 1fr !important; min-height: unset !important; }
+
+  /* Stacked single-column: the player-stats identity card must stop being sticky, or it
+     floats over the sections below as you scroll. */
+  .ps-identity-card { position: static !important; }
 
   /* Stat card grids → 2 col */
   .layout-stat-4    { grid-template-columns: repeat(2,1fr) !important; }
@@ -497,11 +508,38 @@
   gap: 10px;
   margin-bottom: 10px;
 }
+/* !important + display:grid so these override the inline gridTemplateColumns / display:flex
+   that each filter row sets (inline styles otherwise beat the class and stay 4-wide → the
+   page overflows sideways on mobile). */
+.scout-filter-grid > * { min-width: 0; }
+/* Backup: clip any stray horizontal overflow inside the scout page on mobile. `clip` on the
+   x-axis only, so the sticky Search button keeps working. */
+@media (max-width: 768px) { .scoutlab-root { overflow-x: clip; max-width: 100%; } }
+
+/* Scout full report → compact + stacked on mobile so it reads like the desktop layout
+   instead of overflowing. */
+@media (max-width: 600px) {
+  .scout-full-report { padding: 14px 12px 48px !important; }
+  .scout-full-report .sfr-head { flex-direction: column; align-items: center; text-align: center; }
+  .scout-full-report .sfr-head > div:last-child > div { justify-content: center; }
+  /* Uniform vertical spacing between every box (boxes mix marginBottom:16/0 + flex gaps). */
+  .scout-full-report > div { margin-bottom: 14px !important; }
+  .scout-full-report .sfr-pair { gap: 14px !important; }
+  /* The Strengths/Development cards sit inside flex wrappers and keep their own
+     marginBottom — zero it so their gap equals the pair's row-gap, not gap + margin. */
+  .scout-full-report .sfr-card { margin-bottom: 0 !important; }
+
+  /* Scout report identity header: stack info above the stat tiles so the club/nationality
+     line can't run under the Match Score / Apps / Minutes tiles. */
+  .report-id-row { flex-direction: column; align-items: stretch; gap: 14px; }
+  .report-id-row > div { width: 100%; }
+  .report-id-row .layout-3col { grid-template-columns: repeat(3, 1fr) !important; }
+}
 @media (max-width: 900px) {
-  .scout-filter-grid { grid-template-columns: repeat(2, 1fr); }
+  .scout-filter-grid { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; }
 }
 @media (max-width: 540px) {
-  .scout-filter-grid { grid-template-columns: 1fr; }
+  .scout-filter-grid { display: grid !important; grid-template-columns: 1fr !important; }
 }
 
 /* ── Match predictions table ── */

@@ -25,6 +25,7 @@ const CLUB_CRESTS: Record<string, string> = {
   'newcastle united':  'https://crests.football-data.org/67.png',
   'nottm forest':      '/forest%20logo.png',
   "nott'ham forest":   '/forest%20logo.png',
+  "nott'm forest":     '/forest%20logo.png',
   'nottingham forest': '/forest%20logo.png',
   'southampton':       'https://crests.football-data.org/340.png',
   'tottenham':         'https://crests.football-data.org/73.png',

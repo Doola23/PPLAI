@@ -32,3 +32,14 @@ npm-debug.log*
 # Python
 __pycache__/
 *.pyc
+
+# Local one-off DB / data-maintenance scripts (run against backend/.env credentials —
+# not part of the deployed app)
+backend/describe_scouting_current.cjs
+backend/detect_mismapped_values.cjs
+backend/scouting_ml_backup.cjs
+backend/scouting_ml_reclassify.cjs
+backend/update_market_values.cjs
+backend/upload_ml_to_dynamo.cjs
+backend/mismapped_values.json
+backend/scouting_ml_backup.json

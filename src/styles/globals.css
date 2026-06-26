@@ -237,17 +237,28 @@ canvas {
 }
 .skip-link:focus { top: 16px; }
 
+/* ── Global mobile safety net ──
+   Stop any single wide element from forcing the whole page to scroll sideways, and keep
+   media from blowing past the viewport. `clip` (not `hidden`) so position:sticky still works.
+   Inner horizontal-scroll regions (.table-scroll-x) keep their own overflow. */
+@media (max-width: 768px) {
+  html, body, #root { overflow-x: clip; max-width: 100%; }
+  img, video { max-width: 100%; }
+}
+
 /* ── PageBanner responsive collapse ── */
 @media (max-width: 768px) {
   .page-banner-inner {
     flex-direction: column !important;
-    align-items: flex-start !important;
-    padding: 32px 20px 28px !important;
-    gap: 24px !important;
+    align-items: center !important;
+    text-align: center !important;
+    padding: 48px 20px 36px !important;
+    gap: 20px !important;
   }
   .page-banner-stats {
     flex-direction: row !important;
-    align-items: flex-start !important;
+    align-items: center !important;
+    justify-content: center !important;
     flex-wrap: wrap !important;
     gap: 20px !important;
   }

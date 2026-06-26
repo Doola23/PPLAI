@@ -1,14 +1,105 @@
 import Spinner from '../../components/ui/Spinner';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { MagnifyingGlass } from '@phosphor-icons/react';
 import PageBanner from '../../components/dashboard/PageBanner';
 import ClubLogo from '../../components/ui/ClubLogo';
 import PlayerAvatar from '../../components/ui/PlayerAvatar';
 import { playerStatsService, type PlayerStat } from '../../services/playerStats.service';
+import { playerPredictionsService, type PlayerPrediction } from '../../services/playerPredictions.service';
 import { getFlagUrl } from '../../utils/flags';
 
 const E = [0.16, 1, 0.3, 1] as const;
+
+// Validated held-out R^2 for each role's FIRST-listed (headline) stat below (train<=2023,
+// tested against the real 2024 season) -- shown next to the projection so the number carries
+// an honest accuracy context instead of looking like an unverifiable guess.
+// ST/W -> Goals, CB -> Aerial Duels Won%, FB -> Pass Completion%, DM -> Tackles+Interceptions,
+// CM -> Progressive Passes, AM -> Key Passes. See player_stats/validation_report.csv.
+const ROLE_HEADLINE_R2: Record<string, number> = {
+  ST: 0.72, W: 0.72, CB: 0.48, FB: 0.58, DM: 0.87, CM: 0.85, AM: 0.84,
+};
+
+interface ProjectionStat { label: string; cur: keyof PlayerPrediction; pred: keyof PlayerPrediction; low?: keyof PlayerPrediction; high?: keyof PlayerPrediction; }
+
+const ROLE_PROJECTION_STATS: Record<string, ProjectionStat[]> = {
+  ST: [
+    { label: 'Goals', cur: '2024 Goals', pred: '2025 Predicted Goals', low: '2025 Goals (Low Estimate)', high: '2025 Goals (High Estimate)' },
+    { label: 'xG', cur: '2024 Expected Goals (xG)', pred: '2025 Predicted xG' },
+    { label: 'Shots', cur: '2024 Shots', pred: '2025 Predicted Shots' },
+    { label: 'Assists', cur: '2024 Assists', pred: '2025 Predicted Assists' },
+  ],
+  W: [
+    { label: 'Goals', cur: '2024 Goals', pred: '2025 Predicted Goals', low: '2025 Goals (Low Estimate)', high: '2025 Goals (High Estimate)' },
+    { label: 'Assists', cur: '2024 Assists', pred: '2025 Predicted Assists' },
+    { label: 'xG', cur: '2024 Expected Goals (xG)', pred: '2025 Predicted xG' },
+    { label: 'Shots', cur: '2024 Shots', pred: '2025 Predicted Shots' },
+  ],
+  CB: [
+    { label: 'Aerial Duels Won %', cur: '2024 Aerial Duels Won %', pred: '2025 Predicted Aerial Duels Won %' },
+    { label: 'Clearances', cur: '2024 Clearances', pred: '2025 Predicted Clearances' },
+    { label: 'Interceptions', cur: '2024 Interceptions', pred: '2025 Predicted Interceptions' },
+    { label: 'Pass Completion %', cur: '2024 Pass Completion %', pred: '2025 Predicted Pass Completion %' },
+  ],
+  FB: [
+    { label: 'Pass Completion %', cur: '2024 Pass Completion %', pred: '2025 Predicted Pass Completion %' },
+    { label: 'Interceptions', cur: '2024 Interceptions', pred: '2025 Predicted Interceptions' },
+    { label: 'Clearances', cur: '2024 Clearances', pred: '2025 Predicted Clearances' },
+    { label: 'Aerial Duels Won %', cur: '2024 Aerial Duels Won %', pred: '2025 Predicted Aerial Duels Won %' },
+  ],
+  DM: [
+    { label: 'Tackles+Interceptions', cur: '2024 Tackles+Interceptions', pred: '2025 Predicted Tackles+Interceptions' },
+    { label: 'Ball Recoveries', cur: '2024 Ball Recoveries', pred: '2025 Predicted Ball Recoveries' },
+    { label: 'Pass Completion %', cur: '2024 Pass Completion %', pred: '2025 Predicted Pass Completion %' },
+    { label: 'Progressive Passes', cur: '2024 Progressive Passes', pred: '2025 Predicted Progressive Passes' },
+  ],
+  CM: [
+    { label: 'Goals', cur: '2024 Goals', pred: '2025 Predicted Goals' },
+    { label: 'xG', cur: '2024 Expected Goals (xG)', pred: '2025 Predicted xG' },
+    { label: 'Assists', cur: '2024 Assists', pred: '2025 Predicted Assists' },
+    { label: 'Progressive Passes', cur: '2024 Progressive Passes', pred: '2025 Predicted Progressive Passes' },
+    { label: 'Key Passes', cur: '2024 Key Passes', pred: '2025 Predicted Key Passes' },
+    { label: 'Pass Completion %', cur: '2024 Pass Completion %', pred: '2025 Predicted Pass Completion %' },
+    { label: 'Tackles+Interceptions', cur: '2024 Tackles+Interceptions', pred: '2025 Predicted Tackles+Interceptions' },
+  ],
+  AM: [
+    { label: 'Goals', cur: '2024 Goals', pred: '2025 Predicted Goals' },
+    { label: 'xG', cur: '2024 Expected Goals (xG)', pred: '2025 Predicted xG' },
+    { label: 'Assists', cur: '2024 Assists', pred: '2025 Predicted Assists' },
+    { label: 'Key Passes', cur: '2024 Key Passes', pred: '2025 Predicted Key Passes' },
+    { label: 'Progressive Passes', cur: '2024 Progressive Passes', pred: '2025 Predicted Progressive Passes' },
+    { label: 'Pass Completion %', cur: '2024 Pass Completion %', pred: '2025 Predicted Pass Completion %' },
+  ],
+};
+
+function ProjectionRow({ stat, prediction }: { stat: ProjectionStat; prediction: PlayerPrediction }) {
+  const cur = prediction[stat.cur];
+  const pred = prediction[stat.pred];
+  if (pred === undefined || pred === null) return null;
+  const curNum = typeof cur === 'number' ? cur : 0;
+  const predNum = typeof pred === 'number' ? pred : 0;
+  const delta = predNum - curNum;
+  const low = stat.low ? prediction[stat.low] : undefined;
+  const high = stat.high ? prediction[stat.high] : undefined;
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+      <span style={{ fontSize: 12, color: '#939A9E', fontWeight: 500 }}>{stat.label}</span>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+        <span style={{ fontSize: 11, color: '#939A9E' }}>{curNum}{typeof cur === 'number' && !Number.isInteger(cur) ? '' : ''} → </span>
+        <span style={{ fontSize: 16, fontWeight: 900, color: '#1A65D3' }}>{predNum}</span>
+        {delta !== 0 && (
+          <span style={{ fontSize: 10, fontWeight: 700, color: delta > 0 ? '#34d399' : '#f87171' }}>
+            {delta > 0 ? '+' : ''}{delta.toFixed(1)}
+          </span>
+        )}
+        {typeof low === 'number' && typeof high === 'number' && (
+          <span style={{ fontSize: 9, color: '#939A9E' }}>({low}-{high})</span>
+        )}
+      </div>
+    </div>
+  );
+}
 
 interface DisplayPlayer {
   id: string; name: string; club: string; position: string;
@@ -87,20 +178,47 @@ function MetricBar({ label, value, max, avg, color }: { label: string; value: nu
 }
 
 export default function PlayerStatsPage() {
-  const [players, setPlayers]     = useState<DisplayPlayer[]>([]);
+  const [allPlayers, setAllPlayers] = useState<DisplayPlayer[]>([]);
+  const [loading, setLoading]     = useState(true);
   const [playerIdx, setPlayerIdx] = useState(0);
-  const [season, setSeason]       = useState<'2024/25' | '2023/24' | '2022/23'>('2024/25');
+  const [predictions, setPredictions] = useState<PlayerPrediction[]>([]);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
-    playerStatsService.getAll({ limit: 50 }).then(data => {
-      const sorted = [...data].sort((a, b) => ((b.goals ?? 0) + (b.assists ?? 0)) - ((a.goals ?? 0) + (a.assists ?? 0)));
-      setPlayers(sorted.slice(0, 20).map(mapStat));
-    }).catch(() => {});
+    playerPredictionsService.getAll().then(setPredictions).catch(() => {});
   }, []);
 
-  const player = players[playerIdx];
+  useEffect(() => {
+    // Fetch the full player pool once so search can find anyone, not just the top 20.
+    playerStatsService.getAll({ limit: 1000 })
+      .then(data => setAllPlayers(data.map(mapStat)))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
-  if (!player) {
+  const topPlayers = useMemo(
+    () => [...allPlayers].sort((a, b) => (b.goals + b.assists) - (a.goals + a.assists)).slice(0, 20),
+    [allPlayers]
+  );
+
+  const searchResults = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return [];
+    return allPlayers.filter(p => p.name.toLowerCase().includes(q)).slice(0, 20);
+  }, [search, allPlayers]);
+
+  const players = search.trim() ? searchResults : topPlayers;
+
+  useEffect(() => { setPlayerIdx(0); }, [search]);
+
+  // Clamp defensively instead of trusting playerIdx is in range -- the effect above resets it
+  // on search change, but that runs a render *after* this one, so without clamping here the
+  // very next render after typing would read players[stalePlayerIdx] = undefined.
+  const safeIdx = Math.min(playerIdx, Math.max(0, players.length - 1));
+  const player = players[safeIdx];
+  const prediction = player ? predictions.find(p => p.Player === player.name) : undefined;
+
+  if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Spinner size={300} label="Stats" />
@@ -108,7 +226,7 @@ export default function PlayerStatsPage() {
     );
   }
 
-  const statCards = [
+  const statCards = !player ? [] : [
     { label: 'Goals',              value: player.goals,              max: 35,  avg: leagueAvg.goals,              color: '#1A65D3' },
     { label: 'Assists',            value: player.assists,            max: 20,  avg: leagueAvg.assists,            color: '#1A65D3' },
     { label: 'xG',                 value: parseFloat(player.xg.toFixed(1)), max: 30, avg: leagueAvg.xg,           color: '#1A65D3' },
@@ -126,16 +244,41 @@ export default function PlayerStatsPage() {
         title="Player"
         titleAccent="Stats"
         stats={[
-          { value: String(players.length), label: 'Players' },
-          { value: '2024/25',              label: 'Season'  },
-          { value: 'Live',                 label: 'Data'    },
+          { value: String(allPlayers.length), label: 'Players' },
+          { value: '2024/25',                 label: 'Season'  },
+          { value: 'Live',                    label: 'Data'    },
         ]}
         badge="Live"
       />
 
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 60px' }}>
 
-        <div style={{ display: 'flex', gap: 6, padding: '20px 0 0', overflowX: 'auto' }}>
+        <div style={{ position: 'relative', marginTop: 24 }}>
+          <MagnifyingGlass
+            size={16}
+            color="rgba(255,255,255,0.3)"
+            style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+          />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search any player…"
+            style={{
+              width: '100%', padding: '11px 16px 11px 38px',
+              borderRadius: 999, boxSizing: 'border-box',
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(26,101,211,0.45)',
+              color: '#F2F2F2', fontSize: 14, outline: 'none',
+              fontFamily: 'inherit',
+            }}
+          />
+        </div>
+
+        {search.trim() && searchResults.length === 0 && (
+          <p style={{ fontSize: 12, color: '#939A9E', marginTop: 12 }}>No players match "{search}".</p>
+        )}
+
+        <div style={{ display: 'flex', gap: 6, padding: '16px 0 0', overflowX: 'auto' }}>
           {players.map((p, i) => (
             <motion.button
               key={p.id} whileTap={{ scale: 0.97 }}
@@ -143,14 +286,14 @@ export default function PlayerStatsPage() {
               style={{
                 flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10,
                 padding: '10px 16px', borderRadius: 999,
-                background: i === playerIdx ? 'rgba(26,101,211,0.15)' : 'rgba(255,255,255,0.03)',
-                border: `1px solid ${i === playerIdx ? 'rgba(26,101,211,0.4)' : 'rgba(255,255,255,0.07)'}`,
+                background: i === safeIdx ? 'rgba(26,101,211,0.15)' : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${i === safeIdx ? 'rgba(26,101,211,0.4)' : 'rgba(255,255,255,0.07)'}`,
                 cursor: 'pointer', transition: 'all 160ms ease',
               }}
             >
               <PlayerAvatar name={p.name} size={28} style={{ borderRadius: 8 }} />
               <div style={{ textAlign: 'left' }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: i === playerIdx ? '#F2F2F2' : '#939A9E', whiteSpace: 'nowrap' }}>{p.name}</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: i === safeIdx ? '#F2F2F2' : '#939A9E', whiteSpace: 'nowrap' }}>{p.name}</div>
                 <div style={{ fontSize: 9, color: '#939A9E', display: 'flex', alignItems: 'center', gap: 4 }}>
                   <ClubLogo club={p.club} size={11} />
                   {p.position}
@@ -158,24 +301,16 @@ export default function PlayerStatsPage() {
               </div>
             </motion.button>
           ))}
-
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-            {(['2024/25', '2023/24', '2022/23'] as const).map(s => (
-              <button
-                key={s} onClick={() => setSeason(s)}
-                style={{
-                  padding: '8px 12px', borderRadius: 999,
-                  border: `1px solid ${s === season ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.07)'}`,
-                  background: s === season ? 'rgba(255,255,255,0.07)' : 'transparent',
-                  color: s === season ? '#F2F2F2' : '#939A9E',
-                  fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-                }}
-              >{s}</button>
-            ))}
-          </div>
         </div>
 
+        {!player && (
+          <div style={{ textAlign: 'center', padding: '60px 0', color: '#939A9E', fontSize: 13 }}>
+            No player selected.
+          </div>
+        )}
+
         <AnimatePresence mode="wait">
+          {player && (
           <motion.div
             key={player.id}
             initial={{ opacity: 0, filter: 'blur(8px)' }}
@@ -184,7 +319,7 @@ export default function PlayerStatsPage() {
             transition={{ duration: 0.4, ease: E }}
             className="layout-sidebar-left" style={{ marginTop: 20 }}
           >
-            <div style={{
+            <div className="ps-identity-card" style={{
               position: 'sticky', top: 56, height: 'fit-content',
               background: 'var(--surface-card)',
               border: '1px solid rgba(255,255,255,0.07)',
@@ -238,6 +373,42 @@ export default function PlayerStatsPage() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {prediction && ROLE_PROJECTION_STATS[prediction.Role] && (
+                <div style={{ background: 'rgba(26,101,211,0.05)', border: '1px solid rgba(26,101,211,0.25)', borderRadius: 18, padding: '22px 24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <p style={{ fontSize: 9, color: '#1A65D3', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, margin: 0 }}>
+                      2025-26 Projection
+                    </p>
+                    <span style={{ fontSize: 9, color: '#939A9E' }}>
+                      {prediction['2025 Predicted Minutes'] ?? '—'} predicted mins
+                    </span>
+                  </div>
+
+                  {ROLE_PROJECTION_STATS[prediction.Role].map(stat => (
+                    <ProjectionRow key={stat.label} stat={stat} prediction={prediction} />
+                  ))}
+
+                  {prediction['Analysis & Trend'] && (
+                    <p style={{ fontSize: 11, color: '#939A9E', lineHeight: 1.6, marginTop: 14, marginBottom: 0 }}>
+                      {prediction['Analysis & Trend']}
+                    </p>
+                  )}
+
+                  <p style={{ fontSize: 9, color: '#939A9E', opacity: 0.7, marginTop: 12, marginBottom: 0 }}>
+                    Model accuracy: R² {ROLE_HEADLINE_R2[prediction.Role]?.toFixed(2) ?? '—'} on the headline stat,
+                    validated against the real 2024-25 season.
+                  </p>
+                </div>
+              )}
+              {!prediction && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 18, padding: '18px 24px' }}>
+                  <p style={{ fontSize: 9, color: '#939A9E', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>2025-26 Projection</p>
+                  <p style={{ fontSize: 11, color: '#939A9E', margin: 0, lineHeight: 1.6 }}>
+                    No projection available — the model only covers outfield players with 450+ minutes in 2024-25 (goalkeepers are excluded entirely; see player_stats/README.md).
+                  </p>
+                </div>
+              )}
+
               <div style={{ background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18, padding: '22px 24px' }}>
                 <p style={{ fontSize: 9, color: '#939A9E', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, marginBottom: 12 }}>
                   vs League Average <span style={{ color: '#939A9E', fontWeight: 400 }}>— white line = avg</span>
@@ -292,6 +463,7 @@ export default function PlayerStatsPage() {
               </div>
             </div>
           </motion.div>
+          )}
         </AnimatePresence>
       </div>
     </div>

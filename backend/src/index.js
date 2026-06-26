@@ -28,9 +28,19 @@ const ALLOWED_ORIGINS = [
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
+// Also allow private-LAN origins on the dev ports (e.g. http://192.168.1.12:5173) so the
+// site can be opened and signed into from a phone on the same network during development.
+const LAN_ORIGIN = /^http:\/\/(?:10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.)\d+\.\d+:(?:5173|3000)$/;
+
 app.use(helmet());
 app.use(cors({
-  origin: ALLOWED_ORIGINS,
+  origin(origin, callback) {
+    // Non-browser requests (no Origin) and explicit allow-list entries pass through.
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || LAN_ORIGIN.test(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`Origin ${origin} not allowed by CORS`));
+  },
   credentials: true,
 }));
 app.use(express.json({ limit: '2mb' }));

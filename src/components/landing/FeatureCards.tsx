@@ -61,6 +61,16 @@ const PROB_SETS: Record<string, { label:string; team:string; prob:number; color:
   ],
 };
 
+// The five feature shortcuts shown around the Spline robot (desktop) and as a
+// wrapped pill row below it (mobile, where absolute positioning can't fit).
+const SPLINE_FEATURES = [
+  { label: 'Match Predictions',  color: '#1A65D3', path: '/match-predictions', top: '18%', left: '8%',  right: undefined as string | undefined, floatDelay: '0s',   enterDelay: 0   },
+  { label: 'Scout Search',       color: '#1A65D3', path: '/scout-search',      top: '28%', left: undefined as string | undefined, right: '7%', floatDelay: '1.8s', enterDelay: 150 },
+  { label: 'Table Predictions',  color: '#1A65D3', path: '/table-predictions', top: '46%', left: '6%',  right: undefined as string | undefined, floatDelay: '3.2s', enterDelay: 300 },
+  { label: 'Injury Risk',        color: '#1A65D3', path: '/injury-risk',       top: '60%', left: undefined as string | undefined, right: '8%', floatDelay: '0.9s', enterDelay: 450 },
+  { label: 'Player Predictions', color: '#1A65D3', path: '/player-stats',      top: '74%', left: '6%',  right: undefined as string | undefined, floatDelay: '2.4s', enterDelay: 600 },
+];
+
 function useSpotlight(ref: React.RefObject<HTMLElement>) {
   useEffect(() => {
     const el = ref.current;
@@ -377,17 +387,11 @@ export default function FeatureCards() {
             pointerEvents: 'none',
           }} />
 
-          {[
-            { label: 'Match Predictions',  icon: '', color: '#1A65D3', path: '/match-predictions', top: '18%',  left: '8%',   floatDelay: '0s',   enterDelay: 0   },
-            { label: 'Scout Search',       icon: '', color: '#1A65D3', path: '/scout-search',      top: '28%',  right: '7%',  floatDelay: '1.8s', enterDelay: 150 },
-            { label: 'Table Predictions',  icon: '', color: '#1A65D3', path: '/table-predictions', top: '46%',  left: '6%',   floatDelay: '3.2s', enterDelay: 300 },
-            { label: 'Injury Risk',        icon: '', color: '#1A65D3', path: '/injury-risk',       top: '60%',  right: '8%',  floatDelay: '0.9s', enterDelay: 450 },
-            { label: 'Player Predictions', icon: '', color: '#1A65D3', path: '/player-stats',      top: '74%',  left: '6%',   floatDelay: '2.4s', enterDelay: 600 },
-          ].map(({ label, icon, color, path, top, left, right, floatDelay, enterDelay }) => (
+          {SPLINE_FEATURES.map(({ label, color, path, top, left, right, floatDelay, enterDelay }, i) => (
             <button
               key={label}
               onClick={() => navigate(path)}
-              className="lspline-pill"
+              className={`lspline-pill lspline-pill--${i}`}
               style={{
                 position: 'absolute', top, left, right,
                 zIndex: 20,

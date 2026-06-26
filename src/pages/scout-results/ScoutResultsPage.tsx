@@ -56,7 +56,7 @@ export default function ScoutResultsPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    scoutingService.getCurrent({ limit: 1000 })
+    scoutingService.getAll()
       .then(data => {
         const mapped: ResultPlayer[] = data.map((p, i) => ({
           id: i + 1,

@@ -325,7 +325,7 @@ export default function FeatureTeaser() {
       id: 'table',
       label: 'Table Predictions',
       tagline: "See the season before it's played.",
-      description: 'Monte Carlo simulations across 3,400 scenarios/day. Relegation odds, title races, and Europa spots updated live.',
+      description: 'Monte Carlo simulations across 3,400 scenarios/day. Relegation battles, title races, and Europa spots updated live.',
       preview: standings.length ? <TablePreview rows={standings} /> : <StaticTablePreview />,
     },
   ];
@@ -381,7 +381,7 @@ export default function FeatureTeaser() {
               whileTap={{ scale: 0.97 }}
               style={{ height: 52, padding: '0 32px', fontSize: 14, borderRadius: 999 }}
             >
-              Watch Demo
+              Explore Features
             </motion.button>
           </div>
         </div>

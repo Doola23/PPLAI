@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useReveal } from '../../hooks/useReveal';
+import { injuriesService } from '../../services/injuries.service';
 
 const SplineLazy = lazy(() => import('@splinetool/react-spline'));
 
@@ -60,6 +61,16 @@ const PROB_SETS: Record<string, { label:string; team:string; prob:number; color:
   ],
 };
 
+// The five feature shortcuts shown around the Spline robot (desktop) and as a
+// wrapped pill row below it (mobile, where absolute positioning can't fit).
+const SPLINE_FEATURES = [
+  { label: 'Match Predictions',  color: '#1A65D3', path: '/match-predictions', top: '18%', left: '8%',  right: undefined as string | undefined, floatDelay: '0s',   enterDelay: 0   },
+  { label: 'Scout Search',       color: '#1A65D3', path: '/scout-search',      top: '28%', left: undefined as string | undefined, right: '7%', floatDelay: '1.8s', enterDelay: 150 },
+  { label: 'Table Predictions',  color: '#1A65D3', path: '/table-predictions', top: '46%', left: '6%',  right: undefined as string | undefined, floatDelay: '3.2s', enterDelay: 300 },
+  { label: 'Injury Risk',        color: '#1A65D3', path: '/injury-risk',       top: '60%', left: undefined as string | undefined, right: '8%', floatDelay: '0.9s', enterDelay: 450 },
+  { label: 'Player Predictions', color: '#1A65D3', path: '/player-stats',      top: '74%', left: '6%',  right: undefined as string | undefined, floatDelay: '2.4s', enterDelay: 600 },
+];
+
 function useSpotlight(ref: React.RefObject<HTMLElement>) {
   useEffect(() => {
     const el = ref.current;
@@ -94,21 +105,6 @@ function BigStat({ value, unit = '' }: { value: number; unit?: string }) {
     return () => io.disconnect();
   }, [value]);
   return <span ref={ref}>0</span>;
-}
-
-function MeterFill({ pct }: { pct: number }) {
-  const ref  = useRef<HTMLDivElement>(null);
-  const done = useRef(false);
-  useEffect(() => {
-    const el = ref.current; if (!el || done.current) return;
-    const io = new IntersectionObserver(([e]) => {
-      if (!e.isIntersecting) return; done.current = true; io.disconnect();
-      el.style.width = pct + '%';
-    }, { threshold: 0.4 });
-    io.observe(el);
-    return () => io.disconnect();
-  }, [pct]);
-  return <div className="lmeter__fill" ref={ref} />;
 }
 
 function MatchCard({ navigate }: { navigate: (p: string) => void }) {
@@ -183,11 +179,11 @@ function AccuracyCard({ navigate }: { navigate: (p: string) => void }) {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
         </div>
         <h3 className="lcard__title">Prediction Accuracy</h3>
-        <p className="lcard__sub">Consistently outperforms market odds across all top leagues.</p>
+        <p className="lcard__sub">Validated with walk-forward cross-validation across three full seasons.</p>
       </div>
       <div>
-        <div className="lbigstat"><BigStat value={87} /><span className="unit">%</span></div>
-        <div className="lbigstat__cap">Across 2024 / 25 season</div>
+        <div className="lbigstat"><BigStat value={53} /><span className="unit">%</span></div>
+        <div className="lbigstat__cap">3-season test average (2022-24)</div>
       </div>
     </article>
   );
@@ -197,6 +193,12 @@ function InjuryCard({ navigate }: { navigate: (p: string) => void }) {
   const cardRef = useRef<HTMLElement>(null);
   useSpotlight(cardRef as React.RefObject<HTMLElement>);
   useReveal(cardRef as React.RefObject<HTMLElement>);
+  const [highRiskCount, setHighRiskCount] = useState(0);
+  useEffect(() => {
+    injuriesService.getPredictions()
+      .then(rows => setHighRiskCount(rows.filter(p => injuriesService.riskLevel(p) === 'High').length))
+      .catch(() => {});
+  }, []);
   return (
     <article ref={cardRef as React.RefObject<HTMLElement>} className="lcard lcard--inj lreveal"
       style={{ display:'flex', flexDirection:'column', justifyContent:'space-between', '--reveal-x': '-44px', '--reveal-delay': '160ms' } as React.CSSProperties}
@@ -209,10 +211,8 @@ function InjuryCard({ navigate }: { navigate: (p: string) => void }) {
         <p className="lcard__sub">Load monitoring + fatigue signals flag issues before they happen.</p>
       </div>
       <div>
-        <div className="lbigstat"><BigStat value={114} /></div>
-        <div className="lbigstat__cap">Alerts raised this season</div>
-        <div className="lmeter"><MeterFill pct={62} /></div>
-        <div className="lmeter__ticks"><span>Low</span><span>Med</span><span>High</span><span>Crit</span></div>
+        <div className="lbigstat"><BigStat value={highRiskCount} /></div>
+        <div className="lbigstat__cap">High-risk flags raised this season</div>
       </div>
     </article>
   );
@@ -293,7 +293,7 @@ function TableCard({ navigate }: { navigate: (p: string) => void }) {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
           </div>
           <h3 className="lcard__title" style={{ marginTop:14 }}>Table Predictions</h3>
-          <p className="lcard__sub">10,000 Monte Carlo simulations per gameweek — title odds, relegation %, UCL slots.</p>
+          <p className="lcard__sub">2,000 Monte Carlo season simulations — title odds, relegation %, UCL slots.</p>
         </div>
         <div className="lseg" onClick={e => e.stopPropagation()}>
           {[['base','Base'],['form','Form'],['injury','Injuries']].map(([key,label]) => (
@@ -337,7 +337,7 @@ export default function FeatureCards() {
 
         <div ref={headRef} className="lreveal lreveal--head" style={{ textAlign: 'center', marginBottom: 56 }}>
           <h2 className="lsection__title" style={{ fontSize: 'clamp(32px, 4vw, 58px)', marginTop: 16 }}>
-            Four pillars of football intelligence
+            Five pillars of football intelligence
           </h2>
         </div>
 
@@ -387,16 +387,11 @@ export default function FeatureCards() {
             pointerEvents: 'none',
           }} />
 
-          {[
-            { label: 'Match Predictions', icon: '', color: '#1A65D3', path: '/match-predictions', top: '18%',  left: '8%',   floatDelay: '0s',   enterDelay: 0   },
-            { label: 'Scout Search',      icon: '', color: '#1A65D3', path: '/scout-search',      top: '28%',  right: '7%',  floatDelay: '1.8s', enterDelay: 150 },
-            { label: 'Table Predictions', icon: '', color: '#1A65D3', path: '/table-predictions', top: '52%',  left: '6%',   floatDelay: '3.2s', enterDelay: 300 },
-            { label: 'Injury Risk',       icon: '', color: '#1A65D3', path: '/injury-risk',       top: '60%',  right: '8%',  floatDelay: '0.9s', enterDelay: 450 },
-          ].map(({ label, icon, color, path, top, left, right, floatDelay, enterDelay }) => (
+          {SPLINE_FEATURES.map(({ label, color, path, top, left, right, floatDelay, enterDelay }, i) => (
             <button
               key={label}
               onClick={() => navigate(path)}
-              className="lspline-pill"
+              className={`lspline-pill lspline-pill--${i}`}
               style={{
                 position: 'absolute', top, left, right,
                 zIndex: 20,

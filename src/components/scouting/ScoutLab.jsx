@@ -1,7 +1,8 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, SoccerBall, Sparkle, Wind, PaperPlaneTilt, ShieldChevron, Barbell, HandPalm, TrendUp, TrendDown, Warning, ChartBar, ChartLineUp, CalendarBlank, Crosshair, Scales, UsersThree, Brain, Heartbeat, GitDiff, Question, CaretDown, MagnifyingGlass, SlidersHorizontal, CaretRight, X, ArrowRight, ArrowLeft, Funnel, CheckCircle, Buildings } from "@phosphor-icons/react";
+import { Star, SoccerBall, Sparkle, Wind, PaperPlaneTilt, ShieldChevron, Barbell, HandPalm, TrendUp, TrendDown, Warning, ChartBar, ChartLineUp, CalendarBlank, Crosshair, Scales, UsersThree, Brain, Heartbeat, GitDiff, Question, CaretDown, MagnifyingGlass, SlidersHorizontal, CaretRight, X, ArrowRight, ArrowLeft, Funnel, CheckCircle, Buildings, FileText } from "@phosphor-icons/react";
 
 // Phosphor icon for each attribute category (replaces former emoji)
 const CAT_ICON = {
@@ -18,6 +19,7 @@ import api from "../../services/api";
 import PlayerAvatar from "../ui/PlayerAvatar";
 import ClubLogo from "../ui/ClubLogo";
 import Spinner from "../ui/Spinner";
+import { getMarketValueOverride } from "../../utils/marketValueOverrides";
 import logoSrc from "../../assets/logo.svg";
 
 const EASE = [0.16, 1, 0.3, 1];
@@ -852,7 +854,7 @@ function ClubReport({clubCtx,data,teamReports,onSearch,onBack}){
       {/* Suggestions */}
       {sugs.length>0&&(
         <div style={{marginBottom:16}}>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:10}}>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(min(280px,100%),1fr))',gap:10}}>
             {sugs.map((s,i)=>{
               const active=selSug?.role===s.role;
               return(
@@ -1032,14 +1034,14 @@ function AttrCategory({g,priorities,thresholds,uP,uT,gP,tooltip,setTooltip,defau
                     {a.thresholdKey&&isActive&&(()=>{
                       const tc=thresholdCfg(a.thresholdKey);
                       return(
-                      <div style={{display:'flex',alignItems:'center',gap:8,marginLeft:18,marginTop:4}}>
+                      <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',marginLeft:18,marginTop:4}}>
                         <span style={{fontSize:11,color:T.dim,minWidth:70,flexShrink:0}}>{a.thresholdLabel}:</span>
                         <input aria-label={`${a.thresholdLabel} for ${a.l}`} type="number"
                           min={tc.min} max={tc.max} step={tc.step}
                           value={thresholds[a.thresholdKey]||''}
                           onChange={e=>uT(a.thresholdKey,e.target.value)}
                           placeholder={tc.placeholder||'Min'}
-                          style={{...C.input,width:110,padding:'3px 10px',fontSize:11,border:`1px solid ${thresholds[a.thresholdKey]?'#1A65D3':T.border}`}}/>
+                          style={{...C.input,flex:1,minWidth:80,padding:'3px 10px',fontSize:11,border:`1px solid ${thresholds[a.thresholdKey]?'#1A65D3':T.border}`}}/>
                         {thresholds[a.thresholdKey]&&<span style={{fontSize:10,color:'#1A65D3',fontWeight:800,letterSpacing:0.5}}>KNOCKOUT</span>}
                       </div>
                       );
@@ -1253,16 +1255,16 @@ function Search({data,onSearch,clubCtx,forceValues,sidebar}){
 
       {/* ── Attribute Priorities ── */}
       <div style={{marginBottom:20}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-          <div style={{display:'flex',alignItems:'center',gap:8}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10,marginBottom:14}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,minWidth:0}}>
             <span style={{fontSize:13,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:0.8}}>Priorities</span>
             {reqc>0&&<span style={C.tag('#1A65D3')}>{reqc}!</span>}
             {hc>0&&<span style={C.tag(T.accent)}>{hc}H</span>}
             {ac>0&&<span style={{fontSize:11,color:T.dim}}>{ac} set</span>}
           </div>
-          <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
             {/* Legend dots */}
-            <div style={{display:'flex',gap:8,alignItems:'center'}}>
+            <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
               {PRI_SEG.filter(s=>s.k!=='none').reverse().map(seg=>(
                 <div key={seg.k} style={{display:'flex',alignItems:'center',gap:3}}>
                   <div style={{width:8,height:8,borderRadius:999,background:PRI_SEG_C[seg.k],flexShrink:0}}/>
@@ -1448,11 +1450,11 @@ function Results({results,req,shortlist,onToggleShortlist,onSelect,onBack,onShor
 }
 
 // ─── SECTION WRAPPER — defined outside Report so React never remounts it on re-render ───
-function Sec({icon,title,tag,children,accent}){
+function Sec({icon,title,tag,children,accent,style,className}){
   const ac=accent||T.accent;
   const Icon=typeof icon==='function'?icon:null;
   return(
-    <div style={{...C.card,border:accent?`1px solid ${accent}55`:C.card.border}}>
+    <div className={className} style={{...C.card,border:accent?`1px solid ${accent}55`:C.card.border,...style}}>
       <div style={{position:'absolute',top:0,left:'8%',right:'8%',height:1,background:`linear-gradient(90deg,transparent,${ac},transparent)`,pointerEvents:'none'}}/>
       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14}}>
         {Icon
@@ -1481,7 +1483,7 @@ function PlayerDrawer({player:p,data,req,shortlist,onToggle,onClose,onViewFull})
     return()=>window.removeEventListener('keydown',onKey);
   },[onClose]);
 
-  return(
+  return createPortal(
     <>
     <motion.div
       initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
@@ -1494,8 +1496,8 @@ function PlayerDrawer({player:p,data,req,shortlist,onToggle,onClose,onViewFull})
       initial={{x:'100%',opacity:0}} animate={{x:0,opacity:1}} exit={{x:'100%',opacity:0}}
       transition={{duration:0.28,ease:EASE}}
       className="scout-player-drawer"
-      style={{position:'fixed',right:0,top:0,bottom:0,background:'#060608',
-        borderLeft:'1px solid rgba(255,255,255,0.09)',overflowY:'auto',zIndex:200,
+      style={{position:'fixed',right:0,top:0,maxHeight:'100dvh',background:'#060608',
+        borderLeft:'1px solid rgba(255,255,255,0.09)',borderBottomLeftRadius:18,overflowY:'auto',zIndex:200,
         boxShadow:'-24px 0 60px rgba(0,0,0,0.7)',display:'flex',flexDirection:'column'}}
     >
       {/* Header bar */}
@@ -1558,17 +1560,26 @@ function PlayerDrawer({player:p,data,req,shortlist,onToggle,onClose,onViewFull})
             {p._potential_tier&&<span style={C.tag(PTL[p._potential_tier]?.c||T.dim)}>{p._potential_tier} · {p._potential_score}/100</span>}
           </div>
         )}
+
+        {/* Full report — kept up here so it's visible without scrolling to the bottom */}
+        {onViewFull&&(
+          <motion.button onClick={onViewFull} whileHover={{scale:1.01}} whileTap={{scale:0.97}}
+            style={{width:'100%',padding:'12px 20px',borderRadius:999,cursor:'pointer',fontSize:13,fontWeight:800,fontFamily:'inherit',display:'flex',alignItems:'center',justifyContent:'center',gap:7,background:T.accent,color:'#F2F2F2',border:'none',marginBottom:18}}>
+            <FileText size={14} weight="bold"/> View Full Report
+          </motion.button>
+        )}
       </div>
 
-      {/* Sticky action buttons */}
-      <div style={{padding:'16px 22px 28px',marginTop:'auto',flexShrink:0,borderTop:'1px solid rgba(255,255,255,0.06)'}}>
+      {/* Action footer — flows right after the content, no large gap */}
+      <div style={{padding:'16px 22px 28px',flexShrink:0,borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',flexDirection:'column',gap:9}}>
         <motion.button onClick={()=>onToggle(p)} whileHover={{scale:1.01}} whileTap={{scale:0.97}}
           style={{width:'100%',padding:'11px 20px',borderRadius:999,cursor:'pointer',fontSize:13,fontWeight:700,fontFamily:'inherit',display:'flex',alignItems:'center',justifyContent:'center',gap:6,background:starred?'rgba(250,204,21,0.08)':'rgba(255,255,255,0.04)',color:starred?'#facc15':T.dim,border:`1px solid ${starred?'rgba(250,204,21,0.25)':'rgba(255,255,255,0.09)'}`}}>
           <Star size={13} weight={starred?'fill':'regular'}/> {starred?'Shortlisted — Remove':'Add to Shortlist'}
         </motion.button>
       </div>
     </motion.div>
-    </>
+    </>,
+    document.body
   );
 }
 
@@ -1585,6 +1596,8 @@ function SuggestionsPanel({clubCtx,teamReports,selSug,onPickSug,onBackToClubs}){
   const rep=clubCtx?teamReports?.[clubCtx.team]:null;
   const sugs=useMemo(()=>{if(!rep||!leagueCtx)return[];return getSuggestions(rep,clubCtx?.team,leagueCtx);},[rep,clubCtx,leagueCtx]);
   const PRI_C2={required:'#1A65D3',high:T.accent,medium:T.accent2,low:T.dim};
+  const[openReportItem,setOpenReportItem]=useState(null);
+  useEffect(()=>{setOpenReportItem(null);},[clubCtx?.team]);
 
   if(!clubCtx){
     return(
@@ -1634,6 +1647,58 @@ function SuggestionsPanel({clubCtx,teamReports,selSug,onPickSug,onBackToClubs}){
         {rep.gf!==undefined&&<span style={{fontSize:12,color:T.dim,marginLeft:'auto'}}><b style={{color:T.text}}>{rep.gf}</b> GF · <b style={{color:T.text}}>{rep.ga}</b> GA</span>}
       </div>}
 
+      {rep&&(rep.positives?.length>0||rep.negatives?.length>0)&&(
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:11,fontWeight:800,color:T.dim,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>Team Report</div>
+          <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+            {rep.positives?.length>0&&(
+              <div style={{flex:1,minWidth:160,padding:12,borderRadius:12,border:`1px solid ${T.accent}28`,background:T.accent+'08'}}>
+                <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:8}}>
+                  <TrendUp size={12} weight="bold" color={T.accent} aria-hidden="true"/>
+                  <span style={{fontSize:10,fontWeight:800,color:T.accent,textTransform:'uppercase',letterSpacing:0.8}}>Strengths</span>
+                </div>
+                {rep.positives.map((s,i)=>{
+                  const[title,...rest]=s.split(':');
+                  const detail=rest.join(':').trim();
+                  const key=`p-${i}`;const open=openReportItem===key;
+                  return(
+                    <div key={i} style={{borderBottom:i<rep.positives.length-1?'1px solid rgba(255,255,255,0.06)':'none'}}>
+                      <button onClick={()=>setOpenReportItem(open?null:key)} aria-expanded={open} style={{display:'flex',alignItems:'center',gap:6,width:'100%',padding:'3px 0',background:'none',border:'none',cursor:'pointer',textAlign:'left',fontFamily:'inherit'}}>
+                        <span style={{flex:1,fontSize:12,fontWeight:600,color:T.text}}>{title}</span>
+                        {detail&&<CaretDown size={11} weight="bold" color={T.dim} aria-hidden="true" style={{transform:open?'rotate(180deg)':'none',transition:'transform 0.15s',flexShrink:0}}/>}
+                      </button>
+                      {detail&&open&&<div style={{fontSize:11.5,color:T.dim,lineHeight:1.5,padding:'0 0 8px'}}>{detail}</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {rep.negatives?.length>0&&(
+              <div style={{flex:1,minWidth:160,padding:12,borderRadius:12,border:'1px solid rgba(147,154,158,0.25)',background:'rgba(147,154,158,0.05)'}}>
+                <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:8}}>
+                  <TrendDown size={12} weight="bold" color={T.dim} aria-hidden="true"/>
+                  <span style={{fontSize:10,fontWeight:800,color:T.dim,textTransform:'uppercase',letterSpacing:0.8}}>Weaknesses</span>
+                </div>
+                {rep.negatives.map((s,i)=>{
+                  const[title,...rest]=s.split(':');
+                  const detail=rest.join(':').trim();
+                  const key=`n-${i}`;const open=openReportItem===key;
+                  return(
+                    <div key={i} style={{borderBottom:i<rep.negatives.length-1?'1px solid rgba(255,255,255,0.06)':'none'}}>
+                      <button onClick={()=>setOpenReportItem(open?null:key)} aria-expanded={open} style={{display:'flex',alignItems:'center',gap:6,width:'100%',padding:'3px 0',background:'none',border:'none',cursor:'pointer',textAlign:'left',fontFamily:'inherit'}}>
+                        <span style={{flex:1,fontSize:12,fontWeight:600,color:T.dim}}>{title}</span>
+                        {detail&&<CaretDown size={11} weight="bold" color={T.dim} aria-hidden="true" style={{transform:open?'rotate(180deg)':'none',transition:'transform 0.15s',flexShrink:0}}/>}
+                      </button>
+                      {detail&&open&&<div style={{fontSize:11.5,color:T.dim,lineHeight:1.5,padding:'0 0 8px'}}>{detail}</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {sugs.length>0&&<>
         <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:10}}>
           {sugs.map((s,i)=>{
@@ -1676,10 +1741,10 @@ function SuggestionsPanel({clubCtx,teamReports,selSug,onPickSug,onBackToClubs}){
 // Two-column layout: left sidebar (filters) + right panel (suggestions or compact results)
 // Replaces the old sequential clubreport → search → results → report views
 function MainLayout({data,clubCtx,teamReports,shortlist,onToggleShortlist,onBackToClubs,onShortlistView}){
-  const navigate=useNavigate();
   const[results,setResults]=useState(null);
   const[req,setReq]=useState(null);
   const[sel,setSel]=useState(null);
+  const[fullReport,setFullReport]=useState(null);
   const[selSug,setSelSug]=useState(null);
   const searchRef=useRef(null);
 
@@ -1700,27 +1765,23 @@ function MainLayout({data,clubCtx,teamReports,shortlist,onToggleShortlist,onBack
     }
   },[]);
 
-  const viewFullReport=useCallback(p=>{
-    navigate('/scout-report',{state:{player:{
-      name:p.Player,
-      position:p._ml_role||p.Pos||p.position||'—',
-      club:p.Squad||'—',
-      nationality:p.citizenship||'—',
-      age:+(p.Age||0),
-      rating:Math.min(10,(+(p.matchScore||50))/10),
-      xg:+(p.xG||p.npxG||0),
-      xa:+(p.xAG||p.xA||0),
-      apps:Math.round(+(p['90s']||0)),
-      goals:+(p.goals||p.Gls||0),
-      assists:+(p.Ast||0),
-      minutesPlayed:+(p.Min||0),
-      recentInjuries:+(p.recent_injuries||0),
-      recentDaysMissed:+(p.recent_days_missed||0),
-      playerId:p._player_id||null,
-    }}});
-  },[navigate]);
 
   const showResults=results!==null;
+
+  // Full player report — opened from the compact drawer's "Full Report" button.
+  // Shows every section (shot map, match log, radar, trends, comparisons, ML similarity).
+  if(fullReport){
+    const selIdx=results?results.findIndex(x=>x.Player===fullReport.Player):-1;
+    return(
+      <div style={{fontFamily:T.font}}>
+        <Report
+          player={fullReport} idx={selIdx<0?0:selIdx} results={results||[]} data={data} req={req||{posGroup:'FW'}}
+          shortlist={shortlist} onToggleShortlist={onToggleShortlist}
+          onBack={()=>setFullReport(null)} onShortlist={onShortlistView}
+        />
+      </div>
+    );
+  }
 
   return(
     <div style={{fontFamily:T.font}}>
@@ -1786,6 +1847,7 @@ function MainLayout({data,clubCtx,teamReports,shortlist,onToggleShortlist,onBack
                 return(
                   <motion.div
                     key={`${p.Player}-${i}`}
+                    className="scout-result-card"
                     role="button" tabIndex={0}
                     aria-pressed={isSelected}
                     aria-label={`${p.Player}, ${p.Squad}, match score ${p.matchScore}. View details`}
@@ -1859,14 +1921,14 @@ function MainLayout({data,clubCtx,teamReports,shortlist,onToggleShortlist,onBack
         )}
       </AnimatePresence>
 
-      {/* ── Player drawer overlay ── */}
+      {/* ── Player drawer (quick scan) — Full Report button opens the inline report ── */}
       <AnimatePresence>
         {sel&&(
           <PlayerDrawer
             player={sel} data={data} req={req}
             shortlist={shortlist} onToggle={onToggleShortlist}
             onClose={()=>setSel(null)}
-            onViewFull={()=>viewFullReport(sel)}
+            onViewFull={()=>{setFullReport(sel);setSel(null);}}
           />
         )}
       </AnimatePresence>
@@ -1877,6 +1939,8 @@ function MainLayout({data,clubCtx,teamReports,shortlist,onToggleShortlist,onBack
 // ─── PLAYER REPORT ───
 function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBack,onShortlist}){
   const pg=req.posGroup!=='ALL'?req.posGroup:'FW';
+  const [isMob,setIsMob]=useState(()=>typeof window!=='undefined'&&window.innerWidth<=600);
+  useEffect(()=>{const h=()=>setIsMob(window.innerWidth<=600);window.addEventListener('resize',h);return()=>window.removeEventListener('resize',h);},[]);
   const prof=useMemo(()=>getProfile(p,data.current,pg),[p,data,pg]);
   const str=prof.filter(s=>s.percentile>=75).slice(0,5);
   const weak=prof.filter(s=>s.percentile<50).slice(-3).reverse();
@@ -1892,8 +1956,11 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
   // Radar data
   const radarData=useMemo(()=>{
     const cats=['goals','assists','shots','key_passes','tackles','interceptions','aerial','pressing'];
-    return cats.map(k=>{const a=prof.find(x=>x.k===k);return{attr:ALL_A.find(x=>x.k===k)?.l?.split('/')[0]||k,value:a?.percentile||0};}).filter(d=>d.value>0);
-  },[prof]);
+    // Mobile only: shorter axis labels so they aren't clipped at the side vertices (laptop
+    // keeps the full names). Interceptions stays full per request.
+    const SHORT={goals:'Goals',assists:'Assists',shots:'Shots',key_passes:'Key Pass',tackles:'Tackles',interceptions:'Interceptions',aerial:'Aerial',pressing:'Press'};
+    return cats.map(k=>{const a=prof.find(x=>x.k===k);const full=ALL_A.find(x=>x.k===k)?.l?.split('/')[0]||k;return{attr:isMob?(SHORT[k]||full):full,value:a?.percentile||0};}).filter(d=>d.value>0);
+  },[prof,isMob]);
 
   // Comparative analysis
   const compAnalysis=useMemo(()=>{
@@ -1974,17 +2041,19 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
   const verdict=p.matchScore>=90?{r:'HIGHLY RECOMMENDED',a:'Pursue actively.',c:T.accent}:p.matchScore>=80?{r:'RECOMMENDED',a:'Strong candidate.',c:T.green}:p.matchScore>=70?{r:'WORTH MONITORING',a:'Good option, some gaps.',c:T.yellow}:p.matchScore>=60?{r:'CONDITIONAL',a:'Backup option.',c:T.orange}:{r:'NOT RECOMMENDED',a:'Does not match requirements.',c:T.red};
 
   return(
-    <div style={{maxWidth:860,margin:'0 auto',padding:20,fontFamily:T.font}}>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-        <motion.button whileHover={{x:-3}} whileTap={{scale:0.95}} transition={{duration:0.15}} onClick={onBack} style={{background:'none',border:'none',color:T.accent,cursor:'pointer',fontSize:13,padding:0,fontFamily:T.font}}>← Results</motion.button>
+    <div className="scout-full-report" style={{maxWidth:1080,margin:'0 auto',padding:'24px 24px 60px',fontFamily:T.font}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:18,gap:12,flexWrap:'wrap'}}>
+        <button onClick={onBack} style={{display:'flex',alignItems:'center',gap:6,padding:'7px 14px',borderRadius:999,background:'rgba(255,255,255,0.04)',border:`1px solid ${T.border}`,color:T.dim,fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>
+          <ArrowLeft size={13} weight="bold"/> Back to Results
+        </button>
         <div style={{display:'flex',gap:8}}>
-          <button onClick={onShortlist} style={{...C.btn(false,T.yellow),padding:'6px 12px',fontSize:11,border:`1px solid ${T.yellow}30`,borderRadius:999,display:'inline-flex',alignItems:'center',gap:4}}><Star size={12} weight="fill"/> Shortlist {shortlist?.length>0?`(${shortlist.length})`:''}</button>
-          <button onClick={()=>onToggleShortlist(p)} aria-label={shortlist?.includes(p.Player)?`Remove ${p.Player} from shortlist`:`Add ${p.Player} to shortlist`} aria-pressed={shortlist?.includes(p.Player)} style={{background:'none',border:`1px solid ${T.border}`,borderRadius:999,cursor:'pointer',color:shortlist?.includes(p.Player)?T.yellow:T.dim,padding:'3px 10px',lineHeight:1,display:'inline-flex',alignItems:'center'}}><Star size={18} weight={shortlist?.includes(p.Player)?'fill':'regular'}/></button>
+          <button onClick={onShortlist} style={{...C.btn(false,T.accent),padding:'7px 14px',fontSize:12,border:`1px solid ${T.border}`,borderRadius:999,display:'inline-flex',alignItems:'center',gap:5}}><Star size={13} weight="fill"/> Shortlist {shortlist?.length>0?`(${shortlist.length})`:''}</button>
+          <button onClick={()=>onToggleShortlist(p)} aria-label={shortlist?.includes(p.Player)?`Remove ${p.Player} from shortlist`:`Add ${p.Player} to shortlist`} aria-pressed={shortlist?.includes(p.Player)} style={{background:shortlist?.includes(p.Player)?'rgba(250,204,21,0.08)':'rgba(255,255,255,0.04)',border:`1px solid ${shortlist?.includes(p.Player)?'rgba(250,204,21,0.25)':T.border}`,borderRadius:999,cursor:'pointer',color:shortlist?.includes(p.Player)?'#facc15':T.dim,padding:'7px 11px',lineHeight:1,display:'inline-flex',alignItems:'center'}}><Star size={16} weight={shortlist?.includes(p.Player)?'fill':'regular'}/></button>
         </div>
       </div>
 
       {/* Header */}
-      <div style={{...C.card,display:'flex',gap:16,alignItems:'center'}}>
+      <div className="sfr-head" style={{...C.card,display:'flex',gap:16,alignItems:'center'}}>
         {/* Player Photo */}
         <div style={{position:'relative',flexShrink:0}}>
           <PlayerAvatar name={p.Player} playerId={p._player_id} size={108} style={{borderRadius:12}}/>
@@ -2003,7 +2072,7 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
             <span>{p.Squad} · {p.league} · {p._ml_role||p.Pos||p.position}</span>
           </div>
           <div style={{display:'flex',gap:16,marginTop:8,fontSize:12,color:T.dim,flexWrap:'wrap'}}>
-            {[['Age',p.Age],['Height',p.height?p.height+'cm':''],['Foot',p.foot],['Nation',(p.citizenship||'').split(/\s{2,}/).filter(Boolean).join(' / ')||null],['Minutes',p.Min?`${p.Min}'`:''],['Value',mv(p)],['Contract',p.contract_expires]].filter(x=>x[1]).map(([l,v])=>(
+            {[['Age',p.Age],['Height',p.height?p.height+'cm':''],['Foot',p.foot],['Nation',(p.citizenship||'').split(/\s{2,}/).filter(Boolean)[0]||null],['Minutes',p.Min?`${p.Min}'`:''],['Value',mv(p)],['Contract',p.contract_expires]].filter(x=>x[1]).map(([l,v])=>(
               <span key={l}>{l}: <b style={{color:T.text}}>{v}</b></span>
             ))}
             {p.whoscored_rating>0&&<span>WS Rating: <b style={{color:p.whoscored_rating>=7.5?T.green:p.whoscored_rating>=7?T.yellow:T.text}}>{(+p.whoscored_rating).toFixed(2)}</b></span>}
@@ -2013,14 +2082,14 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
       </div>
 
       {/* Radar + Match Breakdown side by side */}
-      <div style={{display:'flex',gap:16,marginBottom:16}}>
-        <div style={{...C.card,flex:1,marginBottom:0}}>
+      <div className="sfr-pair" style={{display:'flex',gap:16,marginBottom:16,flexWrap:'wrap'}}>
+        <div className="sfr-card" style={{...C.card,flex:'1 1 300px',minWidth:0,marginBottom:0}}>
           <div style={{fontSize:13,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>Player Profile</div>
           {radarData.length>=3&&<ResponsiveContainer width="100%" height={220}>
-            <RadarChart data={radarData}><PolarGrid stroke={T.border}/><PolarAngleAxis dataKey="attr" tick={{fill:T.dim,fontSize:11}}/><PolarRadiusAxis domain={[0,100]} tick={false} axisLine={false}/><Radar dataKey="value" stroke={T.accent} fill={T.accent} fillOpacity={0.2} strokeWidth={2}/></RadarChart>
+            <RadarChart data={radarData} {...(isMob?{outerRadius:'68%',margin:{top:6,right:24,bottom:6,left:24}}:{})}><PolarGrid stroke={T.border}/><PolarAngleAxis dataKey="attr" tick={{fill:T.dim,fontSize:isMob?10:11}}/><PolarRadiusAxis domain={[0,100]} tick={false} axisLine={false}/><Radar dataKey="value" stroke={T.accent} fill={T.accent} fillOpacity={0.2} strokeWidth={2}/></RadarChart>
           </ResponsiveContainer>}
         </div>
-        <div style={{...C.card,flex:1,marginBottom:0}}>
+        <div className="sfr-card" style={{...C.card,flex:'1 1 300px',minWidth:0,marginBottom:0}}>
           <div style={{fontSize:13,fontWeight:800,color:T.text,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>Match Breakdown <span style={{color:T.dim,fontWeight:400}}>{data.meta.currentSeason}</span></div>
           <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
             <div style={{flex:1,height:10,borderRadius:5,background:T.border,overflow:'hidden'}}><div style={{width:`${p.matchScore}%`,height:'100%',borderRadius:5,background:sc(p.matchScore)}}/></div>
@@ -2037,8 +2106,9 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
       </div>
 
       {/* Strengths & Weaknesses */}
-      <div style={{display:'flex',gap:16,marginBottom:0}}>
-        <Sec icon={TrendUp} title="Strengths" tag={data.meta.currentSeason}><div>
+      <div className="sfr-pair" style={{display:'flex',gap:16,marginBottom:0,flexWrap:'wrap'}}>
+        <div style={{flex:'1 1 300px',minWidth:0}}>
+        <Sec className="sfr-card" icon={TrendUp} title="Strengths" tag={data.meta.currentSeason}><div>
           {str.length?str.map(s=>(
             <div key={s.k} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
               <TrendUp size={13} weight="bold" color={T.accent} aria-hidden="true" style={{flexShrink:0}}/>
@@ -2048,7 +2118,9 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
             </div>
           )):<p style={{color:T.dim,fontSize:13}}>No standout attributes</p>}
         </div></Sec>
-        {weak.length>0&&<Sec icon={Warning} title="Development" tag={data.meta.currentSeason}><div>
+        </div>
+        {weak.length>0&&<div style={{flex:'1 1 300px',minWidth:0}}>
+        <Sec className="sfr-card" icon={Warning} title="Development" tag={data.meta.currentSeason}><div>
           {weak.map(w=>(
             <div key={w.k} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
               <TrendDown size={13} weight="bold" color={T.dim} aria-hidden="true" style={{flexShrink:0}}/>
@@ -2057,7 +2129,8 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
               <span style={{fontSize:11,color:T.dim,fontFamily:T.mono,marginLeft:'auto'}}>{w.value?.toFixed(2)} · P{w.percentile}</span>
             </div>
           ))}
-        </div></Sec>}
+        </div></Sec>
+        </div>}
       </div>
 
       {/* vs Position Average */}
@@ -2164,7 +2237,9 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
             sy: Math.round(y * PH),
           });
 
-          const dotColor = (r) => r==='G'?'#1A65D3':r==='S'?'#4F82D6':r==='M'?'#2B4C5E':'#939A9E';
+          // Missed = white (the slate pitch is #2B4C5E, so the old slate dot was invisible);
+          // Blocked = gray. Goal/Saved stay blue tones.
+          const dotColor = (r) => r==='G'?'#1A65D3':r==='S'?'#4F82D6':r==='M'?'#F2F2F2':'#939A9E';
           const dotSize = (xg) => Math.max(4, Math.min(14, xg * 60));
 
           // Shot zone stats
@@ -2224,7 +2299,7 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
               </svg>
               {/* Legend */}
               <div style={{display:'flex',gap:16,justifyContent:'center',marginTop:8,flexWrap:'wrap'}}>
-                {[['#1A65D3','Goal'],['#4F82D6','Saved'],['#2B4C5E','Missed'],['#939A9E','Blocked']].map(([c,l])=>(
+                {[['#1A65D3','Goal'],['#4F82D6','Saved'],['#F2F2F2','Missed'],['#939A9E','Blocked']].map(([c,l])=>(
                   <div key={l} style={{display:'flex',alignItems:'center',gap:4,fontSize:11,color:T.dim}}>
                     <div style={{width:8,height:8,borderRadius:'50%',background:c}}/><span>{l}</span>
                   </div>
@@ -2336,9 +2411,10 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
             />
             {compareP&&<button onClick={()=>{setCompareP(null);setCompareQ('');}} style={{...C.btn(false,'#1A65D3'),padding:'8px 12px',fontSize:11,border:`1px solid ${T.border}`}}>✕ Clear</button>}
           </div>
-          {/* Dropdown — absolutely positioned so it never shifts page layout */}
+          {/* Dropdown — in normal flow so it extends the card and pushes content
+              below down (no overlay, no see-through over other sections) */}
           {compareMatches.length>0&&!compareP&&(
-            <div style={{position:'absolute',top:'calc(100% + 4px)',left:0,right:0,zIndex:200,background:T.card2,border:`1px solid ${T.border}`,borderRadius:8,overflow:'hidden',boxShadow:'0 8px 32px #00000060'}}>
+            <div style={{marginTop:6,background:'rgba(0,0,0,0.25)',border:`1px solid ${T.border}`,borderRadius:10,overflow:'hidden'}}>
               {compareMatches.map((x,i)=>(
                 <div key={i} onClick={()=>{setCompareP(x);setCompareQ(x.Player);}}
                   style={{padding:'8px 12px',cursor:'pointer',borderBottom:i<compareMatches.length-1?`1px solid ${T.border}`:'none',display:'flex',alignItems:'center',gap:10}}
@@ -2416,7 +2492,7 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
             </div>
           );
         })()}
-        {!compareP&&!compareQ&&<p style={{fontSize:12,color:T.dim,margin:0}}>Type any player name above to compare head-to-head with overlaid radar and full stats table.</p>}
+        {!compareP&&!compareQ&&<p style={{fontSize:12,color:T.dim,margin:'12px 0 0'}}>Type any player name above to compare head-to-head with overlaid radar and full stats table.</p>}
       </div></Sec>
 
       {/* Why This Player */}
@@ -2737,6 +2813,20 @@ export default function App(){
           role=goals>=0.5?'Inverted Winger':'Creative Winger';
         }
       }
+      // Wingers misclassified as midfielders: the ML k-means clusters creative wide
+      // forwards (Olise, L. Díaz, Grealish) as "Attacking Midfielder". FBref lists them
+      // forward-first (Pos starts "FW"), unlike genuine central AMs (De Bruyne, Wirtz)
+      // whose Pos starts "MF". The primary position cleanly separates the two.
+      if(posGroup==='MF'&&/^FW/.test((p.Pos||'').trim())){
+        const takeons=+(p.successful_takeons_per90||0);
+        const crosses=+(p.crosses_per90||0);
+        const progC=+(p.prog_carries_per90||0);
+        // Confirm an attacking wide profile before moving them out of midfield.
+        if(takeons>=1.0||crosses>=1.5||progC>=3.0){
+          posGroup='WG';
+          role=goals>=0.4?'Inverted Winger':'Creative Winger';
+        }
+      }
       // Winger side detection: avgY < 0.48 = Right Winger, > 0.52 = Left Winger
       let lateralSide=null;
       if(posGroup==='WG'){
@@ -2754,7 +2844,10 @@ export default function App(){
       const rawImg=p.img_url||'';
       const tmIdMatch=rawImg.match(/\/images\/players\/(\d+)\.(png|jpg)$/);
       const _player_id=tmIdMatch?tmIdMatch[1]:null;
+      // Manual market-value correction for source mis-maps (e.g. namesake collisions)
+      const mvOverride=getMarketValueOverride(p.Player);
       return{...p, _player_id, xg_over_raw: xg>0 ? +(goals-xg).toFixed(2) : null,
+        ...(mvOverride!==undefined?{market_value_eur:mvOverride}:{}),
         _ml_pos_group: _posGroup,
         _ml_role: role,
         _lateral_side: lateralSide,

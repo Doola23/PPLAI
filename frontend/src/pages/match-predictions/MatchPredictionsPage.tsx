@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CaretDown, ArrowRight, Lightning, MagnifyingGlass } from '@phosphor-icons/react';
+import { CaretDown, ArrowRight, MagnifyingGlass } from '@phosphor-icons/react';
 import PageBanner from '../../components/dashboard/PageBanner';
 import { DBtn, EASE } from '../../components/dashboard/DS';
+import Spinner from '../../components/ui/Spinner';
 import ClubLogo from '../../components/ui/ClubLogo';
 import { matchesService, type MatchPrediction } from '../../services/matches.service';
-import { fixturesService } from '../../services/fixtures.service';
+import { GW_MAP, GW_DATE, MAX_GW } from '../../utils/gameweekMap';
 
 type Confidence = 'High' | 'Medium' | 'Low';
 
@@ -16,17 +18,12 @@ interface Match {
   pick: string;
   homeProb: number; drawProb: number; awayProb: number;
   confidence: Confidence; confidencePct: number;
-  reason: string;
   keyFact: string;
-  gameweek: number;
+  gameweek: number | null;
 }
 
-function mapPrediction(
-  p: MatchPrediction,
-  idx: number,
-  gwMap: Record<string, number>,
-  currentGW: number,
-): Match {
+function mapPrediction(p: MatchPrediction, idx: number): Match {
+  const key = `${p.home_team}_${p.away_team}`;
   const homeProb = Math.round(parseFloat(p.home_win_pct));
   const drawProb = Math.round(parseFloat(p.draw_pct));
   const awayProb = Math.round(parseFloat(p.away_win_pct));
@@ -36,12 +33,12 @@ function mapPrediction(
   return {
     id: idx + 1,
     home: p.home_team, away: p.away_team,
-    league: 'Premier League', time: '—',
+    league: 'Premier League', time: GW_DATE[key] ?? '—',
     pick, homeProb, drawProb, awayProb,
     confidence, confidencePct: maxProb,
-    reason: `xG home: ${p.xg_home} · xG away: ${p.xg_away}. Model predicts ${p.pred_home}–${p.pred_away}.`,
     keyFact: `Draw probability: ${Math.round(parseFloat(p.dc_draw_prob) * 100)}%`,
-    gameweek: gwMap[`${p.home_team}_${p.away_team}`] ?? currentGW,
+    // Real matchweek from the official 2024/25 schedule (see utils/gameweekMap.ts).
+    gameweek: GW_MAP[key] ?? null,
   };
 }
 
@@ -90,8 +87,8 @@ function FixtureRow({ m, isActive, onClick }: { m: Match; isActive: boolean; onC
 
       <span style={{ fontSize: 10, color: '#939A9E', fontWeight: 700, letterSpacing: '0.08em', flexShrink: 0 }}>vs</span>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 9, justifyContent: 'flex-end', minWidth: 0 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, color: '#939A9E', flexShrink: 0 }}>{m.awayProb}%</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: '#939A9E', flexShrink: 0, marginRight: 'auto' }}>{m.awayProb}%</span>
         <span style={{
           fontSize: 13, fontWeight: isActive ? 700 : 600,
           color: '#F2F2F2',
@@ -276,14 +273,6 @@ function DetailPanel({ selected }: { selected: Match }) {
         ))}
       </div>
 
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-          <Lightning size={11} color="#1A65D3" weight="fill" />
-          <p style={{ fontSize: 9, color: '#1A65D3', letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 700, margin: 0 }}>AI Reasoning</p>
-        </div>
-        <p style={{ fontSize: 13, color: '#939A9E', lineHeight: 1.65, margin: 0 }}>{selected.reason}</p>
-      </div>
-
       <div style={{ padding: '13px 20px', background: 'rgba(26,101,211,0.04)' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9 }}>
           <span style={{ width: 3, height: 3, borderRadius: '50%', background: '#1A65D3', marginTop: 5, flexShrink: 0, display: 'inline-block' }} />
@@ -301,56 +290,47 @@ const MATCH_STATS = [
   { value: 3,   suffix: '',  label: 'Confidence tiers'  },
 ];
 
-const FALLBACK_GW = 1;
-
 export default function MatchPredictionsPage() {
-  const [gwMap, setGwMap] = useState<Record<string, number>>({});
-  const [currentGW, setCurrentGW] = useState(FALLBACK_GW);
-  const [minGW] = useState(1);
-  const [maxGW, setMaxGW] = useState(38);
-  const [gameweek, setGameweek] = useState(FALLBACK_GW);
-  const [gwPickerOpen, setGwPickerOpen] = useState(false);
-  const gwPickerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<'offline' | 'locked' | null>(null);
   const [selected, setSelected] = useState<Match | null>(null);
   const [search, setSearch] = useState('');
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Set<Confidence>>(new Set(['High']));
+  const [gameweek, setGameweek] = useState(1);
+  const [gwPickerOpen, setGwPickerOpen] = useState(false);
+  const gwPickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (gwPickerRef.current && !gwPickerRef.current.contains(e.target as Node)) {
-        setGwPickerOpen(false);
-      }
+      if (gwPickerRef.current && !gwPickerRef.current.contains(e.target as Node)) setGwPickerOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
   useEffect(() => {
-    fixturesService.getPL()
-      .then(pl => {
-        setGwMap(pl.gwMap);
-        setCurrentGW(pl.currentGW);
-        setMaxGW(pl.maxGW);
-        setGameweek(pl.currentGW);
-      })
-      .catch(() => { /* fixtures API unavailable — fall back to gwMap={} */ });
-  }, []);
-
-  useEffect(() => {
     matchesService.getAllPredictions()
       .then(data => {
-        const mapped = data.map((p, i) => mapPrediction(p, i, gwMap, currentGW));
+        const mapped = data.map((p, i) => mapPrediction(p, i));
+        // Order within a gameweek by home team; the gameweek filter does the rest.
+        mapped.sort((a, b) => (a.gameweek ?? 99) - (b.gameweek ?? 99) || a.home.localeCompare(b.home));
         setMatches(mapped);
-        setSelected(mapped[0] ?? null);
+        setSelected(mapped.find(m => m.gameweek === 1) ?? mapped[0] ?? null);
       })
-      .catch(() => setError(true))
+      .catch((err) => setError(err?.response?.status === 403 ? 'locked' : 'offline'))
       .finally(() => setLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gwMap, currentGW]);
+  }, []);
+
+  // Jump the detail panel to the first fixture of the chosen gameweek.
+  useEffect(() => {
+    if (search || selectedTeam) return;
+    const first = matches.find(m => m.gameweek === gameweek);
+    if (first) setSelected(first);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameweek, matches]);
 
   const toggleGroup = (conf: Confidence) => {
     setExpandedGroups(prev => {
@@ -372,7 +352,8 @@ export default function MatchPredictionsPage() {
       m.home.toLowerCase().includes(search.toLowerCase()) ||
       m.away.toLowerCase().includes(search.toLowerCase());
     const matchesTeam = !selectedTeam || m.home === selectedTeam || m.away === selectedTeam;
-    const matchesGW = m.gameweek === gameweek;
+    // When searching or filtering by team, span the whole season; otherwise show the chosen GW.
+    const matchesGW = (search || selectedTeam) ? true : m.gameweek === gameweek;
     return matchesSearch && matchesTeam && matchesGW;
   });
 
@@ -384,10 +365,16 @@ export default function MatchPredictionsPage() {
 
   const highCount = matches.filter(m => m.confidence === 'High').length;
 
+  if (loading) return (
+    <div style={{ minHeight: '100dvh', background: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Spinner size={300} label="Loading predictions…" />
+    </div>
+  );
+
   if (error) return (
     <div style={{ minHeight: '100vh', background: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ color: '#939A9E', fontSize: 13, fontWeight: 600, letterSpacing: '0.1em' }}>
-        Backend offline — start the server to load predictions
+        {error === 'locked' ? 'Feature not available on this account' : 'Backend offline — start the server to load predictions'}
       </div>
     </div>
   );
@@ -407,17 +394,16 @@ export default function MatchPredictionsPage() {
         ]}
       />
 
-
       <div className="dash-topbar-sticky">
         <div ref={gwPickerRef} style={{ position: 'relative' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 0, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 999, padding: '3px 4px' }}>
             <button
-              onClick={() => setGameweek(gw => Math.max(minGW, gw - 1))}
-              disabled={gameweek <= minGW}
+              onClick={() => setGameweek(gw => Math.max(1, gw - 1))}
+              disabled={gameweek <= 1}
               style={{
                 width: 30, height: 30, borderRadius: 999, border: 'none',
-                background: 'transparent', color: gameweek <= minGW ? 'rgba(255,255,255,0.15)' : '#939A9E',
-                cursor: gameweek <= minGW ? 'not-allowed' : 'pointer',
+                background: 'transparent', color: gameweek <= 1 ? 'rgba(255,255,255,0.15)' : '#939A9E',
+                cursor: gameweek <= 1 ? 'not-allowed' : 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 14, fontWeight: 700, transition: '120ms',
               }}
@@ -427,11 +413,10 @@ export default function MatchPredictionsPage() {
               onClick={() => setGwPickerOpen(o => !o)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6, padding: '0 14px',
-                background: 'transparent', border: 'none', cursor: 'pointer',
-                borderRadius: 999,
+                background: 'transparent', border: 'none', cursor: 'pointer', borderRadius: 999,
               }}
             >
-              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: '#939A9E', textTransform: 'uppercase' }}>GW</span>
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: '#939A9E', textTransform: 'uppercase' }}>Gameweek</span>
               <motion.span
                 key={gameweek}
                 initial={{ opacity: 0, y: -6 }}
@@ -439,19 +424,16 @@ export default function MatchPredictionsPage() {
                 transition={{ duration: 0.18 }}
                 style={{ fontSize: 13, fontWeight: 800, color: '#F2F2F2', letterSpacing: '-0.01em', minWidth: 20, textAlign: 'center' }}
               >{gameweek}</motion.span>
-              {gameweek === currentGW && (
-                <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', color: '#1A65D3', textTransform: 'uppercase', background: 'rgba(26,101,211,0.15)', border: '1px solid rgba(26,101,211,0.3)', borderRadius: 999, padding: '1px 6px' }}>Live</span>
-              )}
               <CaretDown size={10} color="rgba(255,255,255,0.3)" style={{ transform: gwPickerOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: '200ms' }} />
             </button>
 
             <button
-              onClick={() => setGameweek(gw => Math.min(maxGW, gw + 1))}
-              disabled={gameweek >= maxGW}
+              onClick={() => setGameweek(gw => Math.min(MAX_GW, gw + 1))}
+              disabled={gameweek >= MAX_GW}
               style={{
                 width: 30, height: 30, borderRadius: 999, border: 'none',
-                background: 'transparent', color: gameweek >= maxGW ? 'rgba(255,255,255,0.15)' : '#939A9E',
-                cursor: gameweek >= maxGW ? 'not-allowed' : 'pointer',
+                background: 'transparent', color: gameweek >= MAX_GW ? 'rgba(255,255,255,0.15)' : '#939A9E',
+                cursor: gameweek >= MAX_GW ? 'not-allowed' : 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 14, fontWeight: 700, transition: '120ms',
               }}
@@ -481,23 +463,21 @@ export default function MatchPredictionsPage() {
                 <div style={{ gridColumn: '1/-1', fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#939A9E', padding: '2px 4px 6px' }}>
                   Select Gameweek
                 </div>
-                {Array.from({ length: maxGW }, (_, i) => i + 1).map(gw => {
+                {Array.from({ length: MAX_GW }, (_, i) => i + 1).map(gw => {
                   const isActive = gw === gameweek;
-                  const isCurrent = gw === currentGW;
                   return (
                     <button
                       key={gw}
                       onClick={() => { setGameweek(gw); setGwPickerOpen(false); }}
                       style={{
                         width: '100%', aspectRatio: '1', borderRadius: 8, border: 'none',
-                        background: isActive ? '#1A65D3' : isCurrent ? 'rgba(26,101,211,0.12)' : 'transparent',
-                        color: isActive ? '#F2F2F2' : isCurrent ? '#1A65D3' : '#939A9E',
+                        background: isActive ? '#1A65D3' : 'transparent',
+                        color: isActive ? '#F2F2F2' : '#939A9E',
                         fontSize: 11, fontWeight: isActive ? 800 : 600,
                         cursor: 'pointer', transition: '120ms',
-                        outline: isCurrent && !isActive ? '1px solid rgba(26,101,211,0.3)' : 'none',
                       }}
                       onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.07)'; }}
-                      onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = isCurrent ? 'rgba(26,101,211,0.12)' : 'transparent'; }}
+                      onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
                     >
                       {gw}
                     </button>
@@ -591,7 +571,7 @@ export default function MatchPredictionsPage() {
           )}
 
           <p style={{ fontSize: 12, color: '#939A9E', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
-            {loading ? '—' : `${filtered.length} fixture${filtered.length !== 1 ? 's' : ''}${selectedTeam ? ` · ${selectedTeam}` : ' · Premier League'}`}
+            {loading ? '—' : `${filtered.length} fixture${filtered.length !== 1 ? 's' : ''}${selectedTeam ? ` · ${selectedTeam}` : search ? ' · Premier League' : ` · Gameweek ${gameweek}`}`}
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr auto', gap: 10, padding: '4px 16px', marginBottom: 6 }}>
@@ -641,12 +621,16 @@ export default function MatchPredictionsPage() {
 
           {!loading && filtered.length === 0 && (
             <div style={{ textAlign: 'center', padding: '40px 0', color: '#939A9E', fontSize: 13 }}>
-              {selectedTeam ? `No fixtures found for ${selectedTeam}` : `No fixtures match "${search}"`}
+              {selectedTeam
+                ? `No fixtures found for ${selectedTeam}`
+                : search
+                  ? `No fixtures match "${search}"`
+                  : `No fixtures for Gameweek ${gameweek}.`}
             </div>
           )}
 
           <div style={{ marginTop: 20, textAlign: 'center' }}>
-            <DBtn>Season Forecast <ArrowRight size={12} /></DBtn>
+            <DBtn onClick={() => navigate('/table-predictions')}>Season Forecast <ArrowRight size={12} /></DBtn>
           </div>
         </div>
 

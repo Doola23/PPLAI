@@ -58,7 +58,11 @@
       "Bash(sed -i '' 's/Go to Dashboard →/Go to Dashboard/g' \"/Users/omarwalid/Downloads/PLAI 2 copy/src/pages/payment/PaymentPage.tsx\")",
       "Bash(sed -i '' 's/Try now <span className=\"arrow\">→<\\\\/span>/Try now/g' \"/Users/omarwalid/Downloads/PLAI 2 copy/src/components/landing/FeatureTeaser.tsx\")",
       "Bash(sed -i '' 's/<motion\\\\.span animate={{ x: hovered ? 4 : 0 }} transition={{ duration: 0.2 }}>→<\\\\/motion\\\\.span>//g' \"/Users/omarwalid/Downloads/PLAI 2 copy/src/pages/player-search/PlayerSearchPage.tsx\")",
-      "Bash(grep -v \"node_modules\\\\|999\\\\|18\\\\|24\\\\|50\\\\|'50%'\\\\|\\\\`50%\\\\`\")"
+      "Bash(grep -v \"node_modules\\\\|999\\\\|18\\\\|24\\\\|50\\\\|'50%'\\\\|\\\\`50%\\\\`\")",
+      "Bash(npx esbuild *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\DELL\\Desktop\\public\\scoutlab\\public"
     ]
   }
 }

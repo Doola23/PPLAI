@@ -214,8 +214,8 @@ export default function DashboardPage() {
                   const predScore = `${m.pred_home ?? '?'}-${m.pred_away ?? '?'}`;
                   return (
                     <div key={`${m.home_team}-${m.away_team}`} onClick={() => navigate('/match-predictions')} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px', cursor: 'pointer' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, minWidth: 0 }}>
                           <ClubLogo club={m.home_team} size={18} />
                           <span style={{ color: '#F2F2F2', fontSize: 13, fontWeight: 700 }}>{m.home_team}</span>
                           <span style={{ color: '#939A9E', fontSize: 10, fontWeight: 800, letterSpacing: '0.1em' }}>VS</span>

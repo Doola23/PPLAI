@@ -162,7 +162,7 @@ export default function SignupPage() {
   return (
     <div className="min-h-[100dvh] w-full flex overflow-hidden bg-bg-black" style={gridStyle}>
 
-      <section className="w-full md:w-[52%] lg:w-[48%] flex flex-col justify-between px-10 py-8 md:px-14 lg:px-20 overflow-y-auto">
+      <section className="w-full md:w-[52%] lg:w-[48%] flex flex-col justify-between px-6 py-8 md:px-14 lg:px-20 overflow-y-auto">
 
         <motion.div {...stagger(0)} className="flex items-center justify-between shrink-0">
           <Logo height={20} />
@@ -203,7 +203,7 @@ export default function SignupPage() {
             className="flex flex-col gap-6"
             {...stagger(2)}
           >
-            <div className="grid grid-cols-2 gap-x-6 gap-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
               <Field label="Full name" error={errors.name?.message}>
                 <LineInput
                   placeholder="Mo Salah"

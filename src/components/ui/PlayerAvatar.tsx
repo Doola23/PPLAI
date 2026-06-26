@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getPlayerImage } from '../../utils/playerImages';
+import { getExtraPlayerImage } from '../../utils/extraPlayerImages';
+import { getImageOverride } from '../../utils/playerImageOverrides';
 
 interface PlayerAvatarProps {
   name: string;
@@ -20,14 +22,20 @@ function uiAvatarsUrl(name: string) {
 
 function buildFallbacks(name: string, playerId?: string | number): string[] {
   const list: string[] = [];
-  if (playerId) {
-    // TM CDN first when we have an ID — guaranteed to be the right player, all leagues
-    list.push(transfermarktUrl(playerId));
-  } else {
-    // No TM ID → FPL map (covers PL players without a TM ID in the DB)
-    const fpl = getPlayerImage(name);
-    if (fpl) list.push(fpl);
-  }
+  // Manual corrections win over everything. A blocked player goes straight to initials.
+  const override = getImageOverride(name);
+  if (override?.blocked) return [uiAvatarsUrl(name)];
+  if (override?.url) list.push(override.url);
+  // FotMob map first — it's an exact, team-verified per-player match. The FPL map
+  // uses loose surname/substring matching, so a non-PL player (e.g. Isco) can be
+  // falsely matched to a PL player's photo; keep it as a fallback only.
+  const extra = getExtraPlayerImage(name);
+  if (extra) list.push(extra);
+  const fpl = getPlayerImage(name);
+  if (fpl) list.push(fpl);
+  // Transfermarkt CDN last-resort (its portrait endpoint is currently hotlink-blocked
+  // and serves empty images, so it's only a maybe before the initials fallback).
+  if (playerId) list.push(transfermarktUrl(playerId));
   list.push(uiAvatarsUrl(name));
   return list;
 }
@@ -67,6 +75,9 @@ export default function PlayerAvatar({ name, playerId, size = 40, className = ''
         width={size}
         height={size}
         onError={handleError}
+        // TM/Wikimedia CDNs serve a 0-byte image when a Referer is present (hotlink
+        // protection). Sending no referrer makes them return the real photo.
+        referrerPolicy="no-referrer"
         style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 15%' }}
       />
     </div>

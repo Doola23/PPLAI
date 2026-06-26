@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 const isTouch = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
 
@@ -70,7 +71,7 @@ export default function CustomCursor() {
 
   if (isTouch) return null;
 
-  return (
+  return createPortal(
     <>
       <div ref={ringRef} className="cursor-ring" aria-hidden="true" />
       <div ref={reticleRef} className="cursor-reticle" aria-hidden="true">
@@ -88,6 +89,7 @@ export default function CustomCursor() {
           <circle cx="14" cy="14" r="2" fill="#1A65D3" />
         </svg>
       </div>
-    </>
+    </>,
+    document.body
   );
 }

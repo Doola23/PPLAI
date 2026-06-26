@@ -38,9 +38,9 @@ const PITCH_SLOTS = [
   { position: 'CB', pitchX: 23, pitchY: 60 },
   { position: 'CB', pitchX: 23, pitchY: 40 },
   { position: 'LB', pitchX: 23, pitchY: 20 },
-  { position: 'DM', pitchX: 46, pitchY: 65 },
-  { position: 'CM', pitchX: 50, pitchY: 50 },
-  { position: 'CM', pitchX: 46, pitchY: 35 },
+  { position: 'DM', pitchX: 42, pitchY: 50 },
+  { position: 'CM', pitchX: 52, pitchY: 34 },
+  { position: 'CM', pitchX: 52, pitchY: 66 },
   { position: 'LW', pitchX: 73, pitchY: 22 },
   { position: 'ST', pitchX: 80, pitchY: 50 },
   { position: 'RW', pitchX: 73, pitchY: 78 },
@@ -80,6 +80,10 @@ function PlayerNode({ p, onHover, isHovered, isMobile }: { p: PitchPlayer; onHov
   const top  = isMobile ? `${100 - toX(p.pitchX)}%` : `${toY(p.pitchY)}%`;
 
   return (
+    // Centering translate lives on this plain wrapper so framer-motion's scale animation
+    // (below) doesn't overwrite it — otherwise every node is pinned by its top-left corner
+    // and drifts right + down by half its size.
+    <div style={{ position: 'absolute', left, top, transform: 'translate(-50%, -50%)', zIndex: isHovered ? 30 : 10 }}>
     <motion.div
       initial={{ opacity: 0, scale: 0 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -87,10 +91,7 @@ function PlayerNode({ p, onHover, isHovered, isMobile }: { p: PitchPlayer; onHov
       onMouseEnter={() => onHover(p.id)}
       onMouseLeave={() => onHover(null)}
       style={{
-        position: 'absolute',
-        left, top,
-        transform: 'translate(-50%, -50%)',
-        zIndex: isHovered ? 30 : 10,
+        position: 'relative',
         cursor: 'pointer',
       }}
     >
@@ -163,6 +164,7 @@ function PlayerNode({ p, onHover, isHovered, isMobile }: { p: PitchPlayer; onHov
         )}
       </AnimatePresence>
     </motion.div>
+    </div>
   );
 }
 
@@ -661,7 +663,7 @@ export default function InjuryRiskPage() {
             style={{
               position: 'relative',
               width: '100%',
-              aspectRatio: isMobile ? '1 / 2' : '8 / 4',
+              aspectRatio: isMobile ? '5 / 8' : '8 / 4',
               borderRadius: 22,
               overflow: 'visible',
               boxShadow: '0 0 0 1px rgba(26,101,211,0.3), 0 24px 80px rgba(0,0,0,0.8), 0 0 120px rgba(26,101,211,0.06)',
