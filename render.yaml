@@ -26,6 +26,11 @@ services:
         sync: false
       - key: JWT_SECRET
         sync: false
+      # Separate secret for refresh tokens (must be set, or signup/login 500s).
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: NODE_ENV
+        value: production
       # The deployed frontend URL, e.g. https://pplai-web.onrender.com — required for CORS.
       - key: FRONTEND_URL
         sync: false
