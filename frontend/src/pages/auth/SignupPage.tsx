@@ -378,22 +378,6 @@ export default function SignupPage() {
             </div>
           </div>
 
-          <div className="absolute bottom-6 left-6 right-6">
-            <div className="w-full h-px bg-white/[0.1] mb-5" />
-            <div className="grid grid-cols-3 gap-1">
-              {[
-                { value: '94%',  label: 'Match prediction accuracy' },
-                { value: '500+', label: 'Players tracked' },
-                { value: '20',   label: 'Premier League clubs' },
-              ].map(({ value, label }) => (
-                <div key={label} className="flex flex-col gap-1">
-                  <span className="font-heading font-black text-white leading-none tracking-tight text-[1.6rem]">{value}</span>
-                  <span className="text-[11px] text-white/35 leading-snug">{label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
         </div>
       </section>
 

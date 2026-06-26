@@ -11,12 +11,6 @@ const stagger = (i: number) => ({
   transition: { delay: i * 0.07, duration: 0.5, ease },
 });
 
-const METRICS = [
-  { value: '94%',  label: 'Match prediction accuracy' },
-  { value: '500+', label: 'Players tracked' },
-  { value: '20',   label: 'Premier League clubs' },
-];
-
 const gridStyle: React.CSSProperties = {
   backgroundImage:
     'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
@@ -107,20 +101,6 @@ export default function LoginPage() {
             >
               <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#F2F2F2', animation: 'pulse 2s infinite' }} />
               Live Platform
-            </div>
-          </div>
-
-          <div className="absolute bottom-6 left-6 right-6">
-            <div className="w-full h-px bg-white/[0.1] mb-5" />
-            <div className="grid grid-cols-3 gap-1">
-              {METRICS.map(({ value, label }) => (
-                <div key={label} className="flex flex-col gap-1">
-                  <span className="font-heading font-black text-white leading-none tracking-tight text-[1.6rem]">
-                    {value}
-                  </span>
-                  <span className="text-[11px] text-white/35 leading-snug">{label}</span>
-                </div>
-              ))}
             </div>
           </div>
 
