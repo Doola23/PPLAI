@@ -20,6 +20,7 @@ import PlayerAvatar from "../ui/PlayerAvatar";
 import ClubLogo from "../ui/ClubLogo";
 import Spinner from "../ui/Spinner";
 import { getMarketValueOverride } from "../../utils/marketValueOverrides";
+import { getFootOverride } from "../../utils/footOverrides";
 import logoSrc from "../../assets/logo.svg";
 
 const EASE = [0.16, 1, 0.3, 1];
@@ -282,7 +283,10 @@ function search(data,req){
   if(minMinutes)f=f.filter(p=>+(p.minutes||p.Min||0)>=minMinutes);
   if(heightMin)f=f.filter(p=>!p.height||+(p.height)>=heightMin);
   if(heightMax)f=f.filter(p=>!p.height||+(p.height)<=heightMax);
-  if(foot&&foot!=='Any')f=f.filter(p=>!p.foot||(p.foot+'').toLowerCase().includes(foot.toLowerCase()));
+  // Strict: when a foot is chosen, require a known matching foot. (Players with missing
+  // foot data are excluded rather than let through, so e.g. a "Left" search can't surface
+  // right-footed players whose foot field is blank.)
+  if(foot&&foot!=='Any')f=f.filter(p=>p.foot&&(p.foot+'').toLowerCase().includes(foot.toLowerCase()));
   if(contractBefore){const cb=new Date(contractBefore+'T23:59:59');f=f.filter(p=>{if(!p.contract_expires)return false;const d=new Date(p.contract_expires);return !isNaN(d)&&d<=cb;});}
   if(contractAfter){const ca=new Date(contractAfter);f=f.filter(p=>{if(!p.contract_expires)return false;const d=new Date(p.contract_expires);return !isNaN(d)&&d>=ca;});}
   if(nationality?.trim()){const n=nationality.trim().toLowerCase();f=f.filter(p=>(p.citizenship||'').toLowerCase().includes(n));}
@@ -2846,8 +2850,10 @@ export default function App(){
       const _player_id=tmIdMatch?tmIdMatch[1]:null;
       // Manual market-value correction for source mis-maps (e.g. namesake collisions)
       const mvOverride=getMarketValueOverride(p.Player);
+      const footOverride=getFootOverride(p.Player);
       return{...p, _player_id, xg_over_raw: xg>0 ? +(goals-xg).toFixed(2) : null,
         ...(mvOverride!==undefined?{market_value_eur:mvOverride}:{}),
+        ...(footOverride?{foot:footOverride}:{}),
         _ml_pos_group: _posGroup,
         _ml_role: role,
         _lateral_side: lateralSide,
