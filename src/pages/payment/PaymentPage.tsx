@@ -8,18 +8,21 @@ import '../../styles/landing.css';
 const E = [0.16, 1, 0.3, 1] as const;
 
 const PLANS: Record<string, { name: string; price: number; accent: string; features: string[] }> = {
-  standard: {
-    name: 'Standard', price: 20, accent: '#1A65D3',
-    features: ['Match Predictions (10/day)', 'Player Search', 'Table Predictions', 'Basic Scout Reports'],
-  },
-  plus: {
-    name: 'Plus', price: 50, accent: '#1A65D3',
-    features: ['Unlimited Match Predictions', 'Advanced Scout Search', 'Injury Risk Analysis', 'AI-powered Reports'],
-  },
-  ultra: {
-    name: 'Ultra', price: 80, accent: '#1A65D3',
-    features: ['Everything in Plus', 'Team Collaboration', 'API Access', 'Dedicated Manager'],
-  },
+  // Legacy
+  standard: { name: 'Standard', price: 20, accent: '#1A65D3', features: ['Match Predictions (10/day)', 'Player Search', 'Table Predictions', 'Basic Scout Reports'] },
+  plus:     { name: 'Plus',     price: 50, accent: '#1A65D3', features: ['Unlimited Match Predictions', 'Advanced Scout Search', 'Injury Risk Analysis', 'AI-powered Reports'] },
+  ultra:    { name: 'Ultra',    price: 80, accent: '#1A65D3', features: ['Everything in Plus', 'Team Collaboration', 'API Access', 'Dedicated Manager'] },
+  // Fan
+  'fan-pro':   { name: 'Fan Pro',   price: 9,  accent: '#1A65D3', features: ['Unlimited Match Predictions', 'Table Predictions', 'Full Player Stats', 'Win probability breakdowns'] },
+  'fan-plus':  { name: 'Fan Plus',  price: 19, accent: '#1A65D3', features: ['Everything in Fan Pro', 'Injury Risk Viewer', 'Advanced Player Comparisons', 'xG & Progressive Metrics'] },
+  // Scout
+  'scout-basic': { name: 'Scout',      price: 29, accent: '#1A65D3', features: ['50 Scout Queries/day', 'Player Profiles & Stats', 'Position & Age Filters', '10 Report Exports/month'] },
+  'scout-pro':   { name: 'Scout Pro',  price: 59, accent: '#1A65D3', features: ['Unlimited Scout Search', 'AI Tactical Fit Ranking', 'Full Player Analytics & xG', 'Injury Risk per Player', 'Unlimited Report Exports'] },
+  'scout-elite': { name: 'Scout Elite',price: 99, accent: '#1A65D3', features: ['Everything in Scout Pro', 'Custom Scout Pipelines', '5-Seat Collaboration', 'API Access', 'Dedicated Manager'] },
+  // Club
+  'club-coach': { name: 'Coach',      price: 39,  accent: '#1A65D3', features: ['Unlimited Match Predictions', 'Injury Risk Forecasting', 'Full Player Analytics', 'Team-level Reports'] },
+  'club-pro':   { name: 'Club Pro',   price: 69,  accent: '#1A65D3', features: ['Everything in Coach', 'Full Scout Search', 'AI Match Reports', 'xG & Pressing Stats'] },
+  'club-suite': { name: 'Club Suite', price: 109, accent: '#1A65D3', features: ['Everything in Club Pro', '10-Seat Collaboration', 'Custom Pipelines', 'API Access', 'Dedicated Manager'] },
 };
 
 const SAVED_CARDS = [
@@ -421,7 +424,7 @@ export default function PaymentPage() {
                       <p style={{ color: 'rgba(255,255,255,0.22)', fontSize: 12, textTransform: 'capitalize', margin: 0 }}>{billing} billing</p>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <p style={{ fontSize: 34, fontWeight: 900, margin: 0, color: plan.accent }}>${price}</p>
+                      <p style={{ fontSize: 34, fontWeight: 900, margin: 0, color: '#F2F2F2' }}>${price}</p>
                       <p style={{ color: 'rgba(255,255,255,0.22)', fontSize: 11, margin: 0 }}>/month</p>
                     </div>
                   </div>
@@ -448,7 +451,7 @@ export default function PaymentPage() {
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 18px', background: `${plan.accent}09`, borderRadius: 14, border: `1px solid ${plan.accent}18` }}>
                     <span style={{ fontWeight: 700, fontSize: 14 }}>Due today</span>
-                    <span style={{ fontSize: 26, fontWeight: 900, color: plan.accent }}>$0</span>
+                    <span style={{ fontSize: 26, fontWeight: 900, color: '#F2F2F2' }}>$0</span>
                   </div>
 
                   <div style={{ marginTop: 16, display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', background: 'rgba(26,101,211,0.05)', border: '1px solid rgba(26,101,211,0.12)', borderRadius: 12 }}>

@@ -264,6 +264,16 @@ canvas {
   }
 }
 
+/* ── Hide native number input spinners globally ── */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
 /* ── ScoutLab: restore focus rings overridden by inline outline:none ── */
 .scoutlab-root *:focus-visible {
   outline: 2px solid #1A65D3 !important;

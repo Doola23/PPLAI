@@ -414,7 +414,7 @@
 .dash-topbar-sticky { position: sticky; top: 0; z-index: 50; background: rgba(10,10,10,0.85); backdrop-filter: blur(16px); padding: 14px 32px; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
 /* ── Page layout utilities (sidebar+main patterns) ── */
-.layout-main-split    { display: grid; grid-template-columns: 1fr 420px; gap: 0; min-height: calc(100vh - 160px); max-width: 1200px; margin: 0 auto; padding: 0 24px 48px; }
+.layout-main-split    { display: grid; grid-template-columns: 1fr 420px; gap: 24px; min-height: calc(100vh - 160px); max-width: 1200px; margin: 0 auto; padding: 0 24px 48px; }
 .scout-results-view   { max-width: 1200px; margin: 0 auto; padding: 0 24px 60px; }
 .scout-results-grid   { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 @media (max-width: 960px) { .scout-results-grid { grid-template-columns: repeat(2, 1fr); } }

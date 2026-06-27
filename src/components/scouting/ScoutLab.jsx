@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+
 import { Star, SoccerBall, Sparkle, Wind, PaperPlaneTilt, ShieldChevron, Barbell, HandPalm, TrendUp, TrendDown, Warning, ChartBar, ChartLineUp, CalendarBlank, Crosshair, Scales, UsersThree, Brain, Heartbeat, GitDiff, Question, CaretDown, MagnifyingGlass, SlidersHorizontal, CaretRight, X, ArrowRight, ArrowLeft, Funnel, CheckCircle, Buildings, FileText } from "@phosphor-icons/react";
 
 // Phosphor icon for each attribute category (replaces former emoji)
@@ -18,10 +19,67 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContai
 import api from "../../services/api";
 import PlayerAvatar from "../ui/PlayerAvatar";
 import ClubLogo from "../ui/ClubLogo";
+import PageBanner from "../dashboard/PageBanner";
 import Spinner from "../ui/Spinner";
 import { getMarketValueOverride } from "../../utils/marketValueOverrides";
 import { getFootOverride } from "../../utils/footOverrides";
 import logoSrc from "../../assets/logo.svg";
+
+// Module-level promise cache — survives SPA navigation, no JSON.parse on return visits
+let _primaryPromise = null;
+let _extrasPromise = null;
+
+const LS_PRIMARY = 'scoutlab_primary_v3';
+const LS_EXTRAS  = 'scoutlab_extras_v3';
+const CACHE_TTL  = 6 * 60 * 60 * 1000; // 6 hours
+
+function lsGet(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const { ts, data } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL) { localStorage.removeItem(key); return null; }
+    return data;
+  } catch { return null; }
+}
+
+function lsSet(key, data) {
+  try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch {}
+}
+
+function fetchPrimary() {
+  if (!_primaryPromise) {
+    const cached = lsGet(LS_PRIMARY);
+    if (cached) {
+      _primaryPromise = Promise.resolve(cached);
+    } else {
+      _primaryPromise = api.get('/api/scouting/primary')
+        .then(r => { lsSet(LS_PRIMARY, r.data); return r.data; })
+        .catch(e => { _primaryPromise = null; throw e; });
+    }
+  }
+  return _primaryPromise;
+}
+
+function fetchExtras() {
+  if (!_extrasPromise) {
+    const cached = lsGet(LS_EXTRAS);
+    if (cached) {
+      _extrasPromise = Promise.resolve(cached);
+    } else {
+      _extrasPromise = api.get('/api/scouting/extras')
+        .then(r => { lsSet(LS_EXTRAS, r.data); return r.data; })
+        .catch(() => ({}));
+    }
+  }
+  return _extrasPromise;
+}
+
+// Called from Sidebar on mount — fires the request before user clicks scout search
+export function prewarmScouting() {
+  fetchPrimary().catch(() => {});
+  fetchExtras().catch(() => {});
+}
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -399,32 +457,15 @@ function Upload({onLoad}){
   const fetchedRef=useRef(false);
 
   useEffect(()=>{
-    // StrictMode double-invokes effects in dev — guard so fetch only fires once per real mount
     if(fetchedRef.current)return;
     fetchedRef.current=true;
 
-    // Try sessionStorage cache for instant return visits
-    try{
-      const raw=sessionStorage.getItem(CACHE_KEY);
-      if(raw){
-        const d=JSON.parse(raw);
-        if(d.current?.length&&d.meta){
-          onLoad(d);
-          // Still lazy-load extras in background
-          api.get('/api/scouting/extras').then(e=>onLoad(e.data)).catch(()=>{});
-          return;
-        }
-      }
-    }catch{}
-
-    api.get('/api/scouting/primary')
-      .then(res=>{
-        const d=res.data;
+    fetchPrimary()
+      .then(d=>{
         if(!d.current?.length||!d.meta){setErr('Scouting database is empty. Populate the scouting tables in DynamoDB first.');return;}
-        try{sessionStorage.setItem(CACHE_KEY,JSON.stringify(d));}catch{}
         onLoad(d);
         setPhase('extras');
-        api.get('/api/scouting/extras').then(e=>onLoad(e.data)).catch(()=>{});
+        fetchExtras().then(e=>onLoad(e));
       })
       .catch(e=>setErr(e.response?.data?.error||e.message));
   },[]);
@@ -451,109 +492,87 @@ function Upload({onLoad}){
 // ─── CLUB SELECT ───
 function ClubSelect({teamReports,onSelect,onSkip}){
   const teams=Object.keys(CLUB_META);
+  const[hoveredIdx,setHoveredIdx]=useState(null);
+
   const doSelect=(team)=>{
     const meta=CLUB_META[team];
     const rep=teamReports?.[team];
     onSelect({team,...meta,formation:rep?.formation||meta.formation,style:rep?.style||meta.style,teamReport:rep});
   };
+
+  const getDockScale=(i)=>{
+    if(hoveredIdx===null) return 1;
+    const d=Math.abs(i-hoveredIdx);
+    if(d===0) return 1.22;
+    if(d===1) return 1.09;
+    if(d===2) return 1.03;
+    return 1;
+  };
+
   return(
-    <div style={{maxWidth:1120,margin:'0 auto',padding:'32px 24px',fontFamily:T.font}}>
+    <div style={{fontFamily:T.font}}>
 
-      {/* Header */}
-      <motion.div
-        initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} transition={{duration:0.5,ease:EASE}}
-        style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',marginBottom:28,flexWrap:'wrap',gap:14}}
-      >
-        <div>
-          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
-            <img src="/pl-badge.svg" alt="Premier League" style={{width:20,height:22,objectFit:'contain',flexShrink:0}}/>
-            <span style={{fontSize:11,fontWeight:800,letterSpacing:'0.28em',color:T.accent,textTransform:'uppercase'}}>Premier League 2024/25</span>
-          </div>
-          <h2 style={{fontSize:28,fontWeight:900,color:T.text,margin:0,lineHeight:1.1,letterSpacing:'-0.02em'}}>Select your club</h2>
-        </div>
+      <PageBanner title="Scout" titleAccent="Search" description="Choose Your Club" />
+
+      {/* ── Badge grid with dock magnification ── */}
+      <div style={{maxWidth:1100,margin:'0 auto',padding:'40px 40px 0',display:'flex',flexWrap:'wrap',justifyContent:'center',alignItems:'center',gap:'36px 44px',marginBottom:60}}>
+        {teams.map((team,i)=>(
+          <motion.button
+            key={team}
+            initial={{opacity:0,y:18,filter:'blur(8px)'}}
+            animate={{
+              opacity:1,
+              y:0,
+              filter:'blur(0px)',
+              scale:getDockScale(i),
+            }}
+            transition={{
+              opacity:{duration:0.5,ease:EASE,delay:0.12+i*0.033},
+              y:{duration:0.5,ease:EASE,delay:0.12+i*0.033},
+              filter:{duration:0.5,delay:0.12+i*0.033},
+              scale:{type:'spring',stiffness:280,damping:24},
+            }}
+            whileTap={{scale:0.93}}
+            onMouseEnter={()=>setHoveredIdx(i)}
+            onMouseLeave={()=>setHoveredIdx(null)}
+            onClick={()=>doSelect(team)}
+            aria-label={`Scout ${team}`}
+            style={{
+              background:'none',border:'none',cursor:'pointer',
+              display:'flex',flexDirection:'column',alignItems:'center',gap:9,
+              padding:'4px 2px',fontFamily:'inherit',
+              filter: hoveredIdx===i
+                ? 'drop-shadow(0 4px 20px rgba(26,101,211,0.45)) drop-shadow(0 2px 6px rgba(0,0,0,0.5))'
+                : 'drop-shadow(0 2px 10px rgba(0,0,0,0.35))',
+              transition:'filter 220ms ease',
+            }}
+          >
+            <ClubLogo club={team} size={88}/>
+            <span style={{fontSize:12,fontWeight:600,letterSpacing:'0.03em',whiteSpace:'nowrap',color:'#F2F2F2'}}>
+              {team}
+            </span>
+          </motion.button>
+        ))}
+      </div>
+
+      {/* ── No club context ── */}
+      <div style={{textAlign:'center',paddingBottom:72}}>
         <motion.button
-          whileHover={{borderColor:'rgba(255,255,255,0.3)',color:T.text}} whileTap={{scale:0.97}}
+          initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.85}}
+          whileHover={{borderColor:'rgba(255,255,255,0.22)',color:'#F2F2F2'}} whileTap={{scale:0.97}}
           onClick={onSkip}
-          style={{display:'flex',alignItems:'center',gap:6,padding:'9px 18px',borderRadius:999,border:`1px solid rgba(255,255,255,0.1)`,background:'transparent',color:T.dim,fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'inherit',flexShrink:0,transition:'all 0.15s'}}
-        >No club context <ArrowRight size={13} weight="bold"/></motion.button>
-      </motion.div>
-
-      {/* 2-col row list */}
-      <motion.div
-        initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.4,delay:0.1}}
-        style={{display:'grid',gridTemplateColumns:'1fr 1fr',border:'1px solid rgba(255,255,255,0.07)',borderRadius:14,overflow:'hidden'}}
-        className="scoutlab-clubs-grid"
-      >
-        {teams.map((team,i)=>{
-          const meta=CLUB_META[team];
-          const rep=teamReports?.[team];
-          const isRightCol=i%2===1;
-          const isLastRow=i>=teams.length-2;
-          return(
-            <motion.div
-              key={team}
-              className="club-row"
-              initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}
-              whileHover={{background:'rgba(26,101,211,0.05)'}}
-              whileTap={{scale:0.99}}
-              transition={{type:'spring',stiffness:90,damping:20,delay:0.08+i*0.022}}
-              role="button" tabIndex={0} aria-label={`Scout for ${team}`}
-              onClick={()=>doSelect(team)}
-              onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();doSelect(team);}}}
-              style={{
-                position:'relative',
-                display:'flex',alignItems:'center',gap:13,padding:'13px 18px',
-                cursor:'pointer',background:'transparent',
-                borderBottom:isLastRow?'none':'1px solid rgba(255,255,255,0.05)',
-                borderRight:isRightCol?'none':'1px solid rgba(255,255,255,0.05)',
-              }}
-            >
-              {/* Left Celtic Blue accent bar */}
-              <div className="club-row-accent" style={{position:'absolute',left:0,top:'50%',transform:'translateY(-50%)',width:3,height:32,borderRadius:2,background:T.accent}}/>
-
-              {/* Logo */}
-              <ClubLogo club={team} size={36} style={{flexShrink:0}}/>
-
-              {/* Name + meta */}
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:14,fontWeight:800,color:T.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{team}</div>
-                <div style={{display:'flex',alignItems:'center',gap:5,marginTop:3}}>
-                  <span style={{fontSize:10,fontWeight:700,color:T.accent,background:'rgba(26,101,211,0.12)',padding:'1px 7px',borderRadius:999}}>{rep?.formation||meta.formation}</span>
-                  <span style={{fontSize:10,color:T.dim,fontWeight:500}}>{rep?.style||meta.style}</span>
-                </div>
-              </div>
-
-              {/* Stats */}
-              {rep?(
-                <div style={{display:'flex',gap:14,flexShrink:0,alignItems:'center'}}>
-                  <div style={{textAlign:'center',minWidth:18}}>
-                    <div style={{fontSize:13,fontWeight:900,color:T.accent,lineHeight:1,fontFamily:T.mono}}>{rep.w}</div>
-                    <div style={{fontSize:8,color:'rgba(147,154,158,0.5)',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.05em',marginTop:1}}>W</div>
-                  </div>
-                  <div style={{textAlign:'center',minWidth:18}}>
-                    <div style={{fontSize:13,fontWeight:900,color:T.dim,lineHeight:1,fontFamily:T.mono}}>{rep.d}</div>
-                    <div style={{fontSize:8,color:'rgba(147,154,158,0.5)',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.05em',marginTop:1}}>D</div>
-                  </div>
-                  <div style={{textAlign:'center',minWidth:18}}>
-                    <div style={{fontSize:13,fontWeight:900,color:'rgba(147,154,158,0.45)',lineHeight:1,fontFamily:T.mono}}>{rep.l}</div>
-                    <div style={{fontSize:8,color:'rgba(147,154,158,0.5)',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.05em',marginTop:1}}>L</div>
-                  </div>
-                  <div style={{width:1,height:24,background:'rgba(255,255,255,0.06)',flexShrink:0}}/>
-                  <div style={{textAlign:'center',flexShrink:0}}>
-                    <div style={{fontSize:11,fontWeight:800,color:T.dim,lineHeight:1,fontFamily:T.mono,letterSpacing:'0.03em'}}>{rep.gf}<span style={{color:'rgba(147,154,158,0.3)',fontWeight:400}}>:</span>{rep.ga}</div>
-                    <div style={{fontSize:8,color:'rgba(147,154,158,0.4)',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.05em',marginTop:1}}>GF:GA</div>
-                  </div>
-                </div>
-              ):(
-                <div style={{fontSize:10,color:'rgba(147,154,158,0.3)',fontFamily:T.mono}}>—</div>
-              )}
-
-              {/* Arrow */}
-              <div style={{color:'rgba(147,154,158,0.25)',fontSize:14,flexShrink:0,lineHeight:1}}>›</div>
-            </motion.div>
-          );
-        })}
-      </motion.div>
+          style={{
+            display:'inline-flex',alignItems:'center',gap:7,
+            padding:'11px 24px',borderRadius:999,
+            border:'1px solid rgba(255,255,255,0.1)',
+            background:'transparent',color:T.dim,
+            fontSize:12,fontWeight:700,cursor:'pointer',
+            fontFamily:'inherit',transition:'all 0.2s',letterSpacing:'0.04em',
+          }}
+        >
+          No club context <ArrowRight size={13} weight="bold"/>
+        </motion.button>
+      </div>
 
     </div>
   );
@@ -1146,10 +1165,12 @@ function Search({data,onSearch,clubCtx,forceValues,sidebar}){
         <div style={{marginBottom:22}}>
           <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14,flexWrap:'wrap'}}>
             {clubCtx?(
-              <div style={{display:'flex',alignItems:'center',gap:7,padding:'5px 12px',borderRadius:999,background:clubCtx.color+'14',border:`1px solid ${clubCtx.color}28`}}>
-                <ClubLogo club={clubCtx.team} size={14}/>
-                <span style={{fontSize:12,fontWeight:700,color:clubCtx.color}}>{clubCtx.team}</span>
-                <span style={{fontSize:11,color:T.dim}}>· {clubCtx.formation}</span>
+              <div style={{display:'flex',alignItems:'center',gap:14}}>
+                <ClubLogo club={clubCtx.team} size={44}/>
+                <div style={{flex:1,minWidth:0}}>
+                  <h2 style={{fontSize:22,fontWeight:900,color:T.text,margin:'0 0 2px'}}>{clubCtx.team}</h2>
+                  <p style={{color:T.dim,fontSize:14,margin:0}}>{clubCtx.formation} · {clubCtx.style} · 2024/25 Season</p>
+                </div>
               </div>
             ):(
               <div style={{display:'flex',alignItems:'center',gap:6,padding:'4px 11px',borderRadius:999,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
@@ -1407,7 +1428,7 @@ function Results({results,req,shortlist,onToggleShortlist,onSelect,onBack,onShor
           <span style={{fontSize:10,fontWeight:800,color:i<3?T.accent:T.dim,width:20,textAlign:'center',fontFamily:T.mono,letterSpacing:'-0.02em'}}>{i+1}</span>
           {/* Player photo */}
           <div style={{flexShrink:0,cursor:'pointer'}} onClick={()=>onSelect(p,i)}>
-            <PlayerAvatar name={p.Player} playerId={p._player_id} size={52} style={{borderRadius:8}}/>
+            <PlayerAvatar name={p.Player} src={p._img_url||undefined} playerId={p._player_id} size={52} style={{borderRadius:8}}/>
           </div>
           {/* Score badge — match score in normal mode, potential score in dev mode */}
           {devMode?(
@@ -1514,7 +1535,7 @@ function PlayerDrawer({player:p,data,req,shortlist,onToggle,onClose,onViewFull})
       <div style={{padding:'22px 22px 0',flexShrink:0}}>
         <div style={{display:'flex',gap:14,alignItems:'flex-start',marginBottom:18}}>
           <div style={{position:'relative',flexShrink:0}}>
-            <PlayerAvatar name={p.Player} playerId={p._player_id} size={76} style={{borderRadius:12}}/>
+            <PlayerAvatar name={p.Player} src={p._img_url||undefined} playerId={p._player_id} size={76} style={{borderRadius:12}}/>
             <div style={{position:'absolute',bottom:-6,right:-6,width:26,height:26,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center',background:sc(p.matchScore),color:'#F2F2F2',fontWeight:900,fontSize:11}}>{p.matchScore}</div>
           </div>
           <div style={{flex:1,minWidth:0}}>
@@ -1744,12 +1765,21 @@ function SuggestionsPanel({clubCtx,teamReports,selSug,onPickSug,onBackToClubs}){
 // ─── MAIN LAYOUT ───
 // Two-column layout: left sidebar (filters) + right panel (suggestions or compact results)
 // Replaces the old sequential clubreport → search → results → report views
+const POS_CARDS=[
+  {k:'FW',label:'Forward',sub:'Striker · False 9 · Complete Forward'},
+  {k:'WG',label:'Winger',sub:'Inverted · Creative · Wide Forward'},
+  {k:'MF',label:'Midfielder',sub:'Box-to-Box · DM · AM · Playmaker'},
+  {k:'DF',label:'Defender',sub:'Centre-Back · Full-Back · Wing-Back'},
+  {k:'GK',label:'Goalkeeper',sub:'Shot-Stopper · Sweeper-Keeper'},
+];
+
 function MainLayout({data,clubCtx,teamReports,shortlist,onToggleShortlist,onBackToClubs,onShortlistView}){
   const[results,setResults]=useState(null);
   const[req,setReq]=useState(null);
   const[sel,setSel]=useState(null);
   const[fullReport,setFullReport]=useState(null);
   const[selSug,setSelSug]=useState(null);
+  const[pickedPos,setPickedPos]=useState(null);
   const searchRef=useRef(null);
 
   const handleSearch=useCallback(f=>{
@@ -1762,11 +1792,18 @@ function MainLayout({data,clubCtx,teamReports,shortlist,onToggleShortlist,onBack
   const handlePickSug=useCallback(s=>{
     setSelSug(s);
     setResults(null);
-    if(s){
-      setTimeout(()=>{
-        searchRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
-      },80);
-    }
+    if(s){setPickedPos(s.posGroup||'FW');}
+  },[]);
+
+  const handlePickPos=useCallback(pos=>{
+    setPickedPos(pos);
+    setSelSug(null);
+    setResults(null);
+  },[]);
+
+  const handleBackToPos=useCallback(()=>{
+    setPickedPos(null);
+    setResults(null);
   },[]);
 
 
@@ -1790,26 +1827,47 @@ function MainLayout({data,clubCtx,teamReports,shortlist,onToggleShortlist,onBack
   return(
     <div style={{fontFamily:T.font}}>
 
-      {/* ── Pre-search: 2-column split ── */}
       <AnimatePresence mode="wait">
-        {!showResults&&(
-          <motion.div key="search-layout" className="layout-main-split" style={{alignItems:'start'}}
-            initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0,x:40}}
+
+        {/* ── STEP 1: Suggestions only ── */}
+        {!pickedPos&&!showResults&&(
+          <motion.div key="suggestions"
+            initial={{opacity:0,x:-20}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-30}}
             transition={{type:'spring',stiffness:140,damping:24}}
           >
-            {/* LEFT: Club context + role suggestions */}
-            <div style={{minWidth:0,borderRight:'1px solid rgba(255,255,255,0.06)'}}>
-              <SuggestionsPanel clubCtx={clubCtx} teamReports={teamReports} selSug={selSug} onPickSug={handlePickSug} onBackToClubs={onBackToClubs}/>
+            <SuggestionsPanel clubCtx={clubCtx} teamReports={teamReports} selSug={selSug} onPickSug={handlePickSug} onBackToClubs={onBackToClubs}/>
+          </motion.div>
+        )}
+
+        {/* ── STEP 2: Search form (full-width, position chosen) ── */}
+        {pickedPos&&!showResults&&(
+          <motion.div key="search-form"
+            initial={{opacity:0,x:40}} animate={{opacity:1,x:0}} exit={{opacity:0,x:30}}
+            transition={{type:'spring',stiffness:140,damping:24}}
+          >
+            {/* Back arrow */}
+            <div style={{padding:'16px 20px 0',borderBottom:'1px solid rgba(255,255,255,0.05)'}}>
+              <motion.button
+                whileHover={{color:T.text,borderColor:'rgba(255,255,255,0.2)'}}
+                whileTap={{scale:0.97}}
+                onClick={handleBackToPos}
+                style={{display:'inline-flex',alignItems:'center',gap:7,padding:'7px 14px',borderRadius:999,background:'transparent',border:'1px solid rgba(255,255,255,0.08)',color:T.dim,fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'inherit',transition:'all 0.15s'}}
+              >
+                <ArrowLeft size={13} weight="bold"/>
+                Back to positions
+              </motion.button>
             </div>
 
-            {/* RIGHT: Search form — sticky */}
-            <div ref={searchRef} style={{position:'sticky',top:64,maxHeight:'calc(100dvh - 64px)',overflowY:'auto',minWidth:0,scrollbarWidth:'none'}}>
+            <div ref={searchRef}>
               <Search
                 data={data}
                 clubCtx={clubCtx?{...clubCtx,autoWeights:selSug?.weights||{}}:null}
-                forceValues={selSug?{posGroup:selSug.posGroup,priorities:selSug.weights,thresholds:selSug.thresholds||{}}:null}
+                forceValues={{
+                  posGroup:pickedPos,
+                  ...(selSug?{priorities:selSug.weights,thresholds:selSug.thresholds||{}}:{}),
+                }}
                 onSearch={handleSearch}
-                sidebar={true}
+                sidebar={false}
               />
             </div>
           </motion.div>
@@ -1827,6 +1885,9 @@ function MainLayout({data,clubCtx,teamReports,shortlist,onToggleShortlist,onBack
                 <button onClick={()=>setResults(null)} style={{display:'flex',alignItems:'center',gap:6,padding:'7px 14px',borderRadius:999,background:'rgba(255,255,255,0.04)',border:`1px solid ${T.border}`,color:T.dim,fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>
                   <ArrowLeft size={13} weight="bold"/>
                   Modify search
+                </button>
+                <button onClick={handleBackToPos} style={{display:'flex',alignItems:'center',gap:6,padding:'7px 14px',borderRadius:999,background:'transparent',border:`1px solid ${T.border}`,color:T.dim,fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>
+                  Change position
                 </button>
                 <div style={{display:'flex',alignItems:'baseline',gap:5}}>
                   <span style={{fontSize:26,fontWeight:900,color:T.accent,lineHeight:1}}>{results.length}</span>
@@ -1881,7 +1942,7 @@ function MainLayout({data,clubCtx,teamReports,shortlist,onToggleShortlist,onBack
                     </div>
 
                     {/* Avatar */}
-                    <PlayerAvatar name={p.Player} playerId={p._player_id} size={62} style={{borderRadius:999,border:`2px solid ${isSelected?T.accent+'60':'rgba(255,255,255,0.08)'}`}}/>
+                    <PlayerAvatar name={p.Player} src={p._img_url||undefined} playerId={p._player_id} size={62} style={{borderRadius:999,border:`2px solid ${isSelected?T.accent+'60':'rgba(255,255,255,0.08)'}`}}/>
 
                     {/* Name + badges */}
                     <div style={{textAlign:'center',minWidth:0,width:'100%'}}>
@@ -2060,7 +2121,7 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
       <div className="sfr-head" style={{...C.card,display:'flex',gap:16,alignItems:'center'}}>
         {/* Player Photo */}
         <div style={{position:'relative',flexShrink:0}}>
-          <PlayerAvatar name={p.Player} playerId={p._player_id} size={108} style={{borderRadius:12}}/>
+          <PlayerAvatar name={p.Player} src={p._img_url||undefined} playerId={p._player_id} size={108} style={{borderRadius:12}}/>
           <div style={{position:'absolute',bottom:-6,right:-6,width:28,height:28,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',background:sc(p.matchScore),color:'#F2F2F2',fontWeight:900,fontSize:12,fontFamily:T.mono}}>{p.matchScore}</div>
         </div>
         <div style={{flex:1}}>
@@ -2424,7 +2485,7 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
                   style={{padding:'8px 12px',cursor:'pointer',borderBottom:i<compareMatches.length-1?`1px solid ${T.border}`:'none',display:'flex',alignItems:'center',gap:10}}
                   onMouseEnter={e=>e.currentTarget.style.background=T.accent+'15'}
                   onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-                  <PlayerAvatar name={x.Player} playerId={x._player_id} size={32} style={{borderRadius:4,flexShrink:0}}/>
+                  <PlayerAvatar name={x.Player} src={x._img_url||undefined} playerId={x._player_id} size={32} style={{borderRadius:4,flexShrink:0}}/>
                   <div>
                     <div style={{fontSize:13,fontWeight:700,color:T.text}}>{x.Player}</div>
                     <div style={{display:'flex',alignItems:'center',gap:5,fontSize:11,color:T.dim}}><ClubLogo club={x.Squad} size={13}/><span>{x.Squad} · {x.league} · {x.Pos||x.position} · {x.Age}y</span></div>
@@ -2521,7 +2582,7 @@ function Report({player:p,idx,results,data,req,shortlist,onToggleShortlist,onBac
           <div key={i} style={{display:'flex',alignItems:'center',gap:10,marginBottom:4,padding:'6px 8px',borderRadius:6,background:i<3?T.accent+'08':'transparent'}}>
             <span style={{fontSize:11,fontWeight:800,color:T.dim,width:18,fontFamily:T.mono}}>#{i+1}</span>
             {/* Mini photo */}
-            <PlayerAvatar name={s.name} playerId={simPlayer?._player_id} size={40} style={{borderRadius:6,flexShrink:0}}/>
+            <PlayerAvatar name={s.name} src={simPlayer?._img_url||undefined} playerId={simPlayer?._player_id} size={40} style={{borderRadius:6,flexShrink:0}}/>
             <div style={{flex:1}}>
               <span style={{fontSize:13,fontWeight:600,color:T.text}}>{s.name}</span>
               <span style={{display:'inline-flex',alignItems:'center',gap:5,fontSize:11,color:T.dim,marginLeft:8,verticalAlign:'middle'}}><ClubLogo club={s.team} size={13}/>{s.team} · {s.league}</span>
@@ -2700,7 +2761,7 @@ function ShortlistView({data,shortlist,onToggle,onSelect,onBack}){
       </div>}
       {players.map((p,i)=>(
         <div key={p.Player} style={{display:'flex',alignItems:'center',gap:14,padding:12,marginBottom:4,background:T.card,border:`1px solid ${T.border}`,borderRadius:10}}>
-          <PlayerAvatar name={p.Player} playerId={p._player_id} size={48} style={{borderRadius:7,flexShrink:0}}/>
+          <PlayerAvatar name={p.Player} src={p._img_url||undefined} playerId={p._player_id} size={48} style={{borderRadius:7,flexShrink:0}}/>
           <div className="scout-card-btn" role="button" tabIndex={0} aria-label={`Open scout report for ${p.Player}`}
             style={{flex:1,minWidth:0,cursor:'pointer',borderRadius:6}} onClick={()=>onSelect(p,i)}
             onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onSelect(p,i);}}}>
@@ -2727,7 +2788,9 @@ export default function App(){
   const navigate=useNavigate();
   const[data,setData]=useState(null);
   const[teamReports,setTeamReports]=useState(null);
-  const[view,setView]=useState('upload');
+  // Start on 'club' immediately — ClubSelect needs no data, fetch runs in background
+  const[view,setView]=useState('club');
+  const[dataReady,setDataReady]=useState(false);
   const[clubCtx,setClubCtx]=useState(null);
   const[shortlist,setShortlist]=useState(()=>{try{return JSON.parse(localStorage.getItem('scoutlab_shortlist')||'[]');}catch{return[];}});
   const toggleShortlist=useCallback(player=>{
@@ -2736,6 +2799,18 @@ export default function App(){
       localStorage.setItem('scoutlab_shortlist',JSON.stringify(next));
       return next;
     });
+  },[]);
+
+  // Kick off background fetch immediately on mount — ClubSelect shows while this loads
+  useEffect(()=>{
+    fetchPrimary()
+      .then(d=>{
+        if(!d.current?.length||!d.meta) return;
+        handleLoad(d);
+        fetchExtras().then(e=>handleLoad(e));
+      })
+      .catch(()=>{});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
 
   const handleLoad=d=>{
@@ -2844,14 +2919,16 @@ export default function App(){
       const _trajectory=calcTrajectory(p, prevByName[key]||null);
       const _posGroup=posGroup;
       const {score:_potential_score,tier:_potential_tier}=calcPotential(p,_posGroup,_trajectory);
-      // Extract numeric ID from /images/players/ID.png for PlayerAvatar (TM CDN fallback)
+      // Build absolute image URL — img_url is a relative backend path like /images/players/ID.png
       const rawImg=p.img_url||'';
       const tmIdMatch=rawImg.match(/\/images\/players\/(\d+)\.(png|jpg)$/);
       const _player_id=tmIdMatch?tmIdMatch[1]:null;
+      const _api_base=(import.meta.env.VITE_API_URL||'http://localhost:3001');
+      const _img_url=rawImg.startsWith('http')?rawImg:rawImg?`${_api_base}${rawImg}`:null;
       // Manual market-value correction for source mis-maps (e.g. namesake collisions)
       const mvOverride=getMarketValueOverride(p.Player);
       const footOverride=getFootOverride(p.Player);
-      return{...p, _player_id, xg_over_raw: xg>0 ? +(goals-xg).toFixed(2) : null,
+      return{...p, _player_id, _img_url, xg_over_raw: xg>0 ? +(goals-xg).toFixed(2) : null,
         ...(mvOverride!==undefined?{market_value_eur:mvOverride}:{}),
         ...(footOverride?{foot:footOverride}:{}),
         _ml_pos_group: _posGroup,
@@ -2864,12 +2941,23 @@ export default function App(){
       };
     });
     setData({...d, current:enrichCurrent(d.current||[]), previous:d.previous?enrichCurrent(d.previous):null});
+    setDataReady(true);
     api.get('/api/team-reports').then(r=>setTeamReports(r.data?.items?r.data.items.reduce((acc,item)=>{const k=item.Team||item.team;if(k)acc[k]=item;return acc;},{}):(r.data||{}))).catch(()=>{});
-    setView('club');
   };
 
-  const handleClubSelect=ctx=>{setClubCtx(ctx);setView('main');};
-  const handleClubSkip=()=>{setClubCtx(null);setView('main');};
+  const handleClubSelect=ctx=>{
+    setClubCtx(ctx);
+    if(dataReady){ setView('main'); return; }
+    // Data still loading — show upload spinner until ready, then auto-advance
+    setView('upload');
+    fetchPrimary().then(()=>{ setView('main'); }).catch(()=>{});
+  };
+  const handleClubSkip=()=>{
+    setClubCtx(null);
+    if(dataReady){ setView('main'); return; }
+    setView('upload');
+    fetchPrimary().then(()=>{ setView('main'); }).catch(()=>{});
+  };
 
   const renderView=()=>{
     switch(view){

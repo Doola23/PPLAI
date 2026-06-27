@@ -1,28 +1,54 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 44">
-  <!-- Shield -->
-  <path d="M20 2 L37 8 L37 22 Q37 34 20 42 Q3 34 3 22 L3 8 Z" fill="#38003C"/>
-  <!-- Crown base -->
-  <rect x="11" y="17" width="18" height="2.5" rx="1" fill="#EAFF00"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 100">
+  <!-- Shield background -->
+  <path d="M40 3 L74 14 L74 46 Q74 76 40 97 Q6 76 6 46 L6 14 Z" fill="#38003C"/>
+  <!-- Shield inner border -->
+  <path d="M40 9 L69 18.5 L69 47 Q69 72 40 91 Q11 72 11 47 L11 18.5 Z" fill="none" stroke="#EAFF00" stroke-width="1.2" opacity="0.35"/>
+
+  <!-- Crown base bar -->
+  <rect x="25" y="38" width="30" height="5" rx="2.5" fill="#EAFF00"/>
+  <!-- Crown band -->
+  <rect x="25" y="34" width="30" height="5" rx="0" fill="#EAFF00"/>
   <!-- Crown points -->
-  <polygon points="11,17 13.5,10 16,15 20,9 24,15 26.5,10 29,17" fill="#EAFF00"/>
+  <polygon points="25,34 27.5,22 32,30 40,19 48,30 52.5,22 55,34" fill="#EAFF00"/>
   <!-- Crown gems -->
-  <circle cx="20" cy="10.5" r="1.2" fill="#E8003D"/>
-  <circle cx="14" cy="12" r="0.8" fill="#E8003D"/>
-  <circle cx="26" cy="12" r="0.8" fill="#E8003D"/>
-  <!-- Lion body (stylized) -->
-  <ellipse cx="20" cy="29" rx="6" ry="7" fill="#EAFF00"/>
+  <circle cx="40" cy="21.5" r="2.4" fill="#E8003D"/>
+  <circle cx="29" cy="25" r="1.6" fill="#E8003D"/>
+  <circle cx="51" cy="25" r="1.6" fill="#E8003D"/>
+  <!-- Crown gem highlights -->
+  <circle cx="40" cy="21.5" r="1" fill="rgba(255,255,255,0.5)"/>
+
+  <!-- Lion body -->
+  <ellipse cx="40" cy="68" rx="11" ry="14" fill="#EAFF00"/>
   <!-- Lion head -->
-  <circle cx="20" cy="25" r="5" fill="#EAFF00"/>
-  <!-- Eyes -->
-  <circle cx="18.2" cy="24.2" r="0.9" fill="#38003C"/>
-  <circle cx="21.8" cy="24.2" r="0.9" fill="#38003C"/>
-  <!-- Nose -->
-  <ellipse cx="20" cy="25.8" rx="0.9" ry="0.6" fill="#C8940A"/>
-  <!-- Mouth -->
-  <path d="M18.2 26.8 Q20 28 21.8 26.8" fill="none" stroke="#38003C" stroke-width="0.7" stroke-linecap="round"/>
-  <!-- Mane highlights -->
-  <path d="M15 22 Q13 24 14.5 27" fill="none" stroke="#C8940A" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M25 22 Q27 24 25.5 27" fill="none" stroke="#C8940A" stroke-width="1.2" stroke-linecap="round"/>
-  <!-- Tail (curled) -->
-  <path d="M26 34 Q30 32 28 38 Q26 36 28 35" fill="none" stroke="#EAFF00" stroke-width="1.4" stroke-linecap="round"/>
+  <circle cx="40" cy="54" r="10" fill="#EAFF00"/>
+  <!-- Mane -->
+  <ellipse cx="40" cy="55" rx="13" ry="12" fill="#C8940A" opacity="0.6"/>
+  <circle cx="40" cy="54" r="10" fill="#EAFF00"/>
+
+  <!-- Face details -->
+  <circle cx="36.5" cy="52" r="1.8" fill="#38003C"/>
+  <circle cx="43.5" cy="52" r="1.8" fill="#38003C"/>
+  <circle cx="37" cy="51.5" r="0.6" fill="white" opacity="0.7"/>
+  <circle cx="44" cy="51.5" r="0.6" fill="white" opacity="0.7"/>
+  <ellipse cx="40" cy="55" rx="2" ry="1.3" fill="#C8940A"/>
+  <path d="M37 57.5 Q40 60 43 57.5" fill="none" stroke="#38003C" stroke-width="1.2" stroke-linecap="round"/>
+
+  <!-- Mane strands -->
+  <path d="M30 50 Q27 53 29 58" fill="none" stroke="#C8940A" stroke-width="2" stroke-linecap="round"/>
+  <path d="M50 50 Q53 53 51 58" fill="none" stroke="#C8940A" stroke-width="2" stroke-linecap="round"/>
+  <path d="M31 46 Q28 48 30 52" fill="none" stroke="#C8940A" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M49 46 Q52 48 50 52" fill="none" stroke="#C8940A" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Paws -->
+  <ellipse cx="31" cy="80" rx="6" ry="4" fill="#EAFF00"/>
+  <ellipse cx="49" cy="80" rx="6" ry="4" fill="#EAFF00"/>
+  <!-- Paw toes -->
+  <path d="M26 79 Q28 77 30 79" fill="none" stroke="#C8940A" stroke-width="1" stroke-linecap="round"/>
+  <path d="M30 78 Q32 76 34 78" fill="none" stroke="#C8940A" stroke-width="1" stroke-linecap="round"/>
+  <path d="M44 78 Q46 76 48 78" fill="none" stroke="#C8940A" stroke-width="1" stroke-linecap="round"/>
+  <path d="M48 79 Q50 77 52 79" fill="none" stroke="#C8940A" stroke-width="1" stroke-linecap="round"/>
+
+  <!-- Tail -->
+  <path d="M51 72 Q60 68 58 78 Q55 74 57 72" fill="none" stroke="#EAFF00" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M58 78 Q61 82 57 85" fill="none" stroke="#EAFF00" stroke-width="2" stroke-linecap="round"/>
 </svg>

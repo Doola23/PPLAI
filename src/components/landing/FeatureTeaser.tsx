@@ -7,7 +7,6 @@ import { playerStatsService, type PlayerStat } from '../../services/playerStats.
 import { scoutingService, type ScoutPlayer } from '../../services/scouting.service';
 import { matchesService, type MatchPrediction, type StandingsRow } from '../../services/matches.service';
 import { getClubCrest } from '../../utils/clubs';
-import { loadLandingConfig, type LandingConfig } from '../../pages/admin/LandingConfigTab';
 
 const E = [0.16, 1, 0.3, 1] as const;
 
@@ -225,49 +224,12 @@ export default function FeatureTeaser() {
   const [scouts, setScouts]     = useState<ScoutPlayer[]>([]);
   const [standings, setStandings] = useState<StandingsRow[]>([]);
 
-  function applyConfig(cfg: LandingConfig, allMatches: MatchPrediction[], allInjuries: InjuryPrediction[], allStats: PlayerStat[], allScouts: ScoutPlayer[], allStandings: StandingsRow[]) {
-    if (cfg.matchTeams.length) {
-      const pinned = cfg.matchTeams.flatMap(team =>
-        allMatches.filter(m => m.home_team === team || m.away_team === team).slice(0, 1)
-      ).slice(0, 3);
-      setMatches(pinned.length ? pinned : allMatches.slice(0, 3));
-    } else {
-      setMatches(allMatches.slice(0, 3));
-    }
-
-    if (cfg.injuryPlayers.length) {
-      const pinned = cfg.injuryPlayers
-        .map(name => allInjuries.find(p => p.player_name === name))
-        .filter(Boolean) as InjuryPrediction[];
-      setInjuries(pinned.length ? pinned : [...allInjuries].sort((a, b) => injuriesService.rankScore(b) - injuriesService.rankScore(a)).slice(0, 4));
-    } else {
-      setInjuries([...allInjuries].sort((a, b) => injuriesService.rankScore(b) - injuriesService.rankScore(a)).slice(0, 4));
-    }
-
-    if (cfg.analyticsPlayer) {
-      const p = allStats.find(s => s.player === cfg.analyticsPlayer) ?? null;
-      setTopPlayer(p ?? [...allStats].sort((a, b) => (b.xg ?? 0) - (a.xg ?? 0))[0] ?? null);
-    } else {
-      setTopPlayer([...allStats].sort((a, b) => (b.xg ?? 0) - (a.xg ?? 0))[0] ?? null);
-    }
-
-    if (cfg.scoutPlayers.length) {
-      const pinned = cfg.scoutPlayers
-        .map(name => allScouts.find(p => p.Player === name))
-        .filter(Boolean) as ScoutPlayer[];
-      setScouts(pinned.length ? pinned : allScouts.filter(p => (p.Pos ?? '').includes('FW') || (p.Pos ?? '').includes('MF')).slice(0, 3));
-    } else {
-      setScouts(allScouts.filter(p => (p.Pos ?? '').includes('FW') || (p.Pos ?? '').includes('MF')).slice(0, 3));
-    }
-
-    if (cfg.tableTeams.length) {
-      const pinned = cfg.tableTeams
-        .map(team => allStandings.find(r => r.Team === team))
-        .filter(Boolean) as StandingsRow[];
-      setStandings(pinned.length ? pinned : allStandings.slice(0, 5));
-    } else {
-      setStandings(allStandings.slice(0, 5));
-    }
+  function applyServerData(allMatches: MatchPrediction[], allInjuries: InjuryPrediction[], allStats: PlayerStat[], allScouts: ScoutPlayer[], allStandings: StandingsRow[]) {
+    setMatches(allMatches.slice(0, 3));
+    setInjuries([...allInjuries].sort((a, b) => injuriesService.rankScore(b) - injuriesService.rankScore(a)).slice(0, 4));
+    setTopPlayer([...allStats].sort((a, b) => (b.xg ?? 0) - (a.xg ?? 0))[0] ?? null);
+    setScouts(allScouts.filter(p => (p.Pos ?? '').includes('FW') || (p.Pos ?? '').includes('MF')).slice(0, 3));
+    setStandings(allStandings.slice(0, 5));
   }
 
   useEffect(() => {
@@ -277,19 +239,13 @@ export default function FeatureTeaser() {
     let allScouts: ScoutPlayer[] = [];
     let allStandings: StandingsRow[] = [];
 
-    const fetch = () => Promise.allSettled([
+    Promise.allSettled([
       matchesService.getAllPredictions().then(d => { allMatches = d; }),
       injuriesService.getPredictions().then(d => { allInjuries = d; }),
       playerStatsService.getAll({ limit: 500 }).then(d => { allStats = d; }),
       scoutingService.getCurrent({ limit: 100 }).then(d => { allScouts = d; }),
       matchesService.getPredictedStandings().then(d => { allStandings = d; }),
-    ]).then(() => applyConfig(loadLandingConfig(), allMatches, allInjuries, allStats, allScouts, allStandings));
-
-    fetch();
-
-    const onUpdate = () => applyConfig(loadLandingConfig(), allMatches, allInjuries, allStats, allScouts, allStandings);
-    window.addEventListener('plai:landing-config-updated', onUpdate);
-    return () => window.removeEventListener('plai:landing-config-updated', onUpdate);
+    ]).then(() => applyServerData(allMatches, allInjuries, allStats, allScouts, allStandings));
   }, []);
 
   const FEATURES = [

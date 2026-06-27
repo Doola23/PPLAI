@@ -40,10 +40,21 @@ export interface SeasonStats {
   Goals_For: number; Goals_Against: number;
 }
 
+let _allPredictionsCache: Promise<MatchPrediction[]> | null = null;
+let _standingsCompCache: Promise<StandingsRow[]> | null = null;
+let _standingsActualCache: Promise<StandingsRow[]> | null = null;
+let _standingsPredictedCache: Promise<PredictedStandingsRow[]> | null = null;
+let _seasonStatsCache: Promise<SeasonStats[]> | null = null;
+let _last5StatsCache: Promise<SeasonStats[]> | null = null;
+
 export const matchesService = {
   async getAllPredictions(): Promise<MatchPrediction[]> {
-    const { data } = await api.get<{ items: MatchPrediction[] }>('/api/matches/predictions');
-    return data.items ?? [];
+    if (!_allPredictionsCache) {
+      _allPredictionsCache = api.get<{ items: MatchPrediction[] }>('/api/matches/predictions')
+        .then(r => r.data.items ?? [])
+        .catch(e => { _allPredictionsCache = null; throw e; });
+    }
+    return _allPredictionsCache;
   },
 
   async getPrediction(homeTeam: string, awayTeam: string): Promise<MatchPrediction> {
@@ -54,27 +65,47 @@ export const matchesService = {
   },
 
   async getStandingsComparison(): Promise<StandingsRow[]> {
-    const { data } = await api.get<{ items: StandingsRow[] }>('/api/matches/output/standings/comparison');
-    return data.items ?? [];
+    if (!_standingsCompCache) {
+      _standingsCompCache = api.get<{ items: StandingsRow[] }>('/api/matches/output/standings/comparison')
+        .then(r => r.data.items ?? [])
+        .catch(e => { _standingsCompCache = null; throw e; });
+    }
+    return _standingsCompCache;
   },
 
   async getActualStandings(): Promise<StandingsRow[]> {
-    const { data } = await api.get<{ items: StandingsRow[] }>('/api/matches/output/standings/actual');
-    return data.items ?? [];
+    if (!_standingsActualCache) {
+      _standingsActualCache = api.get<{ items: StandingsRow[] }>('/api/matches/output/standings/actual')
+        .then(r => r.data.items ?? [])
+        .catch(e => { _standingsActualCache = null; throw e; });
+    }
+    return _standingsActualCache;
   },
 
   async getPredictedStandings(): Promise<PredictedStandingsRow[]> {
-    const { data } = await api.get<{ items: PredictedStandingsRow[] }>('/api/matches/output/standings/predicted');
-    return data.items ?? [];
+    if (!_standingsPredictedCache) {
+      _standingsPredictedCache = api.get<{ items: PredictedStandingsRow[] }>('/api/matches/output/standings/predicted')
+        .then(r => r.data.items ?? [])
+        .catch(e => { _standingsPredictedCache = null; throw e; });
+    }
+    return _standingsPredictedCache;
   },
 
   async getSeasonStats(): Promise<SeasonStats[]> {
-    const { data } = await api.get<{ items: SeasonStats[] }>('/api/matches/output/analyst/season');
-    return data.items ?? [];
+    if (!_seasonStatsCache) {
+      _seasonStatsCache = api.get<{ items: SeasonStats[] }>('/api/matches/output/analyst/season')
+        .then(r => r.data.items ?? [])
+        .catch(e => { _seasonStatsCache = null; throw e; });
+    }
+    return _seasonStatsCache;
   },
 
   async getLast5Stats(): Promise<SeasonStats[]> {
-    const { data } = await api.get<{ items: SeasonStats[] }>('/api/matches/output/analyst/last5');
-    return data.items ?? [];
+    if (!_last5StatsCache) {
+      _last5StatsCache = api.get<{ items: SeasonStats[] }>('/api/matches/output/analyst/last5')
+        .then(r => r.data.items ?? [])
+        .catch(e => { _last5StatsCache = null; throw e; });
+    }
+    return _last5StatsCache;
   },
 };

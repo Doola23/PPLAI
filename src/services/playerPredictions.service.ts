@@ -40,9 +40,15 @@ export interface PlayerPrediction {
   '2025 Predicted Ball Recoveries'?: number;
 }
 
+let _allCache: Promise<PlayerPrediction[]> | null = null;
+
 export const playerPredictionsService = {
   async getAll(): Promise<PlayerPrediction[]> {
-    const { data } = await api.get<{ items: PlayerPrediction[] }>('/api/player-predictions');
-    return data.items ?? [];
+    if (!_allCache) {
+      _allCache = api.get<{ items: PlayerPrediction[] }>('/api/player-predictions')
+        .then(r => r.data.items ?? [])
+        .catch(e => { _allCache = null; throw e; });
+    }
+    return _allCache;
   },
 };

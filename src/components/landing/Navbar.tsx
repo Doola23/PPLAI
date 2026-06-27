@@ -309,13 +309,21 @@ export default function Navbar({ showFeaturesDropdown = false }: NavbarProps) {
                   <span style={{ fontSize: 12, fontWeight: 700, color: '#F2F2F2', letterSpacing: '0.02em' }}>
                     {user?.name?.split(' ')[0] ?? 'Account'}
                   </span>
-                  <div style={{
-                    width: 28, height: 28, borderRadius: '50%',
-                    background: '#1A65D3',
-                    display: 'grid', placeItems: 'center',
-                    fontSize: 11, fontWeight: 800, color: '#F2F2F2', letterSpacing: '0.04em',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.22)',
-                  }}>{initials}</div>
+                  {(user?.avatar || user?.profileImage) ? (
+                    <img src={(user.avatar || user.profileImage)!} alt={user.name ?? 'avatar'} style={{
+                      width: 28, height: 28, borderRadius: '50%',
+                      objectFit: 'cover', flexShrink: 0,
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.22)',
+                    }} />
+                  ) : (
+                    <div style={{
+                      width: 28, height: 28, borderRadius: '50%',
+                      background: '#1A65D3',
+                      display: 'grid', placeItems: 'center',
+                      fontSize: 11, fontWeight: 800, color: '#F2F2F2', letterSpacing: '0.04em',
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.22)',
+                    }}>{initials}</div>
+                  )}
                 </button>
 
                 <AnimatePresence>
@@ -347,7 +355,7 @@ export default function Navbar({ showFeaturesDropdown = false }: NavbarProps) {
                       {[
                         { label: 'Dashboard',  path: '/dashboard', Icon: House },
                         { label: 'My Profile', path: '/account',   Icon: User  },
-                        { label: 'Admin',      path: '/admin',     Icon: Gear  },
+                        ...(user?.role === 'admin' ? [{ label: 'Admin', path: '/admin', Icon: Gear }] : []),
                       ].map(({ label, path, Icon }) => (
                         <button
                           key={label}
@@ -524,7 +532,11 @@ export default function Navbar({ showFeaturesDropdown = false }: NavbarProps) {
                 ) : (
                   <>
                     <div className="lmobile-drawer__user">
-                      <div className="lmobile-drawer__avatar">{initials}</div>
+                      {(user?.avatar || user?.profileImage) ? (
+                        <img src={(user.avatar || user.profileImage)!} alt={user?.name ?? 'avatar'} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                      ) : (
+                        <div className="lmobile-drawer__avatar">{initials}</div>
+                      )}
                       <div>
                         <div style={{ fontSize: 14, fontWeight: 700, color: '#F2F2F2' }}>{user?.name}</div>
                         <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>{user?.email}</div>
@@ -533,7 +545,7 @@ export default function Navbar({ showFeaturesDropdown = false }: NavbarProps) {
                     {[
                       { label: 'Dashboard',  path: '/dashboard', Icon: House },
                       { label: 'My Profile', path: '/account',   Icon: User  },
-                      { label: 'Admin',      path: '/admin',     Icon: Gear  },
+                      ...(user?.role === 'admin' ? [{ label: 'Admin', path: '/admin', Icon: Gear }] : []),
                     ].map(({ label, path, Icon }) => (
                       <button
                         key={label}

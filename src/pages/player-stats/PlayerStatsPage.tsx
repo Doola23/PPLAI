@@ -185,14 +185,13 @@ export default function PlayerStatsPage() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    playerPredictionsService.getAll().then(setPredictions).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    // Fetch the full player pool once so search can find anyone, not just the top 20.
-    playerStatsService.getAll({ limit: 1000 })
-      .then(data => setAllPlayers(data.map(mapStat)))
-      .catch(() => {})
+    Promise.all([
+      playerStatsService.getAll({ limit: 1000 }),
+      playerPredictionsService.getAll().catch(() => [] as PlayerPrediction[]),
+    ]).then(([stats, preds]) => {
+      setAllPlayers(stats.map(mapStat));
+      setPredictions(preds);
+    }).catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 

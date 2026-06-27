@@ -41,6 +41,48 @@ function CyclingPill({ words, color }: { words: string[]; color: string }) {
   );
 }
 
+type FeatItem = { Icon: React.ElementType; label: string; path: string };
+
+function FeatNav({ feats, navigate }: { feats: readonly FeatItem[]; navigate: (p: string) => void }) {
+  const [hovered, setHovered] = useState<string | null>(null);
+  return (
+    <>
+      {feats.map(({ Icon, label, path }) => {
+        const active = hovered === path;
+        return (
+          <button
+            key={path}
+            onClick={() => navigate(path)}
+            onMouseEnter={() => setHovered(path)}
+            onMouseLeave={() => setHovered(null)}
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+              padding: '8px 10px', background: 'none', border: 'none',
+              color: active ? '#F2F2F2' : '#939A9E', fontSize: 12, fontWeight: 600,
+              fontFamily: 'inherit', cursor: 'pointer',
+              transition: 'color 180ms ease, transform 180ms ease',
+              letterSpacing: '0.02em', minWidth: 80,
+              transform: active ? 'translateY(-4px)' : 'none',
+            }}
+          >
+            <div style={{
+              width: 56, height: 56, borderRadius: 999,
+              background: active ? '#1A65D3' : 'rgba(26,101,211,0.14)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'background 180ms ease, box-shadow 180ms ease',
+              boxShadow: active ? '0 8px 24px rgba(26,101,211,0.4)' : 'none',
+              flexShrink: 0,
+            }}>
+              <Icon size={24} weight="duotone" color={active ? '#F2F2F2' : '#1A65D3'} aria-hidden="true" />
+            </div>
+            {label}
+          </button>
+        );
+      })}
+    </>
+  );
+}
+
 export default function ProblemSection() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
@@ -76,31 +118,16 @@ export default function ProblemSection() {
         >
           {isAuthenticated ? (
             <>
-              {([
-                { Icon: ChartLine,      label: 'Match Predictions', path: '/match-predictions' },
-                { Icon: MagnifyingGlass, label: 'Scout Search',     path: '/scout-search'      },
-                { Icon: User,           label: 'Player Stats',      path: '/player-stats'      },
-                { Icon: Heartbeat,      label: 'Injury Risk',       path: '/injury-risk'       },
-                { Icon: ListBullets,    label: 'Table Predictions', path: '/table-predictions' },
-              ] as const).map(({ Icon, label, path }) => (
-                <button
-                  key={path}
-                  onClick={() => navigate(path)}
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 7,
-                    padding: '10px 18px', borderRadius: 999,
-                    background: 'rgba(26,101,211,0.12)',
-                    border: '1px solid rgba(26,101,211,0.3)',
-                    color: '#F2F2F2', fontSize: 13, fontWeight: 700, fontFamily: 'inherit',
-                    cursor: 'pointer', transition: 'background 150ms, transform 150ms',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(26,101,211,0.22)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(26,101,211,0.12)'; e.currentTarget.style.transform = 'none'; }}
-                >
-                  <Icon size={15} weight="bold" color="#1A65D3" aria-hidden="true" />
-                  {label}
-                </button>
-              ))}
+              {(() => {
+                const FEATS = [
+                  { Icon: ChartLine,       label: 'Match Predictions', path: '/match-predictions' },
+                  { Icon: MagnifyingGlass, label: 'Scout Search',      path: '/scout-search'      },
+                  { Icon: User,            label: 'Player Stats',      path: '/player-stats'      },
+                  { Icon: Heartbeat,       label: 'Injury Risk',       path: '/injury-risk'       },
+                  { Icon: ListBullets,     label: 'Table Predictions', path: '/table-predictions' },
+                ] as const;
+                return <FeatNav feats={FEATS} navigate={navigate} />;
+              })()}
             </>
           ) : (
             <>

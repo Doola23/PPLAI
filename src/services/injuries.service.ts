@@ -21,10 +21,16 @@ export interface InjuryPrediction {
   minutes_played_this_match: number;
 }
 
+let _predictionsCache: Promise<InjuryPrediction[]> | null = null;
+
 export const injuriesService = {
   async getPredictions(): Promise<InjuryPrediction[]> {
-    const { data } = await api.get<{ items: InjuryPrediction[] }>('/api/injuries/predictions');
-    return data.items ?? [];
+    if (!_predictionsCache) {
+      _predictionsCache = api.get<{ items: InjuryPrediction[] }>('/api/injuries/predictions')
+        .then(r => r.data.items ?? [])
+        .catch(e => { _predictionsCache = null; throw e; });
+    }
+    return _predictionsCache;
   },
 
   async getPlayerPredictions(playerName: string): Promise<InjuryPrediction[]> {
