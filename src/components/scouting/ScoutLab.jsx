@@ -1622,7 +1622,8 @@ function SuggestionsPanel({clubCtx,teamReports,selSug,onPickSug,onBackToClubs}){
   const sugs=useMemo(()=>{if(!rep||!leagueCtx)return[];return getSuggestions(rep,clubCtx?.team,leagueCtx);},[rep,clubCtx,leagueCtx]);
   const PRI_C2={required:'#1A65D3',high:T.accent,medium:T.accent2,low:T.dim};
   const[openReportItem,setOpenReportItem]=useState(null);
-  useEffect(()=>{setOpenReportItem(null);},[clubCtx?.team]);
+  const[reportOpen,setReportOpen]=useState(false);
+  useEffect(()=>{setOpenReportItem(null);setReportOpen(false);},[clubCtx?.team]);
 
   if(!clubCtx){
     return(
@@ -1674,8 +1675,11 @@ function SuggestionsPanel({clubCtx,teamReports,selSug,onPickSug,onBackToClubs}){
 
       {rep&&(rep.positives?.length>0||rep.negatives?.length>0)&&(
         <div style={{marginBottom:20}}>
-          <div style={{fontSize:11,fontWeight:800,color:T.dim,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>Team Report</div>
-          <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+          <button onClick={()=>setReportOpen(o=>!o)} aria-expanded={reportOpen} style={{display:'flex',alignItems:'center',gap:6,width:'100%',background:'none',border:'none',cursor:'pointer',padding:'4px 0',marginBottom:reportOpen?10:0,fontFamily:'inherit'}}>
+            <span style={{fontSize:11,fontWeight:800,color:T.dim,textTransform:'uppercase',letterSpacing:1,flex:1,textAlign:'left'}}>Team Report</span>
+            <CaretDown size={12} weight="bold" color={T.dim} style={{transform:reportOpen?'rotate(180deg)':'none',transition:'transform 0.2s'}} aria-hidden="true"/>
+          </button>
+          {reportOpen&&<div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
             {rep.positives?.length>0&&(
               <div style={{flex:1,minWidth:160,padding:12,borderRadius:12,border:`1px solid ${T.accent}28`,background:T.accent+'08'}}>
                 <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:8}}>
@@ -1720,7 +1724,7 @@ function SuggestionsPanel({clubCtx,teamReports,selSug,onPickSug,onBackToClubs}){
                 })}
               </div>
             )}
-          </div>
+          </div>}
         </div>
       )}
 

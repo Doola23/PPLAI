@@ -361,7 +361,7 @@ export default function PaymentPage() {
                                   error={errors.card} accent={plan.accent}
                                   adornment={<span style={{ opacity: 0.3 }}>{form.card.startsWith('5') ? <MastercardLogo /> : <VisaLogo />}</span>}
                                 />
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                                <div className="payment-card-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                                   <FieldInput label="Expiry" placeholder="MM/YY" value={form.expiry} onChange={v => set('expiry', formatExpiry(v))} error={errors.expiry} accent={plan.accent} />
                                   <FieldInput label="CVV" placeholder="•••" value={form.cvv} onChange={v => set('cvv', v.replace(/\D/g, '').slice(0, 4))} error={errors.cvv} accent={plan.accent}
                                     adornment={<CardIcon size={14} color="rgba(255,255,255,0.2)" />}
