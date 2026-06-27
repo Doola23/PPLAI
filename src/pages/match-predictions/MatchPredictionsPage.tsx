@@ -312,20 +312,14 @@ export default function MatchPredictionsPage() {
   }, []);
 
   useEffect(() => {
-    Promise.all([
-      matchesService.getAllPredictions(),
-      fixturesService.getPL().catch(() => null),
-    ]).then(([predictions, pl]) => {
-      const resolvedGwMap = pl ? { ...GW1_MAP, ...pl.gwMap } : GW1_MAP;
-      if (pl) {
-        setGwMap(resolvedGwMap);
-        setMaxGW(pl.maxGW);
-      }
-      const mapped = predictions.map((p, i) => mapPrediction(p, i, resolvedGwMap));
-      mapped.sort((a, b) => (GW1_ORDER[`${a.home}_${a.away}`] ?? 99) - (GW1_ORDER[`${b.home}_${b.away}`] ?? 99));
-      setMatches(mapped);
-      setSelected(mapped.find(m => m.gameweek === FALLBACK_GW) ?? mapped[0] ?? null);
-    }).catch((err) => setError(err?.response?.status === 403 ? 'locked' : 'offline'))
+    matchesService.getAllPredictions()
+      .then(data => {
+        const mapped = data.map((p, i) => mapPrediction(p, i));
+        mapped.sort((a, b) => (a.gameweek ?? 99) - (b.gameweek ?? 99) || a.home.localeCompare(b.home));
+        setMatches(mapped);
+        setSelected(mapped.find(m => m.gameweek === 1) ?? mapped[0] ?? null);
+      })
+      .catch((err) => setError(err?.response?.status === 403 ? 'locked' : 'offline'))
       .finally(() => setLoading(false));
   }, []);
 
