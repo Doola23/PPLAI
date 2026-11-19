@@ -226,7 +226,7 @@ export default function FeatureTeaser() {
 
   function applyServerData(allMatches: MatchPrediction[], allInjuries: InjuryPrediction[], allStats: PlayerStat[], allScouts: ScoutPlayer[], allStandings: StandingsRow[]) {
     setMatches(allMatches.slice(0, 3));
-    setInjuries([...allInjuries].sort((a, b) => injuriesService.rankScore(b) - injuriesService.rankScore(a)).slice(0, 4));
+    setInjuries(allInjuries);
     setTopPlayer([...allStats].sort((a, b) => (b.xg ?? 0) - (a.xg ?? 0))[0] ?? null);
     setScouts(allScouts.filter(p => (p.Pos ?? '').includes('FW') || (p.Pos ?? '').includes('MF')).slice(0, 3));
     setStandings(allStandings.slice(0, 5));
@@ -241,7 +241,7 @@ export default function FeatureTeaser() {
 
     Promise.allSettled([
       matchesService.getAllPredictions().then(d => { allMatches = d; }),
-      injuriesService.getPredictions().then(d => { allInjuries = d; }),
+      injuriesService.getTop(4).then(d => { allInjuries = d; }),
       playerStatsService.getAll({ limit: 500 }).then(d => { allStats = d; }),
       scoutingService.getCurrent({ limit: 100 }).then(d => { allScouts = d; }),
       matchesService.getPredictedStandings().then(d => { allStandings = d; }),

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Server, Database, Cpu, RefreshCw, Save, AlertTriangle,
+  Database, Cpu, RefreshCw, Save, AlertTriangle,
   CheckCircle, Settings, Zap, Clock, HardDrive, Wifi, Activity,
 } from 'lucide-react';
 import PageBanner from '../../components/dashboard/PageBanner';

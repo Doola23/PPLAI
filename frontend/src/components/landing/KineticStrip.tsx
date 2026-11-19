@@ -16,8 +16,8 @@ function buildItems(highRiskCount: number | null) {
 export default function KineticStrip() {
   const [highRiskCount, setHighRiskCount] = useState<number | null>(null);
   useEffect(() => {
-    injuriesService.getPredictions()
-      .then(rows => setHighRiskCount(rows.filter(p => injuriesService.riskLevel(p) === 'High').length))
+    injuriesService.getSummary()
+      .then(s => setHighRiskCount(s.highRiskFlags))
       .catch(() => {});
   }, []);
 

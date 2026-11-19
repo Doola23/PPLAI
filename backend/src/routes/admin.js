@@ -1,6 +1,6 @@
 const fs = require('fs');
 const { Router } = require('express');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 const requireAuth = require('../middleware/auth');
 const { userStore, auditStore } = require('../lib/userStore');
 const { readCsv } = require('../lib/dataFiles');
@@ -11,7 +11,7 @@ const router = Router();
 async function writeAuditLog({ userId, userEmail, userName, actionType, action }) {
   try {
     await auditStore.add({
-      logId: uuidv4(),
+      logId: randomUUID(),
       userId: userId ?? 'system',
       userEmail: userEmail ?? '',
       userName: userName ?? 'Unknown',

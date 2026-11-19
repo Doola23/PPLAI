@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import '../../styles/dashboard.css';
-import { motion, useInView, useMotionValue, useTransform, animate } from 'framer-motion';
+import { motion, useInView, useMotionValue, animate } from 'framer-motion';
 
 const E = [0.16, 1, 0.3, 1] as const;
 const BLUE = '#1A65D3';
@@ -8,7 +8,6 @@ const TRACK = 'rgba(255,255,255,0.07)';
 const SIZE = 220;
 const STROKE = 14;
 const R = (SIZE - STROKE) / 2;
-const CIRC = 2 * Math.PI * R;
 const GAP_DEG = 60;
 const ARC_DEG = 360 - GAP_DEG;
 

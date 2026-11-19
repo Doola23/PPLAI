@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 const { body, validationResult } = require('express-validator');
 const requireAuth = require('../middleware/auth');
 const { userStore } = require('../lib/userStore');
@@ -91,7 +91,7 @@ router.post('/signup', signupRules, async (req, res) => {
       return res.status(409).json({ error: 'Email already registered' });
     }
 
-    const userId = uuidv4();
+    const userId = randomUUID();
     const passwordHash = await bcrypt.hash(password, 12);
     const now = new Date().toISOString();
 

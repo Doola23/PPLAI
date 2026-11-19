@@ -1,73 +1,7 @@
 require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const cookieParser = require('cookie-parser');
-const rateLimit = require('express-rate-limit');
+const app = require('./app');
 
-const scoutingRouter   = require('./routes/scouting');
-const matchesRouter    = require('./routes/matches');
-const injuriesRouter   = require('./routes/injuries');
-const teamReportsRouter  = require('./routes/teamReports');
-const playerStatsRouter  = require('./routes/playerStats');
-const playerPredictionsRouter = require('./routes/playerPredictions');
-const authRouter        = require('./routes/auth');
-const fixturesRouter    = require('./routes/fixtures');
-const { router: adminRouter } = require('./routes/admin');
-
-const app = express();
 const PORT = process.env.PORT || 3001;
-
-const ALLOWED_ORIGINS = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  process.env.FRONTEND_URL,
-].filter(Boolean);
-
-// Also allow private-LAN origins on the dev ports (e.g. http://192.168.1.12:5173) so the
-// site can be opened and signed into from a phone on the same network during development.
-const LAN_ORIGIN = /^http:\/\/(?:10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.)\d+\.\d+:(?:5173|3000)$/;
-
-app.use(helmet());
-app.use(cors({
-  origin(origin, callback) {
-    // Non-browser requests (no Origin) and explicit allow-list entries pass through.
-    if (!origin || ALLOWED_ORIGINS.includes(origin) || LAN_ORIGIN.test(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error(`Origin ${origin} not allowed by CORS`));
-  },
-  credentials: true,
-}));
-app.use(express.json({ limit: '2mb' }));
-app.use(cookieParser());
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests, try again later' },
-});
-
-app.get('/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
-
-app.use('/api/auth', authLimiter, authRouter);
-app.use('/api/scouting',     scoutingRouter);
-app.use('/api/matches',      matchesRouter);
-app.use('/api/injuries',     injuriesRouter);
-app.use('/api/team-reports',  teamReportsRouter);
-app.use('/api/player-stats', playerStatsRouter);
-app.use('/api/player-predictions', playerPredictionsRouter);
-app.use('/api/fixtures',    fixturesRouter);
-app.use('/api/admin',       adminRouter);
-
-app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
-
-app.use((err, _req, res, _next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Internal server error' });
-});
 
 app.listen(PORT, () => {
   console.log(`PLAI backend running on http://localhost:${PORT}`);

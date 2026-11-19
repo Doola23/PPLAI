@@ -21,21 +21,48 @@ export interface InjuryPrediction {
   minutes_played_this_match: number;
 }
 
-let _predictionsCache: Promise<InjuryPrediction[]> | null = null;
+export interface InjurySummary {
+  teams: string[];
+  referenceDates: string[];
+  highRiskFlags: number;
+  total: number;
+}
+
+let _summaryCache: Promise<InjurySummary> | null = null;
 
 export const injuriesService = {
-  async getPredictions(): Promise<InjuryPrediction[]> {
-    if (!_predictionsCache) {
-      _predictionsCache = api.get<{ items: InjuryPrediction[] }>('/api/injuries/predictions')
-        .then(r => r.data.items ?? [])
-        .catch(e => { _predictionsCache = null; throw e; });
+  async getSummary(): Promise<InjurySummary> {
+    if (!_summaryCache) {
+      _summaryCache = api.get<InjurySummary>('/api/injuries/summary')
+        .then(r => r.data)
+        .catch(e => { _summaryCache = null; throw e; });
     }
-    return _predictionsCache;
+    return _summaryCache;
+  },
+
+  async getTeamDates(team: string): Promise<string[]> {
+    const { data } = await api.get<{ dates: string[] }>(`/api/injuries/teams/${encodeURIComponent(team)}/dates`);
+    return data.dates ?? [];
+  },
+
+  // Highest-risk players, one row per player (their latest match).
+  async getTop(limit = 4, team?: string): Promise<InjuryPrediction[]> {
+    const { data } = await api.get<{ items: InjuryPrediction[] }>('/api/injuries/top', {
+      params: { limit, ...(team ? { team } : {}) },
+    });
+    return data.items ?? [];
+  },
+
+  async getSquad(team: string, date: string): Promise<InjuryPrediction[]> {
+    const { data } = await api.get<{ items: InjuryPrediction[] }>('/api/injuries/predictions', {
+      params: { team, date, limit: 100 },
+    });
+    return data.items ?? [];
   },
 
   async getPlayerPredictions(playerName: string): Promise<InjuryPrediction[]> {
     const { data } = await api.get<{ items: InjuryPrediction[] }>('/api/injuries/predictions', {
-      params: { playerName },
+      params: { playerName, limit: 100 },
     });
     return data.items ?? [];
   },

@@ -40,12 +40,6 @@ const players = [
   },
 ];
 
-const SIDE_STATS = [
-  { label: 'League', value: '1' },
-  { label: 'PL Clubs', value: '20' },
-  { label: 'Accuracy', value: '53.4%' },
-];
-
 export default function HeroSection() {
   const [loaded, setLoaded] = useState(false);
   const reduceMotion = useReducedMotion();

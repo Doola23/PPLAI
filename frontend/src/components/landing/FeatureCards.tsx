@@ -86,7 +86,7 @@ function useSpotlight(ref: React.RefObject<HTMLElement>) {
 }
 
 
-function BigStat({ value, unit = '' }: { value: number; unit?: string }) {
+function BigStat({ value }: { value: number }) {
   const ref  = useRef<HTMLSpanElement>(null);
   const done = useRef(false);
   useEffect(() => {
@@ -195,8 +195,8 @@ function InjuryCard({ navigate }: { navigate: (p: string) => void }) {
   useReveal(cardRef as React.RefObject<HTMLElement>);
   const [highRiskCount, setHighRiskCount] = useState(0);
   useEffect(() => {
-    injuriesService.getPredictions()
-      .then(rows => setHighRiskCount(rows.filter(p => injuriesService.riskLevel(p) === 'High').length))
+    injuriesService.getSummary()
+      .then(s => setHighRiskCount(s.highRiskFlags))
       .catch(() => {});
   }, []);
   return (

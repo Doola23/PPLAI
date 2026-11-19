@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  House, Target, Trophy, Heartbeat, MagnifyingGlass, User,
-  ChartBar, Binoculars, ListBullets, FileText, Shield, Users,
+  House, Target, Trophy, Heartbeat,
+  Binoculars, ListBullets, Shield, Users,
   Gear, SignOut, Plus, List, CaretRight,
 } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { User as UserType } from '../../types/auth.types';
 import Logo from '../ui/Logo';
-import { prewarmScouting } from '../scouting/ScoutLab';
+import { prewarmScouting } from '../scouting/scoutlab/data';
 
 const W_COLLAPSED = 64;
 const W_EXPANDED  = 220;

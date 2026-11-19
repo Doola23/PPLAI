@@ -96,6 +96,17 @@ Secrets live only in `backend/.env` (git-ignored) — never in the repo. User ac
 stored in `backend/data/users.json` (git-ignored); `userStore.js` exposes an async API so it
 can be swapped for a real database later without touching the routes.
 
+## Testing
+
+```bash
+cd backend  && npm test     # API + auth + data-contract tests (node:test)
+cd frontend && npm test     # service, validator and ScoutLab module tests (Vitest)
+cd frontend && npm run lint # ESLint
+```
+
+GitHub Actions (`.github/workflows/ci.yml`) runs the backend tests, frontend tests + build,
+and a compile check of the ML pipelines on every push to `main` and every pull request.
+
 ## Deployment
 
 See [`DEPLOY.md`](./DEPLOY.md) for the full guide. The app deploys cleanly to **Render**

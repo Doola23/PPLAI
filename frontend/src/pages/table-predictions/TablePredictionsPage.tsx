@@ -4,12 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import PageBanner from '../../components/dashboard/PageBanner';
 
-const TABLE_STATS = [
-  { value: 20,  suffix: '', label: 'Teams' },
-  { value: 10,  suffix: 'K', label: 'Simulations' },
-  { value: 38,  suffix: '', label: 'Matchdays' },
-  { value: 53.4, suffix: '%', label: 'Accuracy' },
-];
 import ClubLogo from '../../components/ui/ClubLogo';
 import { matchesService, type StandingsRow, type PredictedStandingsRow, type SeasonStats } from '../../services/matches.service';
 

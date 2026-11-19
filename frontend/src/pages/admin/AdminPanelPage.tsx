@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Users, Settings, Activity, Shield, TrendingUp, AlertTriangle,
+  Users, Settings, Activity, AlertTriangle,
   CheckCircle, Server, Database, Cpu, ArrowRight, Clock,
-  Zap, Globe, RefreshCw, BarChart2,
+  Globe, BarChart2,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PageBanner from '../../components/dashboard/PageBanner';

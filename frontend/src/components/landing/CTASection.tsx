@@ -4,17 +4,6 @@ import { motion } from 'framer-motion';
 import { ChartLine, MagnifyingGlass, User, Heartbeat, ListBullets } from '@phosphor-icons/react';
 import { useAuth } from '../../hooks/useAuth';
 
-function addRipple(e: React.MouseEvent<HTMLButtonElement>) {
-  const btn = e.currentTarget;
-  const rect = btn.getBoundingClientRect();
-  const size = Math.max(rect.width, rect.height);
-  const el = document.createElement('span');
-  el.className = 'lripple-el';
-  el.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px`;
-  btn.appendChild(el);
-  setTimeout(() => el.remove(), 620);
-}
-
 const ROLES = ['Coach', 'Analyst', 'Scout', 'Admin'];
 
 const EASE = [0.16, 1, 0.3, 1] as const;

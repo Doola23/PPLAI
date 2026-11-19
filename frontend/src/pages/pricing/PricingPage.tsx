@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check } from 'lucide-react';
-import { Users, Binoculars, ChartBar, Star } from '@phosphor-icons/react';
+import { Binoculars, ChartBar, Star } from '@phosphor-icons/react';
 import Navbar from '../../components/landing/Navbar';
 import '../../styles/landing.css';
 

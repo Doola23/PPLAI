@@ -1,15 +1,31 @@
 const { Router } = require('express');
 const { readJson, memo } = require('../lib/dataFiles');
+const { paginate } = require('../lib/pagination');
 const { SCOUTING_BUNDLE_FILE } = require('../config/paths');
 
 const router = Router();
 
 const playerKey = (name) => String(name ?? '').toLowerCase().trim();
-const withSquadKey = (p) => ({ ...p, player_squad: `${p.Player}_${p.Squad}` });
+
+function withSquadKey(p) {
+  const out = {};
+  for (const [k, v] of Object.entries(p)) if (v !== null && v !== '') out[k] = v;
+  out.player_squad = `${p.Player}_${p.Squad}`;
+  return out;
+}
+
+// ScoutLab's fullback/winger side detection only needs the mean lateral shot position,
+// so ship that per player instead of every shot map.
+function withShotSummary(p, shotMaps) {
+  const shots = shotMaps[playerKey(p.Player)]?.sh || [];
+  if (!shots.length) return p;
+  const avgY = shots.reduce((s, sh) => s + sh.y, 0) / shots.length;
+  return { ...p, shot_count: shots.length, shot_avg_y: Math.round(avgY * 1000) / 1000 };
+}
 
 const getBundle = () => memo('scouting-bundle', () => {
   const b = readJson(SCOUTING_BUNDLE_FILE) || {};
-  const current = (b.current || []).map(withSquadKey);
+  const current = (b.current || []).map((p) => withShotSummary(withSquadKey(p), b.shotMaps || {}));
   return {
     current,
     previous: (b.previous || []).map(withSquadKey),
@@ -27,28 +43,29 @@ const getBundle = () => memo('scouting-bundle', () => {
 
 const cacheHeaders = (res) => res.set('Cache-Control', 'public, max-age=600');
 
-// GET /api/scouting/primary — player pool + ML (no shot maps / match logs)
+// GET /api/scouting/primary — full player pool + ML roles. The scouting engine ranks players
+// against positional peer groups client-side, so it needs the whole pool in one go.
+// Shot maps, match logs and similarity lists are fetched per player via the routes below.
 router.get('/primary', (_req, res) => {
   const { current, previous, meta, ml } = getBundle();
+  const { similarity, ...mlWithoutSimilarity } = ml;
   cacheHeaders(res);
-  res.json({ current, previous, meta, ml, shotMaps: {}, matchLogs: {} });
+  res.json({ current, previous, meta, ml: mlWithoutSimilarity });
 });
 
-// GET /api/scouting/extras — shot maps + match logs (lazy-loaded after primary)
-router.get('/extras', (_req, res) => {
-  const { shotMaps, matchLogs } = getBundle();
-  cacheHeaders(res);
-  res.json({ shotMaps, matchLogs });
+// GET /api/scouting/similar/:playerName — ML similarity list for one player
+router.get('/similar/:playerName', (req, res) => {
+  const id = playerKey(decodeURIComponent(req.params.playerName));
+  res.json({ items: getBundle().ml.similarity?.[id] || [] });
 });
 
-// GET /api/scouting/current?position=FW&team=Arsenal&limit=20
+// GET /api/scouting/current?position=FW&team=Arsenal&limit=20&offset=0
 router.get('/current', (req, res) => {
-  const { position, team, limit = 50 } = req.query;
-  let items = getBundle().current;
-  if (position) items = items.filter((p) => p.Pos === position);
-  if (team) items = items.filter((p) => p.Squad === team);
-  items = items.slice(0, parseInt(limit, 10) || 50);
-  res.json({ items, count: items.length });
+  const { position, team } = req.query;
+  let rows = getBundle().current;
+  if (position) rows = rows.filter((p) => p.Pos === position);
+  if (team) rows = rows.filter((p) => p.Squad === team);
+  res.json(paginate(rows, req.query, { defaultLimit: 50 }));
 });
 
 // GET /api/scouting/current/:playerSquad  (key = "PlayerName_Squad")

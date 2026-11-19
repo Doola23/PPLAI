@@ -283,13 +283,6 @@ function DetailPanel({ selected }: { selected: Match }) {
   );
 }
 
-const MATCH_STATS = [
-  { value: 380, suffix: '',  label: 'Fixtures analysed' },
-  { value: 79,  suffix: '%', label: 'Model accuracy'    },
-  { value: 10,  suffix: 'K', label: 'Simulations run'   },
-  { value: 3,   suffix: '',  label: 'Confidence tiers'  },
-];
-
 export default function MatchPredictionsPage() {
   const navigate = useNavigate();
   const [matches, setMatches] = useState<Match[]>([]);
@@ -535,7 +528,7 @@ export default function MatchPredictionsPage() {
 
               {allTeams.map(team => {
                 const isActive = selectedTeam === team;
-                const short = team.replace('Manchester', 'Man').replace('Newcastle United', 'Newcastle').replace('Nottingham', "Nott\'m");
+                const short = team.replace('Manchester', 'Man').replace('Newcastle United', 'Newcastle').replace('Nottingham', "Nott'm");
                 return (
                   <button
                     key={team}
