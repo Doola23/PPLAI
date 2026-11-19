@@ -3,11 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Settings, Activity, Shield, TrendingUp, AlertTriangle,
   CheckCircle, Server, Database, Cpu, ArrowRight, Clock,
-  Zap, Globe, RefreshCw, BarChart2, Layout,
+  Zap, Globe, RefreshCw, BarChart2,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PageBanner from '../../components/dashboard/PageBanner';
-import LandingConfigTab from './LandingConfigTab';
 import { adminService, type ServiceHealth, type Alert, type ActivityEntry } from '../../services/admin.service';
 
 const E = [0.16, 1, 0.3, 1] as const;
@@ -15,11 +14,6 @@ const E = [0.16, 1, 0.3, 1] as const;
 const typeColor: Record<string, string> = {
   signup: '#1A65D3', login: '#939A9E', logout: '#939A9E', default: '#1A65D3',
 };
-
-const TABS = [
-  { id: 'overview', label: 'Overview', icon: Activity },
-  { id: 'landing',  label: 'Landing Config', icon: Layout },
-];
 
 function initials(name: string) {
   return name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
@@ -36,7 +30,6 @@ function relativeTime(ts: string) {
 export default function AdminPanelPage() {
   const navigate = useNavigate();
   const [resolvedAlerts, setResolvedAlerts] = useState<number[]>([]);
-  const [activeTab, setActiveTab] = useState<'overview' | 'landing'>('overview');
   const [systemServices, setSystemServices] = useState<ServiceHealth[]>([]);
   const [activeAlerts, setActiveAlerts] = useState<Alert[]>([]);
   const [recentActivity, setRecentActivity] = useState<ActivityEntry[]>([]);
@@ -70,28 +63,7 @@ export default function AdminPanelPage() {
         badge="Admin Access"
       />
 
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: '#000' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', gap: 4 }}>
-          {TABS.map(t => {
-            const Icon = t.icon;
-            const on = activeTab === t.id;
-            return (
-              <button
-                key={t.id}
-                onClick={() => setActiveTab(t.id as typeof activeTab)}
-                style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '14px 18px', background: 'none', border: 'none', borderBottom: on ? '2px solid #1A65D3' : '2px solid transparent', color: on ? '#F2F2F2' : '#939A9E', fontSize: 13, fontWeight: on ? 700 : 500, cursor: 'pointer', fontFamily: 'inherit', marginBottom: -1, transition: 'color 150ms' }}
-              >
-                <Icon size={14} />
-                {t.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 24px 60px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-        {activeTab === 'landing' && <LandingConfigTab />}
-        {activeTab === 'overview' && <>
 
         <div className="layout-stat-4">
           {[
@@ -315,7 +287,6 @@ export default function AdminPanelPage() {
           </div>
         </motion.div>
 
-        </>}
       </div>
     </div>
   );

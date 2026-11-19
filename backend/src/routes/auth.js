@@ -3,14 +3,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const { body, validationResult } = require('express-validator');
-const { PutCommand, GetCommand, UpdateCommand, QueryCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
-const { CreateTableCommand, DescribeTableCommand } = require('@aws-sdk/client-dynamodb');
-const { docClient } = require('../db');
 const requireAuth = require('../middleware/auth');
+const { userStore } = require('../lib/userStore');
 const { writeAuditLog } = require('./admin');
 
 const router = express.Router();
-const TABLE = 'plai_users';
 
 const JWT_EXPIRY = '15m';
 const REFRESH_EXPIRY = '7d';
@@ -90,8 +87,7 @@ router.post('/signup', signupRules, async (req, res) => {
   const userRole = role || 'fan';
 
   try {
-    const existing = await docClient.send(new GetCommand({ TableName: TABLE, Key: { email } }));
-    if (existing.Item) {
+    if (await userStore.get(email)) {
       return res.status(409).json({ error: 'Email already registered' });
     }
 
@@ -112,7 +108,7 @@ router.post('/signup', signupRules, async (req, res) => {
       createdAt: now, updatedAt: now,
     };
 
-    await docClient.send(new PutCommand({ TableName: TABLE, Item: item }));
+    await userStore.put(item);
 
     const accessToken = issueAccess({ userId, email, name, role: userRole });
     setRefreshCookie(res, refreshToken);
@@ -135,12 +131,11 @@ router.post('/login', loginRules, async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const result = await docClient.send(new GetCommand({ TableName: TABLE, Key: { email } }));
-    if (!result.Item) {
+    const user = await userStore.get(email);
+    if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const user = result.Item;
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -149,12 +144,7 @@ router.post('/login', loginRules, async (req, res) => {
     const refreshToken = issueRefresh(user.userId, user.email);
     const refreshHash = await bcrypt.hash(refreshToken, 10);
 
-    await docClient.send(new UpdateCommand({
-      TableName: TABLE,
-      Key: { email },
-      UpdateExpression: 'SET refreshHash = :rh, updatedAt = :u',
-      ExpressionAttributeValues: { ':rh': refreshHash, ':u': new Date().toISOString() },
-    }));
+    await userStore.update(email, { refreshHash, updatedAt: new Date().toISOString() });
 
     const accessToken = issueAccess(user);
     setRefreshCookie(res, refreshToken);
@@ -176,22 +166,16 @@ router.post('/refresh', async (req, res) => {
     const payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
     const { email } = payload;
 
-    const result = await docClient.send(new GetCommand({ TableName: TABLE, Key: { email } }));
-    if (!result.Item) return res.status(401).json({ error: 'User not found' });
+    const user = await userStore.get(email);
+    if (!user) return res.status(401).json({ error: 'User not found' });
 
-    const user = result.Item;
     const hashMatch = await bcrypt.compare(token, user.refreshHash || '');
     if (!hashMatch) return res.status(401).json({ error: 'Refresh token revoked' });
 
     const newRefresh = issueRefresh(user.userId, user.email);
     const newHash = await bcrypt.hash(newRefresh, 10);
 
-    await docClient.send(new UpdateCommand({
-      TableName: TABLE,
-      Key: { email },
-      UpdateExpression: 'SET refreshHash = :rh, updatedAt = :u',
-      ExpressionAttributeValues: { ':rh': newHash, ':u': new Date().toISOString() },
-    }));
+    await userStore.update(email, { refreshHash: newHash, updatedAt: new Date().toISOString() });
 
     const accessToken = issueAccess(user);
     setRefreshCookie(res, newRefresh);
@@ -209,11 +193,7 @@ router.post('/logout', async (req, res) => {
   if (token) {
     try {
       const payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-      await docClient.send(new UpdateCommand({
-        TableName: TABLE,
-        Key: { email: payload.email },
-        UpdateExpression: 'REMOVE refreshHash',
-      }));
+      await userStore.update(payload.email, { refreshHash: undefined });
     } catch {
       // token already invalid — still clear the cookie
     }
@@ -228,9 +208,9 @@ router.post('/logout', async (req, res) => {
 // GET /api/auth/me
 router.get('/me', requireAuth, async (req, res) => {
   try {
-    const result = await docClient.send(new GetCommand({ TableName: TABLE, Key: { email: req.user.email } }));
-    if (!result.Item) return res.status(404).json({ error: 'User not found' });
-    return res.json({ user: safeUser(result.Item) });
+    const user = await userStore.get(req.user.email);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    return res.json({ user: safeUser(user) });
   } catch (err) {
     console.error('Me error:', err);
     return res.status(500).json({ error: 'Internal server error' });
@@ -240,45 +220,36 @@ router.get('/me', requireAuth, async (req, res) => {
 // PATCH /api/auth/me — onboarding + profile updates
 router.patch('/me', requireAuth, async (req, res) => {
   const { role, favoriteClub, primaryGoal, onboardingComplete, name, bio, avatarColor, profileImage, username, age } = req.body;
-  const updates = [];
-  const values = { ':u': new Date().toISOString() };
-  const names = {};
+  const fields = {};
 
   if (role !== undefined) {
     if (!VALID_ROLES.includes(role)) return res.status(400).json({ error: 'Invalid role' });
-    updates.push('#r = :r'); values[':r'] = role; names['#r'] = 'role';
+    fields.role = role;
   }
-  if (favoriteClub !== undefined) { updates.push('favoriteClub = :fc'); values[':fc'] = favoriteClub; }
+  if (favoriteClub !== undefined) fields.favoriteClub = favoriteClub;
   if (primaryGoal !== undefined) {
     if (primaryGoal && !VALID_GOALS.includes(primaryGoal)) return res.status(400).json({ error: 'Invalid goal' });
-    updates.push('primaryGoal = :pg'); values[':pg'] = primaryGoal;
+    fields.primaryGoal = primaryGoal;
   }
-  if (onboardingComplete !== undefined) { updates.push('onboardingComplete = :oc'); values[':oc'] = !!onboardingComplete; }
-  if (name !== undefined) { updates.push('#n = :nm'); values[':nm'] = name; names['#n'] = 'name'; }
-  if (bio !== undefined) { updates.push('bio = :bio'); values[':bio'] = bio; }
-  if (avatarColor !== undefined) { updates.push('avatarColor = :ac'); values[':ac'] = avatarColor; }
-  if (profileImage !== undefined) { updates.push('profileImage = :pi'); values[':pi'] = profileImage; }
-  if (username !== undefined) { updates.push('username = :un'); values[':un'] = username; }
+  if (onboardingComplete !== undefined) fields.onboardingComplete = !!onboardingComplete;
+  if (name !== undefined) fields.name = name;
+  if (bio !== undefined) fields.bio = bio;
+  if (avatarColor !== undefined) fields.avatarColor = avatarColor;
+  if (profileImage !== undefined) fields.profileImage = profileImage;
+  if (username !== undefined) fields.username = username;
   if (age !== undefined) {
     const n = age === null ? null : Number(age);
     if (n !== null && (isNaN(n) || n < 13 || n > 120)) return res.status(400).json({ error: 'Age must be between 13 and 120' });
-    updates.push('age = :age'); values[':age'] = n;
+    fields.age = n;
   }
 
-  if (!updates.length) return res.status(400).json({ error: 'No fields to update' });
-  updates.push('updatedAt = :u');
+  if (!Object.keys(fields).length) return res.status(400).json({ error: 'No fields to update' });
+  fields.updatedAt = new Date().toISOString();
 
   try {
-    const result = await docClient.send(new UpdateCommand({
-      TableName: TABLE,
-      Key: { email: req.user.email },
-      UpdateExpression: 'SET ' + updates.join(', '),
-      ExpressionAttributeValues: values,
-      ...(Object.keys(names).length ? { ExpressionAttributeNames: names } : {}),
-      ReturnValues: 'ALL_NEW',
-    }));
+    const updated = await userStore.update(req.user.email, fields);
+    if (!updated) return res.status(404).json({ error: 'User not found' });
     // Re-issue access token if role/name changed (claims out of date)
-    const updated = result.Attributes;
     const newAccess = (role || name || bio !== undefined || avatarColor !== undefined || profileImage !== undefined) ? issueAccess(updated) : null;
     return res.json({ user: safeUser(updated), ...(newAccess ? { token: newAccess } : {}) });
   } catch (err) {
@@ -290,7 +261,7 @@ router.patch('/me', requireAuth, async (req, res) => {
 // DELETE /api/auth/me — permanently delete account
 router.delete('/me', requireAuth, async (req, res) => {
   try {
-    await docClient.send(new DeleteCommand({ TableName: TABLE, Key: { email: req.user.email } }));
+    await userStore.remove(req.user.email);
     clearRefreshCookie(res);
     return res.json({ ok: true });
   } catch (err) {

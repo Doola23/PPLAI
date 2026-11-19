@@ -167,20 +167,20 @@ export default function StatsSection() {
         <Dial
           label="Prediction Accuracy"
           sublabel="Win / Draw / Loss"
-          value={94}
+          value={53}
           maxValue={100}
           displaySuffix="%"
-          sideStats={[{ label: 'Season avg', value: '94%' }, { label: 'Peak GW', value: '97%' }]}
+          sideStats={[{ label: '3-season avg', value: '53.4%' }, { label: 'Best season', value: '58.1%' }]}
           delay={0}
           active={inView}
         />
         <Dial
           label="Players Tracked"
           sublabel="Active Profiles"
-          value={650}
-          maxValue={700}
+          value={2168}
+          maxValue={2200}
           displaySuffix="+"
-          sideStats={[{ label: 'Leagues', value: '6' }, { label: 'Nations', value: '42' }]}
+          sideStats={[{ label: 'Leagues', value: '5' }, { label: 'Nations', value: '122' }]}
           delay={0.12}
           active={inView}
         />
@@ -189,7 +189,7 @@ export default function StatsSection() {
           sublabel="This Season"
           value={380}
           maxValue={400}
-          sideStats={[{ label: 'GW complete', value: '38' }, { label: 'Data pts', value: '2.4M' }]}
+          sideStats={[{ label: 'GW complete', value: '38' }, { label: 'Shots tracked', value: '43.8K' }]}
           delay={0.24}
           active={inView}
         />

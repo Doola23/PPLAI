@@ -17,7 +17,6 @@ const PRODUCT_SECTIONS = [
     items: [
       { label: 'Injury Risk',    desc: 'Squad fitness radar',       icon: Heartbeat,   path: '/injury-risk'    },
       { label: 'Player Stats',   desc: 'Deep performance metrics',  icon: ChartBar,    path: '/player-stats'   },
-      { label: 'Player Profile', desc: 'Individual player dossier', icon: User,        path: '/player-profile' },
     ],
   },
   {
@@ -31,7 +30,6 @@ const PRODUCT_SECTIONS = [
 
 const NAV_LINKS = [
   { label: 'Teams',     path: '/teams'    },
-  { label: 'Community', path: '/features' },
   { label: 'Support',   path: '/support'  },
   { label: 'Pricing',   path: '/pricing'  },
 ];
@@ -140,7 +138,7 @@ export default function Navbar({ showFeaturesDropdown = false }: NavbarProps) {
                 aria-expanded={showFeaturesDropdown ? productOpen : undefined}
                 style={{ display: 'flex', alignItems: 'center', gap: 4 }}
               >
-                Product
+                Features
                 {showFeaturesDropdown && (
                   <svg
                     xmlns="http://www.w3.org/2000/svg" width="10" height="10"
@@ -311,13 +309,21 @@ export default function Navbar({ showFeaturesDropdown = false }: NavbarProps) {
                   <span style={{ fontSize: 12, fontWeight: 700, color: '#F2F2F2', letterSpacing: '0.02em' }}>
                     {user?.name?.split(' ')[0] ?? 'Account'}
                   </span>
-                  <div style={{
-                    width: 28, height: 28, borderRadius: '50%',
-                    background: '#1A65D3',
-                    display: 'grid', placeItems: 'center',
-                    fontSize: 11, fontWeight: 800, color: '#F2F2F2', letterSpacing: '0.04em',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.22)',
-                  }}>{initials}</div>
+                  {(user?.avatar || user?.profileImage) ? (
+                    <img src={(user.avatar || user.profileImage)!} alt={user.name ?? 'avatar'} style={{
+                      width: 28, height: 28, borderRadius: '50%',
+                      objectFit: 'cover', flexShrink: 0,
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.22)',
+                    }} />
+                  ) : (
+                    <div style={{
+                      width: 28, height: 28, borderRadius: '50%',
+                      background: '#1A65D3',
+                      display: 'grid', placeItems: 'center',
+                      fontSize: 11, fontWeight: 800, color: '#F2F2F2', letterSpacing: '0.04em',
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.22)',
+                    }}>{initials}</div>
+                  )}
                 </button>
 
                 <AnimatePresence>
@@ -349,7 +355,7 @@ export default function Navbar({ showFeaturesDropdown = false }: NavbarProps) {
                       {[
                         { label: 'Dashboard',  path: '/dashboard', Icon: House },
                         { label: 'My Profile', path: '/account',   Icon: User  },
-                        { label: 'Admin',      path: '/admin',     Icon: Gear  },
+                        ...(user?.role === 'admin' ? [{ label: 'Admin', path: '/admin', Icon: Gear }] : []),
                       ].map(({ label, path, Icon }) => (
                         <button
                           key={label}
@@ -452,7 +458,7 @@ export default function Navbar({ showFeaturesDropdown = false }: NavbarProps) {
                   onClick={() => setMobileProduct(o => !o)}
                   aria-expanded={mobileProduct}
                 >
-                  <span>Product</span>
+                  <span>Features</span>
                   <CaretDown
                     size={14}
                     weight="bold"
@@ -526,7 +532,11 @@ export default function Navbar({ showFeaturesDropdown = false }: NavbarProps) {
                 ) : (
                   <>
                     <div className="lmobile-drawer__user">
-                      <div className="lmobile-drawer__avatar">{initials}</div>
+                      {(user?.avatar || user?.profileImage) ? (
+                        <img src={(user.avatar || user.profileImage)!} alt={user?.name ?? 'avatar'} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                      ) : (
+                        <div className="lmobile-drawer__avatar">{initials}</div>
+                      )}
                       <div>
                         <div style={{ fontSize: 14, fontWeight: 700, color: '#F2F2F2' }}>{user?.name}</div>
                         <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>{user?.email}</div>
@@ -535,7 +545,7 @@ export default function Navbar({ showFeaturesDropdown = false }: NavbarProps) {
                     {[
                       { label: 'Dashboard',  path: '/dashboard', Icon: House },
                       { label: 'My Profile', path: '/account',   Icon: User  },
-                      { label: 'Admin',      path: '/admin',     Icon: Gear  },
+                      ...(user?.role === 'admin' ? [{ label: 'Admin', path: '/admin', Icon: Gear }] : []),
                     ].map(({ label, path, Icon }) => (
                       <button
                         key={label}

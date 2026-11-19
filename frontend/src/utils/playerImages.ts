@@ -8,7 +8,6 @@ export const playerImages: Record<string, string> = {
   'tommy setford': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p551221.png',
   'setford': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p551221.png',
   'gabriel dos santos magalhães': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p226597.png',
-  'gabriel': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p226597.png',
   'william saliba': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p462424.png',
   'saliba': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p462424.png',
   'riccardo calafiori': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p466075.png',
@@ -72,7 +71,7 @@ export const playerImages: Record<string, string> = {
   'marli salmon': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p616065.png',
   'salmon': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p616065.png',
   'emiliano martínez romero': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p98980.png',
-  'martinez': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p98980.png',
+  'emiliano martínez': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p98980.png',
   'marco bizot': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p72147.png',
   'm.bizot': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p72147.png',
   'joe gauci': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p462492.png',
@@ -256,7 +255,6 @@ export const playerImages: Record<string, string> = {
   'kian mcmahon-brown': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p644593.png',
   'mcmahon-brown': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p644593.png',
   'norberto murara neto': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p69752.png',
-  'neto': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p69752.png',
   'đorđe petrović': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p457569.png',
   'petrović': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p457569.png',
   'will dennis': 'https://resources.premierleague.com/premierleague/photos/players/110x140/p444172.png',
@@ -1663,6 +1661,61 @@ function stripAccents(s: string): string {
   return s.normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
+// Runtime FPL player image cache (fetched once from FPL Bootstrap API)
+let _fplCache: Record<string, string> | null = null;
+let _fplPromise: Promise<Record<string, string>> | null = null;
+
+async function loadFplCache(): Promise<Record<string, string>> {
+  if (_fplCache) return _fplCache;
+  if (_fplPromise) return _fplPromise;
+  _fplPromise = (async () => {
+    try {
+      const LS_KEY = 'plai_fpl_img_v1';
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) {
+        const { ts, data } = JSON.parse(raw);
+        if (Date.now() - ts < 24 * 60 * 60 * 1000) { _fplCache = data; return data; }
+      }
+      const r = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/', { cache: 'force-cache' });
+      if (!r.ok) return {};
+      const json = await r.json();
+      const map: Record<string, string> = {};
+      for (const el of json.elements ?? []) {
+        const url = `https://resources.premierleague.com/premierleague/photos/players/110x140/p${el.code}.png`;
+        const full = stripAccents(`${el.first_name} ${el.second_name}`.toLowerCase().trim());
+        const last = stripAccents(el.second_name.toLowerCase().trim());
+        const web  = stripAccents(el.web_name.toLowerCase().trim());
+        map[full] = url; map[last] = url; map[web] = url;
+      }
+      _fplCache = map;
+      try { localStorage.setItem(LS_KEY, JSON.stringify({ ts: Date.now(), data: map })); } catch { /* ignore */ }
+      return map;
+    } catch { return {}; }
+  })();
+  return _fplPromise;
+}
+
+// Kick off FPL cache warmup in the background on module load
+if (typeof window !== 'undefined') loadFplCache();
+
+export async function getPlayerImageAsync(name: string): Promise<string | undefined> {
+  const sync = getPlayerImage(name);
+  if (sync) return sync;
+  const cache = await loadFplCache();
+  return lookupInMap(cache, name);
+}
+
+function lookupInMap(map: Record<string, string>, name: string): string | undefined {
+  const key  = name.toLowerCase().trim();
+  const keyA = stripAccents(key);
+  if (map[key])  return map[key];
+  if (map[keyA]) return map[keyA];
+  const parts    = keyA.split(' ').filter(Boolean);
+  const lastName = parts[parts.length - 1];
+  if (lastName && lastName.length > 2 && map[lastName]) return map[lastName];
+  return undefined;
+}
+
 export function getPlayerImage(name: string): string | undefined {
   if (!name || name === '—') return undefined;
 
@@ -1694,6 +1747,9 @@ export function getPlayerImage(name: string): string | undefined {
     const kA = stripAccents(k);
     if (kA.split(' ').length >= 2 && keyA.includes(kA)) return v;
   }
+
+  // 6. Check runtime FPL cache (synchronous read if already loaded)
+  if (_fplCache) return lookupInMap(_fplCache, name);
 
   return undefined;
 }

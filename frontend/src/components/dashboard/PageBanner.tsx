@@ -18,12 +18,6 @@ export default function PageBanner({ title, titleAccent, description, titleLayou
     <div style={{ position: 'relative', background: '#000000', overflow: 'hidden' }}>
 
       <div style={{
-        position: 'absolute', top: '-60%', left: '50%', transform: 'translateX(-50%)',
-        width: '70%', height: '280%', pointerEvents: 'none',
-        background: 'radial-gradient(ellipse at center, rgba(26,101,211,0.08) 0%, transparent 58%)',
-      }} />
-
-      <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         backgroundImage: `repeating-linear-gradient(
           -55deg,
@@ -57,13 +51,14 @@ export default function PageBanner({ title, titleAccent, description, titleLayou
 
         {description && (
           <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.22 }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.22, duration: 0.5, ease: E }}
             style={{
-              fontSize: 12, color: 'rgba(255,255,255,0.28)',
-              margin: '16px 0 0', maxWidth: 560, lineHeight: 1.7,
-              fontWeight: 500, letterSpacing: '0.01em',
+              fontSize: 15, color: 'rgba(242,242,242,0.55)',
+              margin: '14px 0 0', lineHeight: 1.4,
+              fontWeight: 600, letterSpacing: '0.06em',
+              textTransform: 'uppercase',
             }}
           >
             {description}

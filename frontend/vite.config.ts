@@ -10,7 +10,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'framer-motion', 'axios'],
+    include: ['react', 'react-dom', 'react-router-dom', 'framer-motion', 'axios', 'recharts', '@phosphor-icons/react', 'lucide-react', 'react-easy-crop'],
   },
   build: {
     target: 'esnext',
@@ -24,6 +24,7 @@ export default defineConfig({
           'vendor-spline': ['@splinetool/react-spline'],
           'vendor-forms':  ['react-hook-form', 'zod'],
           'vendor-icons':  ['@phosphor-icons/react', 'lucide-react'],
+          'vendor-charts': ['recharts'],
           'vendor-ui':     ['react-easy-crop', 'axios'],
         },
       },

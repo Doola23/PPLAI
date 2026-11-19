@@ -1,21 +1,14 @@
+const path = require('path');
 const { Router } = require('express');
-const { ScanCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
-const { docClient } = require('../db');
+const { readCsv } = require('../lib/dataFiles');
+const { MATCH_OUTPUTS_DIR } = require('../config/paths');
 
 const router = Router();
 
 // GET /api/team-reports
-router.get('/', async (req, res) => {
-  try {
-    const { limit = 50 } = req.query;
-    const data = await docClient.send(new ScanCommand({
-      TableName: 'output-team-reports',
-      Limit: parseInt(limit),
-    }));
-    res.json({ items: data.Items, count: data.Count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+router.get('/', (_req, res) => {
+  const items = readCsv(path.join(MATCH_OUTPUTS_DIR, 'team_reports.csv'));
+  res.json({ items, count: items.length });
 });
 
 module.exports = router;

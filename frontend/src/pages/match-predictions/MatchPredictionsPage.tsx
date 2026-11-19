@@ -315,7 +315,6 @@ export default function MatchPredictionsPage() {
     matchesService.getAllPredictions()
       .then(data => {
         const mapped = data.map((p, i) => mapPrediction(p, i));
-        // Order within a gameweek by home team; the gameweek filter does the rest.
         mapped.sort((a, b) => (a.gameweek ?? 99) - (b.gameweek ?? 99) || a.home.localeCompare(b.home));
         setMatches(mapped);
         setSelected(mapped.find(m => m.gameweek === 1) ?? mapped[0] ?? null);
@@ -323,14 +322,6 @@ export default function MatchPredictionsPage() {
       .catch((err) => setError(err?.response?.status === 403 ? 'locked' : 'offline'))
       .finally(() => setLoading(false));
   }, []);
-
-  // Jump the detail panel to the first fixture of the chosen gameweek.
-  useEffect(() => {
-    if (search || selectedTeam) return;
-    const first = matches.find(m => m.gameweek === gameweek);
-    if (first) setSelected(first);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameweek, matches]);
 
   const toggleGroup = (conf: Confidence) => {
     setExpandedGroups(prev => {

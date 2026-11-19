@@ -17,13 +17,9 @@ services:
     buildCommand: npm install
     startCommand: node src/index.js
     healthCheckPath: /health
+    # Model outputs are read from ../ml (Render clones the full repo).
+    # Users live in backend/data/users.json — ephemeral on the free plan (reset on redeploy).
     envVars:
-      - key: AWS_ACCESS_KEY_ID
-        sync: false
-      - key: AWS_SECRET_ACCESS_KEY
-        sync: false
-      - key: AWS_REGION
-        sync: false
       - key: JWT_SECRET
         sync: false
       # Separate secret for refresh tokens (must be set, or signup/login 500s).
@@ -42,6 +38,7 @@ services:
   - type: web
     name: pplai-web
     runtime: static
+    rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     pullRequestPreviewsEnabled: false

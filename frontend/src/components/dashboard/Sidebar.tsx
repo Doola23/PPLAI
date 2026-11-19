@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   House, Target, Trophy, Heartbeat, MagnifyingGlass, User,
@@ -8,6 +8,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import type { User as UserType } from '../../types/auth.types';
 import Logo from '../ui/Logo';
+import { prewarmScouting } from '../scouting/ScoutLab';
 
 const W_COLLAPSED = 64;
 const W_EXPANDED  = 220;
@@ -321,6 +322,16 @@ function SidebarContent({
 export default function Sidebar({ user, onLogout }: SidebarProps) {
   const [expanded, setExpanded] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const prewarmed = useRef(false);
+
+  useEffect(() => {
+    // Fire scouting API calls in the background as soon as the sidebar mounts
+    // so scout-search data is ready (or in-flight) before the user clicks
+    if (!prewarmed.current) {
+      prewarmed.current = true;
+      prewarmScouting();
+    }
+  }, []);
 
   useEffect(() => {
     document.documentElement.style.setProperty(
