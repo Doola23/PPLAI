@@ -283,13 +283,6 @@ function DetailPanel({ selected }: { selected: Match }) {
   );
 }
 
-const MATCH_STATS = [
-  { value: 380, suffix: '',  label: 'Fixtures analysed' },
-  { value: 79,  suffix: '%', label: 'Model accuracy'    },
-  { value: 10,  suffix: 'K', label: 'Simulations run'   },
-  { value: 3,   suffix: '',  label: 'Confidence tiers'  },
-];
-
 export default function MatchPredictionsPage() {
   const navigate = useNavigate();
   const [matches, setMatches] = useState<Match[]>([]);
@@ -315,7 +308,6 @@ export default function MatchPredictionsPage() {
     matchesService.getAllPredictions()
       .then(data => {
         const mapped = data.map((p, i) => mapPrediction(p, i));
-        // Order within a gameweek by home team; the gameweek filter does the rest.
         mapped.sort((a, b) => (a.gameweek ?? 99) - (b.gameweek ?? 99) || a.home.localeCompare(b.home));
         setMatches(mapped);
         setSelected(mapped.find(m => m.gameweek === 1) ?? mapped[0] ?? null);
@@ -323,14 +315,6 @@ export default function MatchPredictionsPage() {
       .catch((err) => setError(err?.response?.status === 403 ? 'locked' : 'offline'))
       .finally(() => setLoading(false));
   }, []);
-
-  // Jump the detail panel to the first fixture of the chosen gameweek.
-  useEffect(() => {
-    if (search || selectedTeam) return;
-    const first = matches.find(m => m.gameweek === gameweek);
-    if (first) setSelected(first);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameweek, matches]);
 
   const toggleGroup = (conf: Confidence) => {
     setExpandedGroups(prev => {
@@ -544,7 +528,7 @@ export default function MatchPredictionsPage() {
 
               {allTeams.map(team => {
                 const isActive = selectedTeam === team;
-                const short = team.replace('Manchester', 'Man').replace('Newcastle United', 'Newcastle').replace('Nottingham', "Nott\'m");
+                const short = team.replace('Manchester', 'Man').replace('Newcastle United', 'Newcastle').replace('Nottingham', "Nott'm");
                 return (
                   <button
                     key={team}

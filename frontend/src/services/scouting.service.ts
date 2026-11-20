@@ -45,6 +45,7 @@ export interface ScoutPlayer {
   total_injuries: number;
   recent_injuries: number;
   total_days_missed: number;
+  recent_days_missed: number;
   goals_per90_zscore: number;
   assists_per90_zscore: number;
   npxg_per90_zscore: number;
@@ -61,6 +62,13 @@ export const scoutingService = {
   async getCurrent(params?: { position?: string; team?: string; limit?: number }): Promise<ScoutPlayer[]> {
     const { data } = await api.get<{ items: ScoutPlayer[] }>('/api/scouting/current', { params });
     return data.items ?? [];
+  },
+
+  // Returns EVERY current player. /current is a single un-paginated scan (caps at ~1MB),
+  // so use /primary, which paginates the full table — needed so all shortlisted players appear.
+  async getAll(): Promise<ScoutPlayer[]> {
+    const { data } = await api.get<{ current: ScoutPlayer[] }>('/api/scouting/primary');
+    return data.current ?? [];
   },
 
   async getPlayer(playerSquad: string): Promise<ScoutPlayer> {

@@ -19,9 +19,6 @@ const DashboardPage        = lazy(() => import('./pages/dashboard/DashboardPage'
 const MatchPredictionsPage = lazy(() => import('./pages/match-predictions/MatchPredictionsPage'));
 const TablePredictionsPage = lazy(() => import('./pages/table-predictions/TablePredictionsPage'));
 const InjuryRiskPage       = lazy(() => import('./pages/injury-risk/InjuryRiskPage'));
-const PlayerProfilePage    = lazy(() => import('./pages/player-profile/PlayerProfilePage'));
-const HaalandPage          = lazy(() => import('./pages/player-profile/HaalandPage'));
-const SakaPage             = lazy(() => import('./pages/player-profile/SakaPage'));
 const PlayerStatsPage      = lazy(() => import('./pages/player-stats/PlayerStatsPage'));
 const ScoutSearchPage      = lazy(() => import('./pages/scout-search/ScoutSearchPage'));
 const ScoutResultsPage     = lazy(() => import('./pages/scout-results/ScoutResultsPage'));
@@ -70,10 +67,6 @@ export default function App() {
                 <Route path="/scout-search" element={<ScoutSearchPage />} />
                 <Route path="/scout-results" element={<ScoutResultsPage />} />
                 <Route path="/scout-report" element={<ScoutReportPage />} />
-                <Route path="/player-profile" element={<PlayerProfilePage />} />
-                <Route path="/player-profile/haaland" element={<HaalandPage />} />
-                <Route path="/player-profile/saka" element={<SakaPage />} />
-                <Route path="/player-profile/:name" element={<PlayerProfilePage />} />
                 <Route path="/player-stats" element={<PlayerStatsPage />} />
               </Route>
 

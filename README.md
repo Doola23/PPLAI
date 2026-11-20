@@ -43,7 +43,7 @@ Each model's folder documents its own numbers, methodology, and limitations.
 
 **Frontend** — React 18 · TypeScript · Vite · Tailwind CSS · Framer Motion · Recharts · Spline (3D) · React Router
 
-**Backend** — Node.js · Express · AWS DynamoDB (`@aws-sdk`) · JWT auth (access + refresh) · bcrypt
+**Backend** — Node.js · Express · file-based data (model output CSV/JSON) · JWT auth (access + refresh) · bcrypt
 
 **Machine learning** — Python · XGBoost · scikit-learn · Optuna · pandas · NumPy
 
@@ -54,17 +54,24 @@ Each model's folder documents its own numbers, methodology, and limitations.
 ## Repository structure
 
 ```
-src/                  React/TypeScript frontend (the app)
-backend/              Node/Express API + DynamoDB access + JWT auth
-match_prediction/     XGBoost match-outcome model + Monte Carlo season simulation
-player_stats/         Per-position player stat projection models
-injury_prediction/    Injury-risk classifier
-scouting/             Scouting role-clustering + similarity ML pipeline
-public/               Static assets
-DEPLOY.md             Deployment guide (Render / Vercel+Koyeb)
+frontend/                 React/TypeScript app (Vite)
+backend/                  Node/Express API — serves model outputs from ml/, JWT auth
+  src/config/paths.js     Where every data file lives
+  src/lib/dataFiles.js    Cached CSV/JSON loader
+  src/lib/userStore.js    User + audit store: Postgres when DATABASE_URL is set, JSON file otherwise
+ml/
+  data/fbref/             FBref season stats shared by player_stats + injury_prediction
+  match_prediction/       XGBoost match-outcome model + Monte Carlo season simulation
+  player_stats/           Per-position player stat projection models
+  injury_prediction/      Injury-risk classifier
+  scouting/               Scouting bundle + role-clustering / similarity pipeline
+docs/                     Brand, colour and button guides
+DEPLOY.md                 Deployment guide (Render / Vercel+Koyeb)
 ```
 
 Each ML folder has its own README with the pipeline, how to re-run it, and current accuracy.
+Models write their results to `outputs/` (or `scouting/data/scouting_bundle.json`); the
+backend reads those files directly — re-run a model and restart the backend to refresh.
 
 ---
 
@@ -72,6 +79,7 @@ Each ML folder has its own README with the pipeline, how to re-run it, and curre
 
 **Frontend**
 ```bash
+cd frontend
 npm install
 npm run dev          # http://localhost:5173
 ```
@@ -80,11 +88,26 @@ npm run dev          # http://localhost:5173
 ```bash
 cd backend
 npm install
-npm run dev          # http://localhost:3001  (needs AWS + JWT env vars, see DEPLOY.md)
+npm run dev          # http://localhost:3001  (needs JWT env vars, see DEPLOY.md)
 ```
 
 The frontend auto-targets the backend in dev (including over your LAN for mobile testing).
-Secrets live only in `backend/.env` (git-ignored) — never in the repo.
+Secrets live only in `backend/.env` (git-ignored) — never in the repo. Without
+`DATABASE_URL`, accounts are stored in `backend/data/users.json` (git-ignored); set it to a
+Postgres URL for persistent accounts (tables are created automatically).
+
+## Testing
+
+```bash
+cd backend  && npm test     # API, auth, user-store (file + Postgres) and data-contract tests
+cd frontend && npm test     # services, validators, scouting engine, ScoutLab modules (Vitest)
+cd frontend && npm run lint # ESLint
+cd frontend && npm run e2e  # Playwright: real browser, desktop + mobile, starts both servers
+python ml/run_all.py --check
+```
+
+GitHub Actions (`.github/workflows/ci.yml`) runs backend tests, frontend lint/tests/build,
+the Playwright suite and an ML compile check on every push to `main` and every pull request.
 
 ## Deployment
 

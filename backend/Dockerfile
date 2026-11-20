@@ -1,16 +1,20 @@
-# Backend API container — portable across Koyeb / Fly / Railway / Render / any Docker host.
+# Backend API container. Build from the repo root so model outputs are included:
+#   docker build -f backend/Dockerfile -t plai-api .
 FROM node:20-alpine
 
-WORKDIR /app
+WORKDIR /app/backend
 
-# Install deps first for better layer caching.
-COPY package*.json ./
+COPY backend/package*.json ./
 RUN npm install --omit=dev
 
-# App source.
-COPY . .
+COPY backend/src ./src
+COPY ml/match_prediction/data/2024_PL.csv ml/match_prediction/data/GK_2024_PL.csv /app/ml/match_prediction/data/
+COPY ml/match_prediction/outputs /app/ml/match_prediction/outputs
+COPY ml/match_prediction/premierleaguedata/predictions_all_fixtures.csv /app/ml/match_prediction/premierleaguedata/
+COPY ml/injury_prediction/outputs /app/ml/injury_prediction/outputs
+COPY ml/player_stats/outputs /app/ml/player_stats/outputs
+COPY ml/scouting/data/scouting_bundle.json.gz ml/scouting/data/team_reports.json /app/ml/scouting/data/
 
-# The app listens on process.env.PORT (the platform injects it); 3001 is the local default.
 EXPOSE 3001
 
 CMD ["node", "src/index.js"]

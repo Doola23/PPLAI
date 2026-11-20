@@ -105,22 +105,8 @@ export default function DashboardPage() {
       })
       .catch(() => {});
 
-    injuriesService.getPredictions()
-      .then(data => {
-        const byPlayer = new Map<string, InjuryPrediction>();
-        for (const row of data) {
-          const ex = byPlayer.get(row.player_name);
-          if (!ex || row.match_date > ex.match_date) byPlayer.set(row.player_name, row);
-        }
-        let pool = [...byPlayer.values()];
-        if (user?.role === 'coach' && favClub) {
-          pool = pool.filter(p => p.team.toLowerCase().includes(favClub));
-        }
-        const sorted = pool
-          .sort((a, b) => injuriesService.rankScore(b) - injuriesService.rankScore(a))
-          .slice(0, 4);
-        setInjuryPlayers(sorted);
-      })
+    injuriesService.getTop(4, user?.role === 'coach' && favClub ? favClub : undefined)
+      .then(setInjuryPlayers)
       .catch(() => {});
 
     playerStatsService.getAll({ limit: 50 })

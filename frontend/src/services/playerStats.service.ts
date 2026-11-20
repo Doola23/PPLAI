@@ -34,8 +34,18 @@ export interface PlayerStat {
   ga_per_90?: number;
 }
 
+let _allStatsCache: Promise<PlayerStat[]> | null = null;
+
 export const playerStatsService = {
   async getAll(params?: { squad?: string; position?: string; limit?: number }): Promise<PlayerStat[]> {
+    if (!params || (!params.squad && !params.position && !params.limit)) {
+      if (!_allStatsCache) {
+        _allStatsCache = api.get<{ items: PlayerStat[] }>('/api/player-stats')
+          .then(r => r.data.items ?? [])
+          .catch(e => { _allStatsCache = null; throw e; });
+      }
+      return _allStatsCache;
+    }
     const { data } = await api.get<{ items: PlayerStat[] }>('/api/player-stats', { params });
     return data.items ?? [];
   },

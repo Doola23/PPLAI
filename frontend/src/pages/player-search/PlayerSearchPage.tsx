@@ -1,14 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Search, Users, TrendingUp, DollarSign, ChevronLeft, ChevronRight, ChevronDown, Star, Zap } from 'lucide-react';
+import { Search, Users, TrendingUp, DollarSign, ChevronLeft, ChevronRight, ChevronDown, Star } from 'lucide-react';
 import Flag from '../../components/ui/Flag';
 import PlayerAvatar from '../../components/ui/PlayerAvatar';
 import ClubLogo from '../../components/ui/ClubLogo';
 import { useCountUp, EASE } from '../../components/dashboard/DS';
 import { scoutingService } from '../../services/scouting.service';
 
-const SPRING = { type: 'spring', stiffness: 260, damping: 24 };
 const PAGE_SIZE = 12;
 
 type Position = 'All' | 'GK' | 'CB' | 'LB' | 'RB' | 'CM' | 'CAM' | 'LW' | 'RW' | 'ST';
@@ -20,41 +19,6 @@ interface Player {
   rating: number; xG: number; xA: number; apps: number;
   age: number; nationality: string; avatarColor: string;
   playerId?: string;
-}
-
-const avatarInitials = (name: string) =>
-  name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
-
-function HeroStatPill() {
-  const p  = useCountUp(247, 1400, 0);
-  const l  = useCountUp(10,  1000, 0);
-  const ac = useCountUp(87,  1200, 0);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 40 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.9, ease: EASE, delay: 0.55 }}
-      style={{
-        background: 'rgba(26,101,211,0.12)', border: '1px solid rgba(26,101,211,0.35)',
-        borderRadius: 14, padding: '10px 20px', backdropFilter: 'blur(16px)',
-        display: 'flex', gap: 24,
-      }}
-    >
-      {[
-        { ref: p.ref, val: p.val,  suffix: '',  label: 'Players'  },
-        { ref: l.ref, val: l.val,  suffix: '',  label: 'Leagues'  },
-        { ref: ac.ref,val: ac.val, suffix: '%', label: 'Accuracy' },
-      ].map(({ ref, val, suffix, label }) => (
-        <div key={label} style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 22, fontWeight: 900, color: '#F2F2F2', lineHeight: 1 }}>
-            <span ref={ref}>{val}</span>{suffix}
-          </div>
-          <div style={{ fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#939A9E', marginTop: 4 }}>{label}</div>
-        </div>
-      ))}
-    </motion.div>
-  );
 }
 
 function StatCard({
@@ -269,42 +233,6 @@ export default function PlayerSearchPage() {
   const [searchFocused, setSearchFocused]   = useState(false);
   const [allPlayers, setAllPlayers]         = useState<Player[]>([]);
   const [page, setPage]                     = useState(0);
-
-  const heroRef = useRef<HTMLDivElement>(null);
-
-  const rawX    = useMotionValue(0);
-  const rawY    = useMotionValue(0);
-  const rawRotX = useMotionValue(0);
-  const rawRotY = useMotionValue(0);
-  const cfg = { stiffness: 35, damping: 18, mass: 1.4 };
-  const x    = useSpring(rawX,    cfg);
-  const y    = useSpring(rawY,    cfg);
-  const rotX = useSpring(rawRotX, cfg);
-  const rotY = useSpring(rawRotY, cfg);
-
-  useEffect(() => {
-    const el = heroRef.current;
-    if (!el) return;
-    const handleMove = (e: MouseEvent) => {
-      const { left, top, width, height } = el.getBoundingClientRect();
-      const cx = (e.clientX - left) / width  - 0.5;
-      const cy = (e.clientY - top)  / height - 0.5;
-      rawX.set(cx * 36);
-      rawY.set(cy * 28);
-      rawRotY.set(cx *  8);
-      rawRotX.set(-cy *  6);
-    };
-    const handleLeave = () => {
-      rawX.set(0); rawY.set(0);
-      rawRotX.set(0); rawRotY.set(0);
-    };
-    el.addEventListener('mousemove', handleMove);
-    el.addEventListener('mouseleave', handleLeave);
-    return () => {
-      el.removeEventListener('mousemove', handleMove);
-      el.removeEventListener('mouseleave', handleLeave);
-    };
-  }, [rawX, rawY, rawRotX, rawRotY]);
 
   useEffect(() => {
     scoutingService.getCurrent({ limit: 500 }).then(data => {

@@ -7,13 +7,6 @@ import PlayerAvatar from '../../components/ui/PlayerAvatar';
 import ClubLogo from '../../components/ui/ClubLogo';
 import { injuriesService, type InjuryPrediction } from '../../services/injuries.service';
 
-const INJURY_STATS = [
-  { value: 532, suffix: '', label: 'Players tracked' },
-  { value: 67,  suffix: '%', label: 'AUC' },
-  { value: 20,  suffix: '', label: 'PL Clubs' },
-  { value: 11,  suffix: '', label: 'Positions mapped' },
-];
-
 const E = [0.16, 1, 0.3, 1] as const;
 
 type RiskLevel = 'High' | 'Low';
@@ -295,7 +288,10 @@ function formatMatchDate(iso: string): string {
 
 export default function InjuryRiskPage() {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
-  const [allRows, setAllRows] = useState<InjuryPrediction[]>([]);
+  const [allTeams, setAllTeams] = useState<string[]>([]);
+  const [gwReferenceDates, setGwReferenceDates] = useState<string[]>([]);
+  const [teamDates, setTeamDates] = useState<string[]>([]);
+  const [squadRows, setSquadRows] = useState<InjuryPrediction[]>([]);
   const [selectedTeam, setSelectedTeam] = useState('Arsenal');
   const [teamPickerOpen, setTeamPickerOpen] = useState(false);
   const teamPickerRef = useRef<HTMLDivElement>(null);
@@ -325,33 +321,13 @@ export default function InjuryRiskPage() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  // Teams + the reference gameweek calendar come from the server; squads load per team/date.
   useEffect(() => {
-    // Fetch every row once (~11k, one per player per match date across the season) and
-    // filter client-side per team/date selection.
-    injuriesService.getPredictions()
-      .then(data => setAllRows(data))
+    injuriesService.getSummary()
+      .then(s => { setAllTeams(s.teams); setGwReferenceDates(s.referenceDates); })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, []);
-
-  const allTeams = useMemo(() => [...new Set(allRows.map(r => r.team))].sort(), [allRows]);
-
-  // Reference gameweek calendar: every PL team plays exactly 38 matches, one per gameweek, so
-  // whichever team has the most complete date coverage gives a reliable GW1..GW38 sequence.
-  // A few teams (e.g. Leicester) have data gaps, so their dates are nearest-matched against
-  // this reference instead of trusting their own (incomplete) chronological index.
-  const gwReferenceDates = useMemo(() => {
-    const byTeam = new Map<string, Set<string>>();
-    for (const r of allRows) {
-      if (!byTeam.has(r.team)) byTeam.set(r.team, new Set());
-      byTeam.get(r.team)!.add(r.match_date);
-    }
-    let best: string[] = [];
-    for (const dates of byTeam.values()) {
-      if (dates.size > best.length) best = [...dates].sort();
-    }
-    return best;
-  }, [allRows]);
 
   const gameweekFor = (date: string): number | null => {
     if (!gwReferenceDates.length || !date) return null;
@@ -366,14 +342,22 @@ export default function InjuryRiskPage() {
 
   // Snapshot dates are scoped to the selected team — different teams' fixtures fall on different
   // exact calendar days (Fri/Sat/Sun/Mon), so the picker only ever shows dates that team actually has.
-  const teamDates = useMemo(
-    () => [...new Set(allRows.filter(r => r.team === selectedTeam).map(r => r.match_date))].sort(),
-    [allRows, selectedTeam]
-  );
-
-  useEffect(() => { setDateIdx(0); }, [selectedTeam]);
+  useEffect(() => {
+    setDateIdx(0);
+    setTeamDates([]);
+    injuriesService.getTeamDates(selectedTeam).then(setTeamDates).catch(() => setTeamDates([]));
+  }, [selectedTeam]);
 
   const selectedDate = teamDates[dateIdx] ?? '';
+
+  useEffect(() => {
+    if (!selectedDate) { setSquadRows([]); return; }
+    let cancelled = false;
+    injuriesService.getSquad(selectedTeam, selectedDate)
+      .then(rows => { if (!cancelled) setSquadRows(rows); })
+      .catch(() => { if (!cancelled) setSquadRows([]); });
+    return () => { cancelled = true; };
+  }, [selectedTeam, selectedDate]);
 
   // Matchday squads run 14-16 players but the pitch only has 11 slots. Within each position group,
   // rank by actual minutes played in that specific match — there's no explicit starter flag in the
@@ -381,7 +365,7 @@ export default function InjuryRiskPage() {
   // the bench) rather than an arbitrary cutoff. Top N per group (matching slot capacity) start;
   // the rest are real substitutes for that match, not a display-only split.
   const { startingXI, substitutes } = useMemo(() => {
-    const players = allRows.filter(r => r.team === selectedTeam && r.match_date === selectedDate);
+    const players = squadRows;
 
     // Unrecognized position_group values (likely an abbreviated raw position code the
     // classifier's substring check didn't catch -- e.g. real wingers/defenders showing as
@@ -451,7 +435,7 @@ export default function InjuryRiskPage() {
       .map((p, i) => toBase(p, p.position_group || 'MF', 1000 + i));
     subs.sort((a, b) => b.minutesPlayed - a.minutesPlayed);
     return { startingXI: xi, substitutes: subs };
-  }, [allRows, selectedTeam, selectedDate]);
+  }, [squadRows]);
 
   const allSquadPlayers = [...startingXI, ...substitutes];
   const cardPlayers = [...allSquadPlayers].sort((a, b) => b.rankScore - a.rankScore);

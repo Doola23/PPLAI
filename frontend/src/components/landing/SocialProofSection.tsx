@@ -7,7 +7,7 @@ const TESTIMONIALS = [
   { text: "The pre-match opposition pack used to take my analyst 14 hours. Now the gaffer has it before the morning briefing.", name: 'James Whitfield', role: 'Head of Analysis', club: 'arsenal', image: 'https://picsum.photos/seed/jwhitfield/80/80' },
   { text: 'PLAI flagged three hamstring risks two weeks before our medical department noticed anything. Changed how we manage the squad.', name: "Ciarán O'Sullivan", role: 'Head Physio', club: 'chelsea', image: 'https://picsum.photos/seed/cosullivan/80/80' },
   { text: 'I showed the head coach the press trigger data before Saturday. He changed the press shape in the warm-up. We won 3-0.', name: 'Priya Nambiar', role: 'First-Team Analyst', club: 'tottenham', image: 'https://picsum.photos/seed/pnambiar/80/80' },
-  { text: "87% prediction accuracy over two seasons. The board stopped second-guessing the coaching staff's decisions.", name: 'Daniel Ashworth', role: 'Sporting Director', club: 'man utd', image: 'https://picsum.photos/seed/dashworth/80/80' },
+  { text: "53.4% prediction accuracy across three full seasons. The board stopped second-guessing the coaching staff's decisions.", name: 'Daniel Ashby', role: 'Sporting Director', club: 'man utd', image: 'https://picsum.photos/seed/dashby/80/80' },
   { text: 'Set-piece data from PLAI directly changed our corner routine in the cup run. We scored three times from it.', name: 'Tom Harrison', role: 'Assistant Head Coach', club: 'aston villa', image: 'https://picsum.photos/seed/tharrison/80/80' },
   { text: "The scout engine found our January signing in 40 minutes. He's now worth four times what we paid.", name: 'Marcus Reid', role: 'Chief Scout', club: 'newcastle', image: 'https://picsum.photos/seed/mreid/80/80' },
   { text: "We managed a 38-game season with zero long-term muscular injuries. The workload monitoring changed everything for us.", name: 'Oliver Banks', role: 'Head of Sports Science', club: 'liverpool', image: 'https://picsum.photos/seed/obanks/80/80' },
@@ -18,7 +18,7 @@ const TESTIMONIALS = [
 const STATS = [
   { value: '20',    label: 'PL Clubs' },
   { value: '1',     label: 'League' },
-  { value: '87.2%', label: 'Accuracy' },
+  { value: '53.4%', label: 'Accuracy' },
   { value: '500+',  label: 'Players tracked' },
 ];
 

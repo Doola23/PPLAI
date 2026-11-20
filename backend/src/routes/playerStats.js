@@ -1,30 +1,12 @@
-const express = require('express');
-const router = express.Router();
-const fs = require('fs');
 const path = require('path');
-const { parse } = require('csv-parse/sync');
+const { Router } = require('express');
+const { readCsv } = require('../lib/dataFiles');
+const { MATCH_DATA_DIR } = require('../config/paths');
 
-const DATA_DIR = path.resolve(__dirname, '../../../match_prediction/data');
+const router = Router();
 
-function loadCsv(filename) {
-  const filepath = path.join(DATA_DIR, filename);
-  if (!fs.existsSync(filepath)) return [];
-  const content = fs.readFileSync(filepath, 'utf8').replace(/^﻿/, ''); // strip BOM
-  return parse(content, { columns: true, skip_empty_lines: true, cast: true });
-}
-
-let _outfield = null;
-let _gk = null;
-
-function getOutfield() {
-  if (!_outfield) _outfield = loadCsv('2024_PL.csv');
-  return _outfield;
-}
-
-function getGK() {
-  if (!_gk) _gk = loadCsv('GK_2024_PL.csv');
-  return _gk;
-}
+const getOutfield = () => readCsv(path.join(MATCH_DATA_DIR, '2024_PL.csv'));
+const getGK = () => readCsv(path.join(MATCH_DATA_DIR, 'GK_2024_PL.csv'));
 
 // GET /api/player-stats?name=&squad=&position=&limit=
 router.get('/', (req, res) => {

@@ -1,21 +1,18 @@
 const { Router } = require('express');
-const { ScanCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
-const { docClient } = require('../db');
+const { readJson, memo } = require('../lib/dataFiles');
+const { TEAM_REPORTS_FILE } = require('../config/paths');
 
 const router = Router();
 
+// team_reports.json is keyed by club; the API returns it as a list with a Team field.
+const getReports = () => memo('team-reports', () => (
+  Object.entries(readJson(TEAM_REPORTS_FILE) || {}).map(([Team, report]) => ({ Team, ...report }))
+));
+
 // GET /api/team-reports
-router.get('/', async (req, res) => {
-  try {
-    const { limit = 50 } = req.query;
-    const data = await docClient.send(new ScanCommand({
-      TableName: 'output-team-reports',
-      Limit: parseInt(limit),
-    }));
-    res.json({ items: data.Items, count: data.Count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+router.get('/', (_req, res) => {
+  const items = getReports();
+  res.json({ items, count: items.length });
 });
 
 module.exports = router;

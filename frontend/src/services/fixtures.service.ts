@@ -8,9 +8,15 @@ export interface PLFixtures {
   cachedAt: string;
 }
 
+let _plCache: Promise<PLFixtures> | null = null;
+
 export const fixturesService = {
   async getPL(): Promise<PLFixtures> {
-    const { data } = await api.get<PLFixtures>('/api/fixtures/pl');
-    return data;
+    if (!_plCache) {
+      _plCache = api.get<PLFixtures>('/api/fixtures/pl')
+        .then(r => r.data)
+        .catch(e => { _plCache = null; throw e; });
+    }
+    return _plCache;
   },
 };

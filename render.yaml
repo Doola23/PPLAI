@@ -17,12 +17,11 @@ services:
     buildCommand: npm install
     startCommand: node src/index.js
     healthCheckPath: /health
+    # Model outputs are read from ../ml (Render clones the full repo).
+    # Set DATABASE_URL (e.g. a free Neon/Supabase Postgres) so accounts survive redeploys;
+    # without it users fall back to backend/data/users.json, which resets on each deploy.
     envVars:
-      - key: AWS_ACCESS_KEY_ID
-        sync: false
-      - key: AWS_SECRET_ACCESS_KEY
-        sync: false
-      - key: AWS_REGION
+      - key: DATABASE_URL
         sync: false
       - key: JWT_SECRET
         sync: false
@@ -42,6 +41,7 @@ services:
   - type: web
     name: pplai-web
     runtime: static
+    rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     pullRequestPreviewsEnabled: false

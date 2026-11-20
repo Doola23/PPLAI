@@ -1,6 +1,7 @@
+const path = require('path');
 const { Router } = require('express');
-const { ScanCommand, GetCommand, QueryCommand } = require('@aws-sdk/lib-dynamodb');
-const { docClient } = require('../db');
+const { readCsv } = require('../lib/dataFiles');
+const { MATCH_OUTPUTS_DIR, MATCH_FIXTURES_FILE } = require('../config/paths');
 const { optionalAuth, blockRole } = require('../middleware/auth');
 
 const router = Router();
@@ -10,124 +11,42 @@ const router = Router();
 // this away from anything that reads as betting-odds access for casual users.
 const blockFans = [optionalAuth, blockRole('fan')];
 
+const output = (file) => readCsv(path.join(MATCH_OUTPUTS_DIR, file));
+const list = (rows) => ({ items: rows, count: rows.length });
+
 // GET /api/matches/predictions?homeTeam=Arsenal&awayTeam=Chelsea
-router.get('/predictions', blockFans, async (req, res) => {
-  try {
-    const { homeTeam, awayTeam } = req.query;
+router.get('/predictions', blockFans, (req, res) => {
+  const { homeTeam, awayTeam } = req.query;
+  let rows = readCsv(MATCH_FIXTURES_FILE);
 
-    if (homeTeam && awayTeam) {
-      const data = await docClient.send(new GetCommand({
-        TableName: 'Matchpredictions',
-        Key: { home_team: homeTeam, away_team: awayTeam },
-      }));
-      if (!data.Item) return res.status(404).json({ error: 'Prediction not found' });
-      return res.json(data.Item);
-    }
-
-    if (homeTeam) {
-      const data = await docClient.send(new QueryCommand({
-        TableName: 'Matchpredictions',
-        KeyConditionExpression: 'home_team = :h',
-        ExpressionAttributeValues: { ':h': homeTeam },
-      }));
-      return res.json({ items: data.Items, count: data.Count });
-    }
-
-    const data = await docClient.send(new ScanCommand({ TableName: 'Matchpredictions' }));
-    res.json({ items: data.Items, count: data.Count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  if (homeTeam && awayTeam) {
+    const match = rows.find((r) => r.home_team === homeTeam && r.away_team === awayTeam);
+    if (!match) return res.status(404).json({ error: 'Prediction not found' });
+    return res.json(match);
   }
+  if (homeTeam) rows = rows.filter((r) => r.home_team === homeTeam);
+  res.json(list(rows));
 });
 
-// GET /api/matches/output/predictions
-router.get('/output/predictions', blockFans, async (req, res) => {
-  try {
-    const data = await docClient.send(new ScanCommand({ TableName: 'match-output-predictions' }));
-    res.json({ items: data.Items, count: data.Count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+const outputs = {
+  '/output/standings/actual': 'actual_standings.csv',
+  '/output/standings/predicted': 'predicted_standings.csv',
+  '/output/standings/comparison': 'standings_comparison.csv',
+  '/output/draw-risk': 'draw_risk_predictions.csv',
+  '/output/shap': 'shap_importance.csv',
+  '/output/analyst/last5': 'analyst_reports_last5.csv',
+  '/output/analyst/season': 'analyst_reports_season.csv',
+};
 
-// GET /api/matches/output/standings/actual
-router.get('/output/standings/actual', async (req, res) => {
-  try {
-    const data = await docClient.send(new ScanCommand({ TableName: 'match-output-standings-actual' }));
-    res.json({ items: data.Items, count: data.Count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+router.get('/output/predictions', blockFans, (_req, res) => res.json(list(output('match_predictions.csv'))));
 
-// GET /api/matches/output/standings/predicted
-router.get('/output/standings/predicted', async (req, res) => {
-  try {
-    const data = await docClient.send(new ScanCommand({ TableName: 'match-output-standings-predicted' }));
-    res.json({ items: data.Items, count: data.Count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+for (const [route, file] of Object.entries(outputs)) {
+  router.get(route, (_req, res) => res.json(list(output(file))));
+}
 
-// GET /api/matches/output/standings/comparison
-router.get('/output/standings/comparison', async (req, res) => {
-  try {
-    const data = await docClient.send(new ScanCommand({ TableName: 'match-output-standings-comparison' }));
-    res.json({ items: data.Items, count: data.Count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET /api/matches/output/draw-risk
-router.get('/output/draw-risk', async (req, res) => {
-  try {
-    const data = await docClient.send(new ScanCommand({ TableName: 'match-output-draw-risk' }));
-    res.json({ items: data.Items, count: data.Count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET /api/matches/output/shap
-router.get('/output/shap', async (req, res) => {
-  try {
-    const data = await docClient.send(new ScanCommand({ TableName: 'match-output-shap' }));
-    res.json({ items: data.Items, count: data.Count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET /api/matches/output/analyst/last5
-router.get('/output/analyst/last5', async (req, res) => {
-  try {
-    const data = await docClient.send(new ScanCommand({ TableName: 'match-output-analyst-last5' }));
-    res.json({ items: data.Items, count: data.Count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET /api/matches/output/analyst/season
-router.get('/output/analyst/season', async (req, res) => {
-  try {
-    const data = await docClient.send(new ScanCommand({ TableName: 'match-output-analyst-season' }));
-    res.json({ items: data.Items, count: data.Count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET /api/matches/output/calibration
-router.get('/output/calibration', async (req, res) => {
-  try {
-    const data = await docClient.send(new ScanCommand({ TableName: 'match-output-calibration' }));
-    res.json({ items: data.Items, count: data.Count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+router.get('/output/calibration', (_req, res) => {
+  const rows = ['calibration_validation.csv', 'calibration_test.csv'].flatMap((f) => output(f));
+  res.json(list(rows));
 });
 
 module.exports = router;

@@ -1,12 +1,11 @@
 const { Router } = require('express');
-const { ScanCommand, QueryCommand } = require('@aws-sdk/lib-dynamodb');
-const { docClient } = require('../db');
+const { readCsv, memo } = require('../lib/dataFiles');
+const { paginate } = require('../lib/pagination');
+const { INJURY_PREDICTIONS_FILE } = require('../config/paths');
 
 const router = Router();
 
-// Each row now carries ~93 raw ML feature columns. A single un-projected Scan hits DynamoDB's
-// 1MB-per-page cap after only a few hundred rows, silently truncating the result. Project down
-// to just the fields the UI needs and paginate fully so all ~11k rows come back.
+// The predictions CSV carries ~93 raw feature columns; only these reach the UI.
 const PREDICTION_FIELDS = [
   'player_name', 'match_date', 'team', 'position_group',
   'injury_probability', 'risk_tier', 'predicted_high_risk',
@@ -17,121 +16,86 @@ const PREDICTION_FIELDS = [
   'minutes_played_this_match',
 ];
 
-async function scanAllPredictions() {
-  const names = {};
-  PREDICTION_FIELDS.forEach((f, i) => { names[`#f${i}`] = f; });
-  const projectionExpression = PREDICTION_FIELDS.map((_, i) => `#f${i}`).join(', ');
-  const items = [];
-  let params = {
-    TableName: 'injuries-predictions',
-    ProjectionExpression: projectionExpression,
-    ExpressionAttributeNames: names,
+const HIGH_RISK = 'High Risk';
+const byProbability = (a, b) => (b.injury_probability || 0) - (a.injury_probability || 0);
+
+const getPredictions = () => memo('injury-predictions', () => readCsv(INJURY_PREDICTIONS_FILE).map((row) => {
+  const out = {};
+  for (const f of PREDICTION_FIELDS) if (row[f] !== undefined) out[f] = row[f];
+  out.match_date = String(row.match_date ?? '');
+  return out;
+}));
+
+const getIndex = () => memo('injury-index', () => {
+  const rows = getPredictions();
+  const datesByTeam = new Map();
+  const latestByPlayer = new Map();
+  let highRiskFlags = 0;
+
+  for (const r of rows) {
+    if (!datesByTeam.has(r.team)) datesByTeam.set(r.team, new Set());
+    datesByTeam.get(r.team).add(r.match_date);
+    const prev = latestByPlayer.get(r.player_name);
+    if (!prev || r.match_date > prev.match_date) latestByPlayer.set(r.player_name, r);
+    if (r.risk_tier === HIGH_RISK) highRiskFlags++;
+  }
+
+  const teamDates = {};
+  for (const [team, dates] of datesByTeam) teamDates[team] = [...dates].sort();
+
+  // Every PL team plays 38 matches, so the team with the fullest date coverage gives a
+  // reliable GW1..GW38 calendar; teams with data gaps are nearest-matched against it.
+  const referenceDates = Object.values(teamDates).reduce((best, d) => (d.length > best.length ? d : best), []);
+
+  return {
+    teams: Object.keys(teamDates).sort(),
+    teamDates,
+    referenceDates,
+    latest: [...latestByPlayer.values()].sort(byProbability),
+    highRiskFlags,
+    total: rows.length,
   };
-  while (params) {
-    const result = await docClient.send(new ScanCommand(params));
-    items.push(...(result.Items || []));
-    params = result.LastEvaluatedKey
-      ? { ...params, ExclusiveStartKey: result.LastEvaluatedKey }
-      : null;
-  }
-  return items;
-}
-
-// GET /api/injuries/predictions?playerName=Haaland
-router.get('/predictions', async (req, res) => {
-  try {
-    const { playerName, matchDate } = req.query;
-
-    if (playerName && matchDate) {
-      const { GetCommand } = require('@aws-sdk/lib-dynamodb');
-      const data = await docClient.send(new GetCommand({
-        TableName: 'injuries-predictions',
-        Key: { player_name: playerName, match_date: matchDate },
-      }));
-      if (!data.Item) return res.status(404).json({ error: 'Not found' });
-      return res.json(data.Item);
-    }
-
-    if (playerName) {
-      const data = await docClient.send(new QueryCommand({
-        TableName: 'injuries-predictions',
-        KeyConditionExpression: 'player_name = :n',
-        ExpressionAttributeValues: { ':n': playerName },
-      }));
-      return res.json({ items: data.Items, count: data.Count });
-    }
-
-    const items = await scanAllPredictions();
-    res.json({ items, count: items.length });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
 });
 
-// GET /api/injuries/combined
-router.get('/combined', async (req, res) => {
-  try {
-    const { limit = 100 } = req.query;
-    const data = await docClient.send(new ScanCommand({
-      TableName: 'injuries-combined-clean',
-      Limit: parseInt(limit),
-    }));
-    res.json({ items: data.Items, count: data.Count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+// GET /api/injuries/summary — season-level counts + team list + gameweek calendar
+router.get('/summary', (_req, res) => {
+  const { teams, referenceDates, highRiskFlags, total } = getIndex();
+  res.json({ teams, referenceDates, highRiskFlags, total });
 });
 
-// GET /api/injuries/players-combined
-router.get('/players-combined', async (req, res) => {
-  try {
-    const { limit = 100 } = req.query;
-    const data = await docClient.send(new ScanCommand({
-      TableName: 'injuries-players-combined',
-      Limit: parseInt(limit),
-    }));
-    res.json({ items: data.Items, count: data.Count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+// GET /api/injuries/teams/:team/dates — match dates available for one team
+router.get('/teams/:team/dates', (req, res) => {
+  const dates = getIndex().teamDates[decodeURIComponent(req.params.team)];
+  if (!dates) return res.status(404).json({ error: 'Team not found' });
+  res.json({ dates });
 });
 
-// GET /api/injuries/player-minutes
-router.get('/player-minutes', async (req, res) => {
-  try {
-    const { limit = 100 } = req.query;
-    const data = await docClient.send(new ScanCommand({
-      TableName: 'injuries-player-minutes',
-      Limit: parseInt(limit),
-    }));
-    res.json({ items: data.Items, count: data.Count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+// GET /api/injuries/top?limit=4&team=Arsenal — highest-risk players, latest match per player
+router.get('/top', (req, res) => {
+  const { team } = req.query;
+  let rows = getIndex().latest;
+  if (team) {
+    const needle = String(team).toLowerCase();
+    rows = rows.filter((r) => String(r.team).toLowerCase().includes(needle));
   }
+  res.json(paginate(rows, req.query, { defaultLimit: 10, maxLimit: 100 }));
 });
 
-// GET /api/injuries/fpl
-router.get('/fpl', async (req, res) => {
-  try {
-    const { limit = 100 } = req.query;
-    const data = await docClient.send(new ScanCommand({
-      TableName: 'injuries-fpl-api',
-      Limit: parseInt(limit),
-    }));
-    res.json({ items: data.Items, count: data.Count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// GET /api/injuries/predictions?team=&date=&playerName=&limit=&offset=
+router.get('/predictions', (req, res) => {
+  const { team, date, playerName, matchDate } = req.query;
+  let rows = getPredictions();
 
-// GET /api/injuries/international-breaks
-router.get('/international-breaks', async (req, res) => {
-  try {
-    const data = await docClient.send(new ScanCommand({ TableName: 'injuries-international-breaks' }));
-    res.json({ items: data.Items, count: data.Count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  if (team) rows = rows.filter((r) => r.team === team);
+  if (date) rows = rows.filter((r) => r.match_date === date);
+  if (playerName) rows = rows.filter((r) => r.player_name === playerName);
+
+  if (playerName && matchDate) {
+    const item = rows.find((r) => r.match_date === matchDate);
+    if (!item) return res.status(404).json({ error: 'Not found' });
+    return res.json(item);
   }
+  res.json(paginate(rows, req.query));
 });
 
 module.exports = router;

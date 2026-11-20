@@ -28,7 +28,7 @@ export default function FeatureNav() {
       msOverflowStyle: 'none',
     } as React.CSSProperties}>
 
-      {FEATURES.map(({ label, shortLabel, path, icon: Icon, desc }) => {
+      {FEATURES.map(({ label, shortLabel, path, icon: Icon }) => {
         const isActive = pathname === path;
         return (
           <button

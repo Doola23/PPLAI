@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion';
 
 const STATS = [
-  { value: '4,200+', label: 'Players tracked' },
-  { value: '3,400', label: 'Simulations per day' },
-  { value: '38', label: 'Matchweeks modelled' },
-  { value: '97%', label: 'Prediction accuracy' },
+  { value: '500+',   label: 'Players tracked' },
+  { value: '38',     label: 'Matchweeks modelled' },
+  { value: '53.4%',  label: 'Prediction accuracy' },
+  { value: '20',     label: 'PL Clubs' },
 ];
 
 const EASE = [0.16, 1, 0.3, 1] as const;

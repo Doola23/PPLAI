@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { ChartLine, MagnifyingGlass, User, Heartbeat, ListBullets } from '@phosphor-icons/react';
 import { useReveal } from '../../hooks/useReveal';
+import { useAuth } from '../../hooks/useAuth';
 
 const ROLES = ['Head Coaches', 'Analysts', 'Scouts', 'Physios', 'Sporting Directors'];
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -39,8 +41,51 @@ function CyclingPill({ words, color }: { words: string[]; color: string }) {
   );
 }
 
+type FeatItem = { Icon: React.ElementType; label: string; path: string };
+
+function FeatNav({ feats, navigate }: { feats: readonly FeatItem[]; navigate: (p: string) => void }) {
+  const [hovered, setHovered] = useState<string | null>(null);
+  return (
+    <>
+      {feats.map(({ Icon, label, path }) => {
+        const active = hovered === path;
+        return (
+          <button
+            key={path}
+            onClick={() => navigate(path)}
+            onMouseEnter={() => setHovered(path)}
+            onMouseLeave={() => setHovered(null)}
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+              padding: '8px 10px', background: 'none', border: 'none',
+              color: active ? '#F2F2F2' : '#939A9E', fontSize: 12, fontWeight: 600,
+              fontFamily: 'inherit', cursor: 'pointer',
+              transition: 'color 180ms ease, transform 180ms ease',
+              letterSpacing: '0.02em', minWidth: 80,
+              transform: active ? 'translateY(-4px)' : 'none',
+            }}
+          >
+            <div style={{
+              width: 56, height: 56, borderRadius: 999,
+              background: active ? '#1A65D3' : 'rgba(26,101,211,0.14)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'background 180ms ease, box-shadow 180ms ease',
+              boxShadow: active ? '0 8px 24px rgba(26,101,211,0.4)' : 'none',
+              flexShrink: 0,
+            }}>
+              <Icon size={24} weight="duotone" color={active ? '#F2F2F2' : '#1A65D3'} aria-hidden="true" />
+            </div>
+            {label}
+          </button>
+        );
+      })}
+    </>
+  );
+}
+
 export default function ProblemSection() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const headRef = useRef<HTMLDivElement>(null);
   const btnsRef = useRef<HTMLDivElement>(null);
   useReveal(headRef as React.RefObject<HTMLElement>, 0.2);
@@ -69,10 +114,27 @@ export default function ProblemSection() {
         <div
           ref={btnsRef}
           className="lreveal"
-          style={{ '--reveal-y': '24px', '--reveal-blur': '6px', '--reveal-delay': '150ms', display: 'flex', justifyContent: 'center', gap: 16, marginTop: 40 } as React.CSSProperties}
+          style={{ '--reveal-y': '24px', '--reveal-blur': '6px', '--reveal-delay': '150ms', display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 12, marginTop: 40 } as React.CSSProperties}
         >
-          <button className="lbtn" onClick={() => { navigate('/signup'); window.scrollTo(0, 0); }}>Signup</button>
-          <button className="lbtn lbtn--outline" onClick={() => { navigate('/features'); window.scrollTo(0, 0); }}>Explore</button>
+          {isAuthenticated ? (
+            <>
+              {(() => {
+                const FEATS = [
+                  { Icon: ChartLine,       label: 'Match Predictions', path: '/match-predictions' },
+                  { Icon: MagnifyingGlass, label: 'Scout Search',      path: '/scout-search'      },
+                  { Icon: User,            label: 'Player Stats',      path: '/player-stats'      },
+                  { Icon: Heartbeat,       label: 'Injury Risk',       path: '/injury-risk'       },
+                  { Icon: ListBullets,     label: 'Table Predictions', path: '/table-predictions' },
+                ] as const;
+                return <FeatNav feats={FEATS} navigate={navigate} />;
+              })()}
+            </>
+          ) : (
+            <>
+              <button className="lbtn" onClick={() => { navigate('/signup'); window.scrollTo(0, 0); }}>Signup</button>
+              <button className="lbtn lbtn--outline" onClick={() => { navigate('/features'); window.scrollTo(0, 0); }}>Explore</button>
+            </>
+          )}
         </div>
 
       </div>

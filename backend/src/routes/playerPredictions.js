@@ -1,45 +1,44 @@
+const path = require('path');
 const { Router } = require('express');
-const { ScanCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
-const { docClient } = require('../db');
+const { readCsv, memo } = require('../lib/dataFiles');
+const { PLAYER_PREDICTIONS_DIR } = require('../config/paths');
 
 const router = Router();
 
-async function scanAll(TableName) {
-  const items = [];
-  let params = { TableName };
-  while (params) {
-    const result = await docClient.send(new ScanCommand(params));
-    items.push(...(result.Items || []));
-    params = result.LastEvaluatedKey
-      ? { TableName, ExclusiveStartKey: result.LastEvaluatedKey }
-      : null;
+const POSITION_FILES = [
+  'Strikers_2025_Predictions.csv',
+  'Wingers_2025_Predictions.csv',
+  'Centre_Backs_2025_Predictions.csv',
+  'Fullbacks_2025_Predictions.csv',
+  'Defensive_Midfielders_2025_Predictions.csv',
+  'Central_Midfielders_2025_Predictions.csv',
+  'Attacking_Midfielders_2025_Predictions.csv',
+];
+
+// One row per player (last file wins), matching the old Player-keyed table.
+const getAll = () => memo('player-predictions', () => {
+  const byPlayer = new Map();
+  for (const file of POSITION_FILES) {
+    for (const row of readCsv(path.join(PLAYER_PREDICTIONS_DIR, file))) {
+      if (row.Player) byPlayer.set(row.Player, { ...row, season: '2025-2026' });
+    }
   }
-  return items;
-}
+  return [...byPlayer.values()];
+});
 
 // GET /api/player-predictions — 2025-26 season forecasts for all outfield players
-// (goalkeepers excluded — validated separately as unreliable, see player_stats/README.md)
-router.get('/', async (req, res) => {
-  try {
-    const items = await scanAll('player-stats-predictions');
-    res.json({ items, count: items.length });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+// (goalkeepers excluded — validated separately as unreliable, see ml/player_stats/README.md)
+router.get('/', (_req, res) => {
+  const items = getAll();
+  res.json({ items, count: items.length });
 });
 
 // GET /api/player-predictions/:player
-router.get('/:player', async (req, res) => {
-  try {
-    const data = await docClient.send(new GetCommand({
-      TableName: 'player-stats-predictions',
-      Key: { Player: decodeURIComponent(req.params.player) },
-    }));
-    if (!data.Item) return res.status(404).json({ error: 'Not found' });
-    res.json(data.Item);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+router.get('/:player', (req, res) => {
+  const name = decodeURIComponent(req.params.player);
+  const item = getAll().find((p) => p.Player === name);
+  if (!item) return res.status(404).json({ error: 'Not found' });
+  res.json(item);
 });
 
 module.exports = router;

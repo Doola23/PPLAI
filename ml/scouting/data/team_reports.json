@@ -1,0 +1,823 @@
+{
+  "Arsenal": {
+    "formation": "4-3-3",
+    "style": "High Press",
+    "w": 20,
+    "d": 14,
+    "l": 4,
+    "gf": 69,
+    "ga": 34,
+    "gfPerGame": 1.82,
+    "gaPerGame": 0.89,
+    "cleanSheets": 13,
+    "errors": 24,
+    "topScorer": "Havertz (9g)",
+    "topAssister": "Saka (10a)",
+    "gk": "Raya",
+    "positives": [
+      "PROLIFIC ATTACK: Scoring 1.82 goals per game — one of the most dangerous attacks in the league, consistently threatening in every match",
+      "DEFENSIVE SOLIDITY: Conceding only 0.89 goals per game — one of the hardest defences to break down in the division",
+      "DEFENSIVE DOMINANCE: 13 clean sheets — keeping opponents out in 34% of matches, a mark of elite defensive organisation",
+      "RELIABLE GOALKEEPER: 71.7% save rate (6th in the league) — a dependable last line that saves the team points on a regular basis",
+      "GOOD ATTACKING MOVEMENT: 270 carries into the box (4th in the league) — regularly getting into dangerous positions with the ball"
+    ],
+    "negatives": [
+      "STRIKER DEFICIT: Havertz's 9 goals is the best forward return — in a side scoring 1.82 goals per game the number 9 position is underfilled. Goals are spread across the squad rather than produced by a reliable centre-forward, which becomes a major vulnerability when the team needs a goal",
+      "DRAW PROBLEM: 14 drawn matches — consistently failing to convert dominant performances into wins. These dropped points are the difference between the top 4 and mid-table",
+      "INJURY RISK: Jurriën Timber has missed 301 days through injury in the last two seasons (6 separate spells) — a genuine availability concern for a player the team relies on. Cover at this position must be a recruitment priority",
+      "LIMITED BOX DELIVERY: Only 95 passes into the penalty area (19th in the league) — the attack relies on individual carries rather than passing combinations to create chances. Opponents who nullify the ball-carriers leave the team with limited alternatives"
+    ],
+    "autoWeights": {},
+    "recruitmentPriorities": [
+      {
+        "position": "Centre-Forward",
+        "reason": "Havertz leads with only 9 goals — no reliable #9 in a team scoring 1.82/game"
+      },
+      {
+        "position": "Defender",
+        "reason": "Cover for Jurriën Timber — 301 days missed across 6 spells"
+      }
+    ]
+  },
+  "Aston Villa": {
+    "formation": "4-2-3-1",
+    "style": "High Press",
+    "w": 19,
+    "d": 9,
+    "l": 10,
+    "gf": 58,
+    "ga": 51,
+    "gfPerGame": 1.53,
+    "gaPerGame": 1.34,
+    "cleanSheets": 9,
+    "errors": 33,
+    "topScorer": "Watkins (16g)",
+    "topAssister": "Rogers (10a)",
+    "gk": "Martinez",
+    "positives": [
+      "EFFECTIVE ATTACK: 1.53 goals per game — above the league average, the team creates and converts chances regularly",
+      "ORGANISED DEFENCE: 1.34 goals conceded per game — close to the league average, the defence is structured and competitive without being a significant liability"
+    ],
+    "negatives": [
+      "COSTLY ERRORS: 33 defensive errors — well above the 25 league average. Individual mistakes regularly cost points in games that should be controlled",
+      "CLEAN SHEET SHORTAGE: Only 9 clean sheets — the team concedes in 76% of matches. The defence is too easy to score against and cannot consistently protect leads",
+      "RESULTS VOLATILITY: 10 defeats this season — the team cannot consistently protect results. Too many winnable games are being lost, costing points at crucial moments in the table",
+      "GOAL CONCENTRATION: Watkins accounts for 27% of the team's goals — too much weight on one individual for a consistent full-season campaign",
+      "INJURY RISK: Ollie Watkins has missed 41 days through injury in the last two seasons (3 separate spells) — a genuine availability concern for a player the team relies on. Cover at this position must be a recruitment priority",
+      "POOR ANTICIPATION: Only 228 interceptions (18th in the league) — failing to read attacking movements. Opponents are able to develop dangerous attacks that a more switched-on defence would cut out earlier"
+    ],
+    "autoWeights": {
+      "interceptions": "required",
+      "tackles": "required"
+    },
+    "recruitmentPriorities": [
+      {
+        "position": "Forward / Winger",
+        "reason": "Cover for Ollie Watkins — 41 days missed across 3 spells"
+      },
+      {
+        "position": "Goalkeeper",
+        "reason": "Only 9 clean sheets and 67.6% save rate — GK upgrade would directly improve results"
+      }
+    ]
+  },
+  "Bournemouth": {
+    "formation": "4-2-3-1",
+    "style": "High Press",
+    "w": 15,
+    "d": 11,
+    "l": 12,
+    "gf": 58,
+    "ga": 46,
+    "gfPerGame": 1.53,
+    "gaPerGame": 1.21,
+    "cleanSheets": 9,
+    "errors": 18,
+    "topScorer": "Kluivert (12g)",
+    "topAssister": "Kluivert (6a)",
+    "gk": "Arrizabalaga",
+    "positives": [
+      "EFFECTIVE ATTACK: 1.53 goals per game — above the league average, the team creates and converts chances regularly",
+      "SOLID DEFENCE: 1.21 goals conceded per game — a well-organised backline that keeps the team competitive across the season",
+      "RELIABLE GOALKEEPER: 70.9% save rate (8th in the league) — a dependable last line that saves the team points on a regular basis",
+      "INTELLIGENT DEFENDING: 326 interceptions (3rd in the league) — excellent reading of the game, cutting out attacks before they develop and disrupting opposition build-up"
+    ],
+    "negatives": [
+      "CLEAN SHEET SHORTAGE: Only 9 clean sheets — the team concedes in 76% of matches. The defence is too easy to score against and cannot consistently protect leads",
+      "RESULTS VOLATILITY: 12 defeats this season — the team cannot consistently protect results. Too many winnable games are being lost, costing points at crucial moments in the table",
+      "GOAL CONCENTRATION: Kluivert accounts for 20% of the team's goals — too much weight on one individual for a consistent full-season campaign",
+      "SINGLE CREATIVE FORCE: Kluivert is both the top scorer and top assister — the team's attack runs almost entirely through one player. Opposition scouts will plan around him and any absence leaves the attack without a primary creative outlet"
+    ],
+    "autoWeights": {},
+    "recruitmentPriorities": [
+      {
+        "position": "Attacking Forward / Winger",
+        "reason": "Over-reliance on Kluivert — squad needs a second genuine attacking threat"
+      }
+    ]
+  },
+  "Brentford": {
+    "formation": "4-3-3",
+    "style": "Direct Play",
+    "w": 16,
+    "d": 8,
+    "l": 14,
+    "gf": 66,
+    "ga": 57,
+    "gfPerGame": 1.74,
+    "gaPerGame": 1.5,
+    "cleanSheets": 8,
+    "errors": 23,
+    "topScorer": "Mbeumo (20g)",
+    "topAssister": "Damsgaard (10a)",
+    "gk": "Flekken",
+    "positives": [
+      "EFFECTIVE ATTACK: 1.74 goals per game — above the league average, the team creates and converts chances regularly",
+      "ELITE GOALKEEPER: 73.9% save rate — 1st in the Premier League. The goalkeeper is regularly bailing out the defence and earning points single-handedly",
+      "AERIAL DOMINANCE: 597 aerial duels won (1st in the league) — dominant in the air at both ends of the pitch. Dangerous from set pieces and effective at dealing with crosses and long balls"
+    ],
+    "negatives": [
+      "DEFENSIVE FRAGILITY: 1.5 goals conceded per game — the defence shows recurring vulnerabilities that better opponents consistently exploit",
+      "CLEAN SHEET SHORTAGE: Only 8 clean sheets — the team concedes in 78% of matches. The defence is too easy to score against and cannot consistently protect leads",
+      "RESULTS VOLATILITY: 14 defeats this season — the team cannot consistently protect results. Too many winnable games are being lost, costing points at crucial moments in the table",
+      "ONE-MAN ATTACK: Mbeumo supplies 30% of all goals — a dangerous over-reliance on a single player. Any injury, suspension or loss of form collapses the entire attack"
+    ],
+    "autoWeights": {},
+    "recruitmentPriorities": [
+      {
+        "position": "Attacking Forward / Winger",
+        "reason": "Over-reliance on Mbeumo — squad needs a second genuine attacking threat"
+      },
+      {
+        "position": "Centre-Back",
+        "reason": "Conceding 1.5 goals per game — defensive reinforcement is essential"
+      }
+    ]
+  },
+  "Brighton": {
+    "formation": "4-2-3-1",
+    "style": "Possession",
+    "w": 16,
+    "d": 13,
+    "l": 9,
+    "gf": 66,
+    "ga": 59,
+    "gfPerGame": 1.74,
+    "gaPerGame": 1.55,
+    "cleanSheets": 8,
+    "errors": 22,
+    "topScorer": "Welbeck (10g)",
+    "topAssister": "Pedro (6a)",
+    "gk": "Verbruggen",
+    "positives": [
+      "EFFECTIVE ATTACK: 1.74 goals per game — above the league average, the team creates and converts chances regularly",
+      "GOOD ATTACKING MOVEMENT: 252 carries into the box (6th in the league) — regularly getting into dangerous positions with the ball"
+    ],
+    "negatives": [
+      "STRIKER DEFICIT: Welbeck's 10 goals is the best forward return — in a side scoring 1.74 goals per game the number 9 position is underfilled. Goals are spread across the squad rather than produced by a reliable centre-forward, which becomes a major vulnerability when the team needs a goal",
+      "DEFENSIVE FRAGILITY: 1.55 goals conceded per game — the defence shows recurring vulnerabilities that better opponents consistently exploit",
+      "DRAW PROBLEM: 13 drawn matches — consistently failing to convert dominant performances into wins. These dropped points are the difference between the top 4 and mid-table",
+      "CLEAN SHEET SHORTAGE: Only 8 clean sheets — the team concedes in 78% of matches. The defence is too easy to score against and cannot consistently protect leads",
+      "INJURY RISK: Kaoru Mitoma has missed 199 days through injury in the last two seasons (5 separate spells) — a genuine availability concern for a player the team relies on. Cover at this position must be a recruitment priority",
+      "GOALKEEPING CONCERN: Only 60.8% save rate — 19th in the league. The goalkeeper is failing to stop shots that peers would save, costing the team points directly"
+    ],
+    "autoWeights": {},
+    "recruitmentPriorities": [
+      {
+        "position": "Centre-Forward",
+        "reason": "Welbeck leads with only 10 goals — no reliable #9 in a team scoring 1.74/game"
+      },
+      {
+        "position": "Goalkeeper",
+        "reason": "60.8% save rate (19th in the league) — upgrade between the posts is necessary"
+      },
+      {
+        "position": "Forward / Winger",
+        "reason": "Cover for Kaoru Mitoma — 199 days missed across 5 spells"
+      },
+      {
+        "position": "Centre-Back",
+        "reason": "Conceding 1.55 goals per game — defensive reinforcement is essential"
+      }
+    ]
+  },
+  "Chelsea": {
+    "formation": "4-2-3-1",
+    "style": "Possession",
+    "w": 20,
+    "d": 9,
+    "l": 9,
+    "gf": 64,
+    "ga": 43,
+    "gfPerGame": 1.68,
+    "gaPerGame": 1.13,
+    "cleanSheets": 11,
+    "errors": 27,
+    "topScorer": "Palmer (15g)",
+    "topAssister": "Palmer (8a)",
+    "gk": "Sanchez",
+    "positives": [
+      "EFFECTIVE ATTACK: 1.68 goals per game — above the league average, the team creates and converts chances regularly",
+      "SOLID DEFENCE: 1.13 goals conceded per game — a well-organised backline that keeps the team competitive across the season",
+      "RELIABLE BACKLINE: 11 clean sheets this season — the defence regularly shuts opponents out, a strong foundation for results",
+      "RELIABLE GOALKEEPER: 72.4% save rate (3rd in the league) — a dependable last line that saves the team points on a regular basis",
+      "GOOD ATTACKING MOVEMENT: 305 carries into the box (3rd in the league) — regularly getting into dangerous positions with the ball"
+    ],
+    "negatives": [
+      "GOAL CONCENTRATION: Palmer accounts for 23% of the team's goals — too much weight on one individual for a consistent full-season campaign",
+      "SINGLE CREATIVE FORCE: Palmer is both the top scorer and top assister — the team's attack runs almost entirely through one player. Opposition scouts will plan around him and any absence leaves the attack without a primary creative outlet"
+    ],
+    "autoWeights": {},
+    "recruitmentPriorities": [
+      {
+        "position": "Attacking Forward / Winger",
+        "reason": "Over-reliance on Palmer — squad needs a second genuine attacking threat"
+      }
+    ]
+  },
+  "Crystal Palace": {
+    "formation": "4-3-3",
+    "style": "Counter-attack",
+    "w": 13,
+    "d": 14,
+    "l": 11,
+    "gf": 51,
+    "ga": 51,
+    "gfPerGame": 1.34,
+    "gaPerGame": 1.34,
+    "cleanSheets": 11,
+    "errors": 14,
+    "topScorer": "Mateta (14g)",
+    "topAssister": "Eze (8a)",
+    "gk": "Henderson",
+    "positives": [
+      "ORGANISED DEFENCE: 1.34 goals conceded per game — close to the league average, the defence is structured and competitive without being a significant liability",
+      "RELIABLE BACKLINE: 11 clean sheets this season — the defence regularly shuts opponents out, a strong foundation for results"
+    ],
+    "negatives": [
+      "WEAK ATTACK: 1.34 goals per game — below the 1.47 league average. Struggling to create and convert consistently",
+      "DRAW PROBLEM: 14 drawn matches — consistently failing to convert dominant performances into wins. These dropped points are the difference between the top 4 and mid-table",
+      "RESULTS VOLATILITY: 11 defeats this season — the team cannot consistently protect results. Too many winnable games are being lost, costing points at crucial moments in the table",
+      "GOAL CONCENTRATION: Mateta accounts for 27% of the team's goals — too much weight on one individual for a consistent full-season campaign",
+      "ATTACK LACKS PENETRATION: Only 98 carries into the penalty box (20th in the league) — the team rarely drives into dangerous areas, making it easy for opponents to defend"
+    ],
+    "autoWeights": {
+      "goals": "high",
+      "shots": "medium"
+    },
+    "recruitmentPriorities": []
+  },
+  "Everton": {
+    "formation": "4-4-2",
+    "style": "Direct Play",
+    "w": 11,
+    "d": 15,
+    "l": 12,
+    "gf": 42,
+    "ga": 44,
+    "gfPerGame": 1.11,
+    "gaPerGame": 1.16,
+    "cleanSheets": 12,
+    "errors": 23,
+    "topScorer": "Ndiaye (9g)",
+    "topAssister": "McNeil (6a)",
+    "gk": "Pickford",
+    "positives": [
+      "SOLID DEFENCE: 1.16 goals conceded per game — a well-organised backline that keeps the team competitive across the season",
+      "DEFENSIVE DOMINANCE: 12 clean sheets — keeping opponents out in 31% of matches, a mark of elite defensive organisation",
+      "RELIABLE GOALKEEPER: 71.8% save rate (5th in the league) — a dependable last line that saves the team points on a regular basis",
+      "INTELLIGENT DEFENDING: 334 interceptions (2nd in the league) — excellent reading of the game, cutting out attacks before they develop and disrupting opposition build-up",
+      "AERIAL DOMINANCE: 572 aerial duels won (2nd in the league) — dominant in the air at both ends of the pitch. Dangerous from set pieces and effective at dealing with crosses and long balls"
+    ],
+    "negatives": [
+      "WEAK ATTACK: 1.11 goals per game — below the 1.47 league average. Struggling to create and convert consistently",
+      "DRAW PROBLEM: 15 drawn matches — consistently failing to convert dominant performances into wins. These dropped points are the difference between the top 4 and mid-table",
+      "RESULTS VOLATILITY: 12 defeats this season — the team cannot consistently protect results. Too many winnable games are being lost, costing points at crucial moments in the table",
+      "GOAL CONCENTRATION: Ndiaye accounts for 21% of the team's goals — too much weight on one individual for a consistent full-season campaign",
+      "INJURY RISK: Jarrad Branthwaite has missed 138 days through injury in the last two seasons (3 separate spells) — a genuine availability concern for a player the team relies on. Cover at this position must be a recruitment priority",
+      "ATTACK LACKS PENETRATION: Only 112 carries into the penalty box (19th in the league) — the team rarely drives into dangerous areas, making it easy for opponents to defend"
+    ],
+    "autoWeights": {
+      "goals": "required",
+      "shots": "high",
+      "xg_over": "medium"
+    },
+    "recruitmentPriorities": [
+      {
+        "position": "Defender",
+        "reason": "Cover for Jarrad Branthwaite — 138 days missed across 3 spells"
+      }
+    ]
+  },
+  "Fulham": {
+    "formation": "4-2-3-1",
+    "style": "Counter-attack",
+    "w": 15,
+    "d": 9,
+    "l": 14,
+    "gf": 54,
+    "ga": 54,
+    "gfPerGame": 1.42,
+    "gaPerGame": 1.42,
+    "cleanSheets": 5,
+    "errors": 27,
+    "topScorer": "Jimenez (12g)",
+    "topAssister": "Robinson (10a)",
+    "gk": "Leno",
+    "positives": [
+      "CONSISTENT SCORER: 1.42 goals per game — close to the league standard, the team scores with reliable regularity and rarely goes long spells without a goal"
+    ],
+    "negatives": [
+      "CLEAN SHEET SHORTAGE: Only 5 clean sheets — the team concedes in 86% of matches. The defence is too easy to score against and cannot consistently protect leads",
+      "RESULTS VOLATILITY: 14 defeats this season — the team cannot consistently protect results. Too many winnable games are being lost, costing points at crucial moments in the table",
+      "GOAL CONCENTRATION: Jimenez accounts for 22% of the team's goals — too much weight on one individual for a consistent full-season campaign",
+      "BELOW-AVERAGE GOALKEEPER: 66.7% save rate (14th in the league) — not converting enough saves into clean sheets"
+    ],
+    "autoWeights": {
+      "gk_cs": "high"
+    },
+    "recruitmentPriorities": [
+      {
+        "position": "Goalkeeper",
+        "reason": "66.7% save rate (14th in the league) — upgrade between the posts is necessary"
+      }
+    ]
+  },
+  "Ipswich": {
+    "formation": "4-2-3-1",
+    "style": "Direct Play",
+    "w": 4,
+    "d": 10,
+    "l": 24,
+    "gf": 36,
+    "ga": 82,
+    "gfPerGame": 0.95,
+    "gaPerGame": 2.16,
+    "cleanSheets": 2,
+    "errors": 29,
+    "topScorer": "Delap (12g)",
+    "topAssister": "Clarke (4a)",
+    "gk": "Muric",
+    "positives": [],
+    "negatives": [
+      "ATTACK CRISIS: Only 0.95 goals per game — the attack cannot manufacture or convert chances; a fundamental structural problem that demands urgent transfer window action",
+      "DEFENSIVE CRISIS: Conceding 2.16 goals per game — the backline is routinely exposed and cannot handle sustained attacking pressure. A defensive rebuild is necessary",
+      "COSTLY ERRORS: 29 defensive errors — well above the 25 league average. Individual mistakes regularly cost points in games that should be controlled",
+      "RELEGATION FORM: Losing 63% of matches — the team cannot compete at Premier League level. Results are nowhere near what survival demands",
+      "ONE-MAN ATTACK: Delap supplies 33% of all goals — a dangerous over-reliance on a single player. Any injury, suspension or loss of form collapses the entire attack",
+      "INJURY RISK: Omari Hutchinson has missed 47 days through injury in the last two seasons (4 separate spells) — a genuine availability concern for a player the team relies on. Cover at this position must be a recruitment priority"
+    ],
+    "autoWeights": {
+      "interceptions": "required",
+      "tackles": "required",
+      "aerial": "high",
+      "blocks": "high",
+      "gk_saves": "required",
+      "gk_cs": "high",
+      "goals": "required",
+      "shots": "high",
+      "xg_over": "medium"
+    },
+    "recruitmentPriorities": [
+      {
+        "position": "Attacking Forward / Winger",
+        "reason": "Over-reliance on Delap — squad needs a second genuine attacking threat"
+      },
+      {
+        "position": "Midfielder",
+        "reason": "Cover for Omari Hutchinson — 47 days missed across 4 spells"
+      },
+      {
+        "position": "Centre-Back",
+        "reason": "Conceding 2.16 goals per game — defensive reinforcement is essential"
+      }
+    ]
+  },
+  "Leicester": {
+    "formation": "4-2-3-1",
+    "style": "Counter-attack",
+    "w": 6,
+    "d": 7,
+    "l": 25,
+    "gf": 33,
+    "ga": 80,
+    "gfPerGame": 0.87,
+    "gaPerGame": 2.11,
+    "cleanSheets": 3,
+    "errors": 26,
+    "topScorer": "Vardy (9g)",
+    "topAssister": "Ndidi (5a)",
+    "gk": "Hermansen",
+    "positives": [],
+    "negatives": [
+      "ATTACK CRISIS: Only 0.87 goals per game — the attack cannot manufacture or convert chances; a fundamental structural problem that demands urgent transfer window action",
+      "DEFENSIVE CRISIS: Conceding 2.11 goals per game — the backline is routinely exposed and cannot handle sustained attacking pressure. A defensive rebuild is necessary",
+      "RELEGATION FORM: Losing 65% of matches — the team cannot compete at Premier League level. Results are nowhere near what survival demands",
+      "GOAL CONCENTRATION: Vardy accounts for 27% of the team's goals — too much weight on one individual for a consistent full-season campaign",
+      "INJURY RISK: Mads Hermansen has missed 136 days through injury in the last two seasons (3 separate spells) — a genuine availability concern for a player the team relies on. Cover at this position must be a recruitment priority",
+      "GOALKEEPING CONCERN: Only 63.9% save rate — 17th in the league. The goalkeeper is failing to stop shots that peers would save, costing the team points directly",
+      "ATTACK LACKS PENETRATION: Only 123 carries into the penalty box (18th in the league) — the team rarely drives into dangerous areas, making it easy for opponents to defend"
+    ],
+    "autoWeights": {
+      "tackles": "required",
+      "interceptions": "required",
+      "aerial": "high",
+      "blocks": "high",
+      "gk_saves": "required",
+      "gk_cs": "high",
+      "goals": "required",
+      "shots": "high",
+      "xg_over": "medium"
+    },
+    "recruitmentPriorities": [
+      {
+        "position": "Goalkeeper",
+        "reason": "63.9% save rate (17th in the league) — upgrade between the posts is necessary"
+      },
+      {
+        "position": "Centre-Back",
+        "reason": "Conceding 2.11 goals per game — defensive reinforcement is essential"
+      }
+    ]
+  },
+  "Liverpool": {
+    "formation": "4-3-3",
+    "style": "High Press",
+    "w": 25,
+    "d": 9,
+    "l": 4,
+    "gf": 86,
+    "ga": 41,
+    "gfPerGame": 2.26,
+    "gaPerGame": 1.08,
+    "cleanSheets": 14,
+    "errors": 25,
+    "topScorer": "Salah (29g)",
+    "topAssister": "Salah (18a)",
+    "gk": "Alisson",
+    "positives": [
+      "PROLIFIC ATTACK: Scoring 2.26 goals per game — one of the most dangerous attacks in the league, consistently threatening in every match",
+      "SOLID DEFENCE: 1.08 goals conceded per game — a well-organised backline that keeps the team competitive across the season",
+      "DEFENSIVE DOMINANCE: 14 clean sheets — keeping opponents out in 36% of matches, a mark of elite defensive organisation",
+      "WINNING MENTALITY: 65% win rate — converting performances into three points consistently, the hallmark of a title-challenging side",
+      "ELITE GOALKEEPER: 73.0% save rate — 2nd in the Premier League. The goalkeeper is regularly bailing out the defence and earning points single-handedly",
+      "GOOD ATTACKING MOVEMENT: 315 carries into the box (2nd in the league) — regularly getting into dangerous positions with the ball"
+    ],
+    "negatives": [
+      "ONE-MAN ATTACK: Salah supplies 33% of all goals — a dangerous over-reliance on a single player. Any injury, suspension or loss of form collapses the entire attack",
+      "INJURY RISK: Alexis Mac Allister has missed 102 days through injury in the last two seasons (2 separate spells) — a genuine availability concern for a player the team relies on. Cover at this position must be a recruitment priority"
+    ],
+    "autoWeights": {},
+    "recruitmentPriorities": [
+      {
+        "position": "Attacking Forward / Winger",
+        "reason": "Over-reliance on Salah — squad needs a second genuine attacking threat"
+      },
+      {
+        "position": "Midfielder",
+        "reason": "Cover for Alexis Mac Allister — 102 days missed across 2 spells"
+      }
+    ]
+  },
+  "Manchester City": {
+    "formation": "4-3-3",
+    "style": "Possession",
+    "w": 21,
+    "d": 8,
+    "l": 9,
+    "gf": 72,
+    "ga": 44,
+    "gfPerGame": 1.89,
+    "gaPerGame": 1.16,
+    "cleanSheets": 13,
+    "errors": 30,
+    "topScorer": "Haaland (27g)",
+    "topAssister": "Savio (8a)",
+    "gk": "Ederson",
+    "positives": [
+      "PROLIFIC ATTACK: Scoring 1.89 goals per game — one of the most dangerous attacks in the league, consistently threatening in every match",
+      "SOLID DEFENCE: 1.16 goals conceded per game — a well-organised backline that keeps the team competitive across the season",
+      "DEFENSIVE DOMINANCE: 13 clean sheets — keeping opponents out in 34% of matches, a mark of elite defensive organisation",
+      "DIRECT AND PENETRATING: 403 carries into the penalty box (1st in the league) — the attack consistently drives into dangerous areas, creating high-quality chances",
+      "CREATIVE DELIVERY: 314 passes into the penalty area (1st in the league) — consistently delivering the ball into dangerous positions, creating an abundance of goalscoring opportunities"
+    ],
+    "negatives": [
+      "COSTLY ERRORS: 30 defensive errors — well above the 25 league average. Individual mistakes regularly cost points in games that should be controlled",
+      "ONE-MAN ATTACK: Haaland supplies 37% of all goals — a dangerous over-reliance on a single player. Any injury, suspension or loss of form collapses the entire attack",
+      "INJURY RISK: Ederson has missed 173 days through injury in the last two seasons (7 separate spells) — a genuine availability concern for a player the team relies on. Cover at this position must be a recruitment priority",
+      "AERIAL WEAKNESS: Only 300 aerial duels won (20th in the league) — vulnerable to crosses, long balls and set pieces. Opponents will target this weakness repeatedly"
+    ],
+    "autoWeights": {
+      "interceptions": "high",
+      "tackles": "medium"
+    },
+    "recruitmentPriorities": [
+      {
+        "position": "Attacking Forward / Winger",
+        "reason": "Over-reliance on Haaland — squad needs a second genuine attacking threat"
+      },
+      {
+        "position": "Goalkeeper",
+        "reason": "Cover for Ederson — 173 days missed across 7 spells"
+      },
+      {
+        "position": "Aerial Centre-Back",
+        "reason": "Only 300 aerial duels won — vulnerable to set pieces and long balls"
+      }
+    ]
+  },
+  "Manchester United": {
+    "formation": "3-4-3",
+    "style": "Counter-attack",
+    "w": 11,
+    "d": 9,
+    "l": 18,
+    "gf": 44,
+    "ga": 54,
+    "gfPerGame": 1.16,
+    "gaPerGame": 1.42,
+    "cleanSheets": 10,
+    "errors": 20,
+    "topScorer": "Diallo (8g)",
+    "topAssister": "Fernandes (10a)",
+    "gk": "Onana",
+    "positives": [
+      "ORGANISED DEFENCE: 1.42 goals conceded per game — close to the league average, the defence is structured and competitive without being a significant liability",
+      "RELIABLE BACKLINE: 10 clean sheets this season — the defence regularly shuts opponents out, a strong foundation for results",
+      "PRESSING MACHINE: 759 tackles this season (2nd in the league) — one of the most defensively active sides, winning the ball back constantly and giving opponents no time on the ball",
+      "INTELLIGENT DEFENDING: 335 interceptions (1st in the league) — excellent reading of the game, cutting out attacks before they develop and disrupting opposition build-up"
+    ],
+    "negatives": [
+      "WEAK ATTACK: 1.16 goals per game — below the 1.47 league average. Struggling to create and convert consistently",
+      "INCONSISTENCY: Losing 47% of games — unable to string results together. The team has moments of quality but cannot sustain them across a campaign",
+      "INJURY RISK: Matthijs de Ligt has missed 125 days through injury in the last two seasons (7 separate spells) — a genuine availability concern for a player the team relies on. Cover at this position must be a recruitment priority"
+    ],
+    "autoWeights": {
+      "goals": "high",
+      "shots": "medium"
+    },
+    "recruitmentPriorities": [
+      {
+        "position": "Defender",
+        "reason": "Cover for Matthijs de Ligt — 125 days missed across 7 spells"
+      }
+    ]
+  },
+  "Newcastle": {
+    "formation": "4-3-3",
+    "style": "High Press",
+    "w": 20,
+    "d": 6,
+    "l": 12,
+    "gf": 68,
+    "ga": 47,
+    "gfPerGame": 1.79,
+    "gaPerGame": 1.24,
+    "cleanSheets": 13,
+    "errors": 26,
+    "topScorer": "Isak (23g)",
+    "topAssister": "Murphy (12a)",
+    "gk": "Pope",
+    "positives": [
+      "PROLIFIC ATTACK: Scoring 1.79 goals per game — one of the most dangerous attacks in the league, consistently threatening in every match",
+      "SOLID DEFENCE: 1.24 goals conceded per game — a well-organised backline that keeps the team competitive across the season",
+      "DEFENSIVE DOMINANCE: 13 clean sheets — keeping opponents out in 34% of matches, a mark of elite defensive organisation",
+      "RELIABLE GOALKEEPER: 71.7% save rate (6th in the league) — a dependable last line that saves the team points on a regular basis",
+      "GOOD ATTACKING MOVEMENT: 254 carries into the box (5th in the league) — regularly getting into dangerous positions with the ball",
+      "CREATIVE DELIVERY: 276 passes into the penalty area (2nd in the league) — consistently delivering the ball into dangerous positions, creating an abundance of goalscoring opportunities"
+    ],
+    "negatives": [
+      "ONE-MAN ATTACK: Isak supplies 33% of all goals — a dangerous over-reliance on a single player. Any injury, suspension or loss of form collapses the entire attack"
+    ],
+    "autoWeights": {},
+    "recruitmentPriorities": [
+      {
+        "position": "Attacking Forward / Winger",
+        "reason": "Over-reliance on Isak — squad needs a second genuine attacking threat"
+      }
+    ]
+  },
+  "Nott'm Forest": {
+    "formation": "4-2-3-1",
+    "style": "Counter-attack",
+    "w": 19,
+    "d": 8,
+    "l": 11,
+    "gf": 58,
+    "ga": 46,
+    "gfPerGame": 1.53,
+    "gaPerGame": 1.21,
+    "cleanSheets": 13,
+    "errors": 23,
+    "topScorer": "Wood (20g)",
+    "topAssister": "Elanga (11a)",
+    "gk": "Sels",
+    "positives": [
+      "EFFECTIVE ATTACK: 1.53 goals per game — above the league average, the team creates and converts chances regularly",
+      "SOLID DEFENCE: 1.21 goals conceded per game — a well-organised backline that keeps the team competitive across the season",
+      "DEFENSIVE DOMINANCE: 13 clean sheets — keeping opponents out in 34% of matches, a mark of elite defensive organisation",
+      "RELIABLE GOALKEEPER: 72.1% save rate (4th in the league) — a dependable last line that saves the team points on a regular basis"
+    ],
+    "negatives": [
+      "RESULTS VOLATILITY: 11 defeats this season — the team cannot consistently protect results. Too many winnable games are being lost, costing points at crucial moments in the table",
+      "ONE-MAN ATTACK: Wood supplies 34% of all goals — a dangerous over-reliance on a single player. Any injury, suspension or loss of form collapses the entire attack"
+    ],
+    "autoWeights": {},
+    "recruitmentPriorities": [
+      {
+        "position": "Attacking Forward / Winger",
+        "reason": "Over-reliance on Wood — squad needs a second genuine attacking threat"
+      }
+    ]
+  },
+  "Southampton": {
+    "formation": "4-4-2",
+    "style": "Direct Play",
+    "w": 2,
+    "d": 6,
+    "l": 30,
+    "gf": 26,
+    "ga": 86,
+    "gfPerGame": 0.68,
+    "gaPerGame": 2.26,
+    "cleanSheets": 3,
+    "errors": 39,
+    "topScorer": "Onuachu (4g)",
+    "topAssister": "Fernandes (4a)",
+    "gk": "Ramsdale",
+    "positives": [],
+    "negatives": [
+      "ATTACK CRISIS: Only 0.68 goals per game — the attack cannot manufacture or convert chances; a fundamental structural problem that demands urgent transfer window action",
+      "DEFENSIVE CRISIS: Conceding 2.26 goals per game — the backline is routinely exposed and cannot handle sustained attacking pressure. A defensive rebuild is necessary",
+      "RECKLESS DEFENCE: 39 defensive errors — the most in the league. The team gifts opponents direct shooting opportunities through individual mistakes at an alarming rate",
+      "RELEGATION FORM: Losing 78% of matches — the team cannot compete at Premier League level. Results are nowhere near what survival demands",
+      "INJURY RISK: Aaron Ramsdale has missed 47 days through injury in the last two seasons (2 separate spells) — a genuine availability concern for a player the team relies on. Cover at this position must be a recruitment priority"
+    ],
+    "autoWeights": {
+      "interceptions": "required",
+      "tackles": "required",
+      "aerial": "high",
+      "blocks": "high",
+      "gk_saves": "required",
+      "gk_cs": "high",
+      "goals": "required",
+      "shots": "high",
+      "xg_over": "medium"
+    },
+    "recruitmentPriorities": [
+      {
+        "position": "Goalkeeper",
+        "reason": "Cover for Aaron Ramsdale — 47 days missed across 2 spells"
+      },
+      {
+        "position": "Centre-Back",
+        "reason": "Conceding 2.26 goals per game — defensive reinforcement is essential"
+      }
+    ]
+  },
+  "Tottenham": {
+    "formation": "4-3-3",
+    "style": "High Press",
+    "w": 11,
+    "d": 5,
+    "l": 22,
+    "gf": 64,
+    "ga": 65,
+    "gfPerGame": 1.68,
+    "gaPerGame": 1.71,
+    "cleanSheets": 6,
+    "errors": 31,
+    "topScorer": "Johnson (11g)",
+    "topAssister": "Heung-min (9a)",
+    "gk": "Vicario",
+    "positives": [
+      "EFFECTIVE ATTACK: 1.68 goals per game — above the league average, the team creates and converts chances regularly"
+    ],
+    "negatives": [
+      "STRIKER DEFICIT: Johnson's 11 goals is the best forward return — in a side scoring 1.68 goals per game the number 9 position is underfilled. Goals are spread across the squad rather than produced by a reliable centre-forward, which becomes a major vulnerability when the team needs a goal",
+      "DEFENSIVE FRAGILITY: 1.71 goals conceded per game — the defence shows recurring vulnerabilities that better opponents consistently exploit",
+      "COSTLY ERRORS: 31 defensive errors — well above the 25 league average. Individual mistakes regularly cost points in games that should be controlled",
+      "CLEAN SHEET SHORTAGE: Only 6 clean sheets — the team concedes in 84% of matches. The defence is too easy to score against and cannot consistently protect leads",
+      "INCONSISTENCY: Losing 57% of games — unable to string results together. The team has moments of quality but cannot sustain them across a campaign",
+      "INJURY RISK: Dejan Kulusevski has missed 46 days through injury in the last two seasons (2 separate spells) — a genuine availability concern for a player the team relies on. Cover at this position must be a recruitment priority",
+      "BELOW-AVERAGE GOALKEEPER: 65.7% save rate (16th in the league) — not converting enough saves into clean sheets"
+    ],
+    "autoWeights": {
+      "interceptions": "high",
+      "tackles": "medium",
+      "aerial": "medium",
+      "gk_cs": "high"
+    },
+    "recruitmentPriorities": [
+      {
+        "position": "Centre-Forward",
+        "reason": "Johnson leads with only 11 goals — no reliable #9 in a team scoring 1.68/game"
+      },
+      {
+        "position": "Goalkeeper",
+        "reason": "65.7% save rate (16th in the league) — upgrade between the posts is necessary"
+      },
+      {
+        "position": "Midfielder",
+        "reason": "Cover for Dejan Kulusevski — 46 days missed across 2 spells"
+      },
+      {
+        "position": "Centre-Back",
+        "reason": "Conceding 1.71 goals per game — defensive reinforcement is essential"
+      }
+    ]
+  },
+  "West Ham": {
+    "formation": "4-2-3-1",
+    "style": "Counter-attack",
+    "w": 11,
+    "d": 10,
+    "l": 17,
+    "gf": 46,
+    "ga": 62,
+    "gfPerGame": 1.21,
+    "gaPerGame": 1.63,
+    "cleanSheets": 7,
+    "errors": 24,
+    "topScorer": "Bowen (13g)",
+    "topAssister": "Bowen (8a)",
+    "gk": "Areola",
+    "positives": [
+      "AERIAL DOMINANCE: 555 aerial duels won (3rd in the league) — dominant in the air at both ends of the pitch. Dangerous from set pieces and effective at dealing with crosses and long balls"
+    ],
+    "negatives": [
+      "WEAK ATTACK: 1.21 goals per game — below the 1.47 league average. Struggling to create and convert consistently",
+      "DEFENSIVE FRAGILITY: 1.63 goals conceded per game — the defence shows recurring vulnerabilities that better opponents consistently exploit",
+      "CLEAN SHEET SHORTAGE: Only 7 clean sheets — the team concedes in 81% of matches. The defence is too easy to score against and cannot consistently protect leads",
+      "RESULTS VOLATILITY: 17 defeats this season — the team cannot consistently protect results. Too many winnable games are being lost, costing points at crucial moments in the table",
+      "GOAL CONCENTRATION: Bowen accounts for 28% of the team's goals — too much weight on one individual for a consistent full-season campaign",
+      "SINGLE CREATIVE FORCE: Bowen is both the top scorer and top assister — the team's attack runs almost entirely through one player. Opposition scouts will plan around him and any absence leaves the attack without a primary creative outlet",
+      "INJURY RISK: Lucas Paquetá has missed 80 days through injury in the last two seasons (3 separate spells) — a genuine availability concern for a player the team relies on. Cover at this position must be a recruitment priority"
+    ],
+    "autoWeights": {
+      "goals": "high",
+      "shots": "medium"
+    },
+    "recruitmentPriorities": [
+      {
+        "position": "Attacking Forward / Winger",
+        "reason": "Over-reliance on Bowen — squad needs a second genuine attacking threat"
+      },
+      {
+        "position": "Midfielder",
+        "reason": "Cover for Lucas Paquetá — 80 days missed across 3 spells"
+      },
+      {
+        "position": "Centre-Back",
+        "reason": "Conceding 1.63 goals per game — defensive reinforcement is essential"
+      },
+      {
+        "position": "Goalkeeper",
+        "reason": "Only 7 clean sheets and 67.0% save rate — GK upgrade would directly improve results"
+      }
+    ]
+  },
+  "Wolves": {
+    "formation": "3-4-3",
+    "style": "Counter-attack",
+    "w": 12,
+    "d": 6,
+    "l": 20,
+    "gf": 54,
+    "ga": 69,
+    "gfPerGame": 1.42,
+    "gaPerGame": 1.82,
+    "cleanSheets": 8,
+    "errors": 21,
+    "topScorer": "Cunha (15g)",
+    "topAssister": "Bellegarde (7a)",
+    "gk": "Sa",
+    "positives": [
+      "CONSISTENT SCORER: 1.42 goals per game — close to the league standard, the team scores with reliable regularity and rarely goes long spells without a goal",
+      "PRESSING MACHINE: 766 tackles this season (1st in the league) — one of the most defensively active sides, winning the ball back constantly and giving opponents no time on the ball"
+    ],
+    "negatives": [
+      "DEFENSIVE CRISIS: Conceding 1.82 goals per game — the backline is routinely exposed and cannot handle sustained attacking pressure. A defensive rebuild is necessary",
+      "CLEAN SHEET SHORTAGE: Only 8 clean sheets — the team concedes in 78% of matches. The defence is too easy to score against and cannot consistently protect leads",
+      "INCONSISTENCY: Losing 52% of games — unable to string results together. The team has moments of quality but cannot sustain them across a campaign",
+      "GOAL CONCENTRATION: Cunha accounts for 27% of the team's goals — too much weight on one individual for a consistent full-season campaign",
+      "GOALKEEPING CONCERN: Only 59.0% save rate — 20th in the league. The goalkeeper is failing to stop shots that peers would save, costing the team points directly",
+      "ATTACK LACKS PENETRATION: Only 137 carries into the penalty box (16th in the league) — the team rarely drives into dangerous areas, making it easy for opponents to defend"
+    ],
+    "autoWeights": {
+      "tackles": "high",
+      "interceptions": "high",
+      "aerial": "medium"
+    },
+    "recruitmentPriorities": [
+      {
+        "position": "Goalkeeper",
+        "reason": "59.0% save rate (20th in the league) — upgrade between the posts is necessary"
+      },
+      {
+        "position": "Centre-Back",
+        "reason": "Conceding 1.82 goals per game — defensive reinforcement is essential"
+      }
+    ]
+  }
+}
