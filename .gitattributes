@@ -1,0 +1,14 @@
+# Raw ML training inputs live in Git LFS. Files the backend serves at runtime
+# (model outputs, 2024_PL.csv / GK_2024_PL.csv, predictions_all_fixtures.csv,
+# scouting_bundle.json.gz) stay as normal git blobs so deploys never need LFS.
+ml/data/fbref/*.csv                                filter=lfs diff=lfs merge=lfs -text
+ml/match_prediction/data/pl_lineups.csv            filter=lfs diff=lfs merge=lfs -text
+ml/match_prediction/data/injuries.csv              filter=lfs diff=lfs merge=lfs -text
+ml/match_prediction/data/players.csv               filter=lfs diff=lfs merge=lfs -text
+ml/match_prediction/data/pl_players_valuations.csv filter=lfs diff=lfs merge=lfs -text
+ml/match_prediction/data/pl_managers.csv           filter=lfs diff=lfs merge=lfs -text
+ml/match_prediction/data/pitch_data/*.csv          filter=lfs diff=lfs merge=lfs -text
+ml/match_prediction/premierleaguedata/[0-9]*_[0-9]*.csv filter=lfs diff=lfs merge=lfs -text
+ml/match_prediction/xg/*.csv                       filter=lfs diff=lfs merge=lfs -text
+ml/injury_prediction/data/*.csv                    filter=lfs diff=lfs merge=lfs -text
+ml/scouting/data/player_profiles.csv               filter=lfs diff=lfs merge=lfs -text

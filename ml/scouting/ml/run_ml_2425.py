@@ -9,7 +9,7 @@ Improvements over v3:
   • Tighter role rules per cluster
 """
 
-import json, os, re, unicodedata
+import gzip, json, os, re, unicodedata
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
@@ -19,7 +19,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")
-BUNDLE_PATH = os.path.join(DATA_DIR, "scouting_bundle.json")
+BUNDLE_PATH = os.path.join(DATA_DIR, "scouting_bundle.json.gz")
 TM_PROFILES = os.path.join(DATA_DIR, "player_profiles.csv")
 
 # ── Helpers ───────────────────────────────────────────────────────────────
@@ -36,7 +36,7 @@ print("  ScoutLab ML v4 — 2024/25 + 2023/24 combined")
 print("=" * 65)
 
 # ── Load bundle ───────────────────────────────────────────────────────────
-with open(BUNDLE_PATH, encoding="utf-8") as f:
+with gzip.open(BUNDLE_PATH, "rt", encoding="utf-8") as f:
     bundle = json.load(f)
 
 df_cur  = pd.DataFrame(bundle["current"])   # 24/25
@@ -360,12 +360,12 @@ bundle["ml"] = {
     }
 }
 
-with open(BUNDLE_PATH, "w", encoding="utf-8") as f:
+with gzip.open(BUNDLE_PATH, "wt", encoding="utf-8", compresslevel=9) as f:
     json.dump(bundle, f, separators=(",", ":"), ensure_ascii=False)
 
 from pathlib import Path
 mb = Path(BUNDLE_PATH).stat().st_size / 1024 / 1024
-print(f"Done. Bundle: {mb:.1f}MB")
-with open(BUNDLE_PATH, encoding="utf-8") as f:
+print(f"Done. Bundle: {mb:.1f}MB (gzipped)")
+with gzip.open(BUNDLE_PATH, "rt", encoding="utf-8") as f:
     json.load(f)
 print("JSON validation: PASSED")

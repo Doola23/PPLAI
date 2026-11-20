@@ -58,7 +58,7 @@ frontend/                 React/TypeScript app (Vite)
 backend/                  Node/Express API — serves model outputs from ml/, JWT auth
   src/config/paths.js     Where every data file lives
   src/lib/dataFiles.js    Cached CSV/JSON loader
-  src/lib/userStore.js    User + audit store (JSON file in backend/data/)
+  src/lib/userStore.js    User + audit store: Postgres when DATABASE_URL is set, JSON file otherwise
 ml/
   data/fbref/             FBref season stats shared by player_stats + injury_prediction
   match_prediction/       XGBoost match-outcome model + Monte Carlo season simulation
@@ -92,20 +92,22 @@ npm run dev          # http://localhost:3001  (needs JWT env vars, see DEPLOY.md
 ```
 
 The frontend auto-targets the backend in dev (including over your LAN for mobile testing).
-Secrets live only in `backend/.env` (git-ignored) — never in the repo. User accounts are
-stored in `backend/data/users.json` (git-ignored); `userStore.js` exposes an async API so it
-can be swapped for a real database later without touching the routes.
+Secrets live only in `backend/.env` (git-ignored) — never in the repo. Without
+`DATABASE_URL`, accounts are stored in `backend/data/users.json` (git-ignored); set it to a
+Postgres URL for persistent accounts (tables are created automatically).
 
 ## Testing
 
 ```bash
-cd backend  && npm test     # API + auth + data-contract tests (node:test)
-cd frontend && npm test     # service, validator and ScoutLab module tests (Vitest)
+cd backend  && npm test     # API, auth, user-store (file + Postgres) and data-contract tests
+cd frontend && npm test     # services, validators, scouting engine, ScoutLab modules (Vitest)
 cd frontend && npm run lint # ESLint
+cd frontend && npm run e2e  # Playwright: real browser, desktop + mobile, starts both servers
+python ml/run_all.py --check
 ```
 
-GitHub Actions (`.github/workflows/ci.yml`) runs the backend tests, frontend tests + build,
-and a compile check of the ML pipelines on every push to `main` and every pull request.
+GitHub Actions (`.github/workflows/ci.yml`) runs backend tests, frontend lint/tests/build,
+the Playwright suite and an ML compile check on every push to `main` and every pull request.
 
 ## Deployment
 

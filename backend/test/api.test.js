@@ -28,6 +28,9 @@ describe('scouting', () => {
     assert.equal(res.body.ml.similarity, undefined);
     assert.equal(res.body.shotMaps, undefined);
 
+    const leagues = new Set(res.body.current.map((p) => p.league));
+    assert.deepEqual([...leagues].sort(), ['Bundesliga', 'La Liga', 'Ligue 1', 'Premier League', 'Serie A']);
+
     const saka = res.body.current.find((p) => p.Player === 'Bukayo Saka');
     assert.equal(saka.player_squad, 'Bukayo Saka_Arsenal');
     assert.ok(saka.shot_count > 0);
@@ -144,8 +147,16 @@ describe('matches', () => {
   });
 });
 
-test('team reports, player stats, player predictions', async () => {
-  assert.equal((await api.get('/api/team-reports')).body.items.length, 20);
+test('team reports carry the fields ScoutLab club context needs', async () => {
+  const { items } = (await api.get('/api/team-reports')).body;
+  assert.equal(items.length, 20);
+  const arsenal = items.find((r) => r.Team === 'Arsenal');
+  for (const k of ['w', 'd', 'l', 'gfPerGame', 'gaPerGame', 'cleanSheets', 'topScorer', 'positives']) {
+    assert.ok(arsenal[k] !== undefined, `missing ${k}`);
+  }
+});
+
+test('player stats, player predictions', async () => {
   assert.equal((await api.get('/api/player-stats?limit=3')).body.items.length, 3);
   const preds = (await api.get('/api/player-predictions')).body;
   assert.ok(preds.items.length > 300);

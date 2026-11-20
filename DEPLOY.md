@@ -21,14 +21,18 @@ VITE_API_URL=https://api.your-domain.com
 Set these in the hosting platform's environment (never committed):
 
 The backend reads model outputs from `ml/` in the repo, so it must be deployed with the
-whole repo (Render) or built from the repo root (Docker). User accounts are written to
-`backend/data/users.json` — on hosts with an ephemeral disk they reset on each redeploy
-(attach a persistent disk and point `STORE_DIR` at it, or move to a database).
+whole repo (Render) or built from the repo root (Docker). Deploys don't need Git LFS —
+only raw ML inputs are in LFS.
+
+**User accounts:** set `DATABASE_URL` to a Postgres connection string (a free Neon or
+Supabase database works). Tables are created on first start. Without it, accounts fall back
+to `backend/data/users.json`, which resets on every redeploy on hosts with an ephemeral disk.
 
 ```
 JWT_SECRET=...
 JWT_REFRESH_SECRET=...
-STORE_DIR=/var/data                               # optional: persistent folder for users.json
+DATABASE_URL=postgres://user:pass@host/db         # recommended: persistent accounts
+STORE_DIR=/var/data                               # optional: folder for the JSON fallback
 FRONTEND_URL=https://your-frontend-domain.com   # required for CORS to allow the live site
 PORT=3001                                        # or platform-assigned
 FOOTBALL_DATA_API_KEY=...                         # optional: live gameweek mapping

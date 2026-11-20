@@ -9,6 +9,10 @@ node_modules/
 dist/
 build/
 
+# Playwright
+test-results/
+playwright-report/
+
 # Vercel
 .vercel
 
@@ -34,7 +38,3 @@ catboost_info/
 
 # Backend runtime store (users, audit log)
 backend/data/
-
-# Large raw ML inputs — kept locally, not in git
-ml/injury_prediction/data/
-ml/scouting/data/player_profiles.csv

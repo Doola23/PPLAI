@@ -22,7 +22,8 @@ rather than by a single global rating.
 
 | Path | What it is |
 |---|---|
-| `data/scouting_bundle.json` | Player pool (current + previous season), match logs, shot maps and the `ml` block. Served as-is by the backend `/api/scouting/*` routes. |
+| `data/scouting_bundle.json.gz` | Player pool (current + previous season), match logs, shot maps and the `ml` block (gzipped). Served by the backend `/api/scouting/*` routes. |
+| `data/team_reports.json` | Per-club reports (record, top scorer, strengths/weaknesses, recruitment priorities) behind Scout Lab's club context. Built by `ml/generate_team_reports.py`. |
 | `data/player_profiles.csv` | Transfermarkt positions used by the ML pipeline (local only, git-ignored). |
 | `ml/` | Python pipeline that regenerates role clustering + similarity into the bundle. See [`ml/README.md`](./ml/README.md). |
 

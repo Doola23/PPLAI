@@ -10,6 +10,7 @@ module.exports = {
   MATCH_FIXTURES_FILE: path.join(ML_DIR, 'match_prediction', 'premierleaguedata', 'predictions_all_fixtures.csv'),
   INJURY_PREDICTIONS_FILE: path.join(ML_DIR, 'injury_prediction', 'outputs', 'injury_predictions.csv'),
   PLAYER_PREDICTIONS_DIR: path.join(ML_DIR, 'player_stats', 'outputs'),
-  SCOUTING_BUNDLE_FILE: path.join(ML_DIR, 'scouting', 'data', 'scouting_bundle.json'),
+  TEAM_REPORTS_FILE: path.join(ML_DIR, 'scouting', 'data', 'team_reports.json'),
+  SCOUTING_BUNDLE_FILE: path.join(ML_DIR, 'scouting', 'data', 'scouting_bundle.json.gz'),
   STORE_DIR: process.env.STORE_DIR || path.resolve(__dirname, '../../data'),
 };

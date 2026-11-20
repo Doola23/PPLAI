@@ -1,8 +1,0 @@
-﻿pandas
-numpy
-xgboost
-scikit-learn
-imbalanced-learn
-optuna
-lightgbm
-catboost

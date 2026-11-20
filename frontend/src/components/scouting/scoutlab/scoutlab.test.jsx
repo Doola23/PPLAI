@@ -6,12 +6,12 @@ vi.mock('../../../services/api', () => ({
   default: { get: vi.fn(() => new Promise(() => {})) },
 }));
 
-const MODULES = import.meta.glob(['./*.js', './components/*.jsx', '../ScoutLab.jsx']);
+const MODULES = import.meta.glob(['./*.ts', '!./*.test.*', './components/**/*.jsx', '../ScoutLab.jsx']);
 
 describe('ScoutLab modules', () => {
   it('every module evaluates without missing imports', async () => {
     const entries = Object.entries(MODULES);
-    expect(entries.length).toBeGreaterThanOrEqual(15);
+    expect(entries.length).toBeGreaterThanOrEqual(23);
     for (const [file, load] of entries) {
       await expect(load(), file).resolves.toBeTruthy();
     }

@@ -1,19 +1,58 @@
 import { T } from "./constants";
+import type { PosGroup, Priority } from "./types";
+
+export interface TeamReport {
+  gfPerGame?: number;
+  gaPerGame?: number;
+  cleanSheets?: number;
+  errors?: number;
+  w?: number;
+  d?: number;
+  l?: number;
+  gf?: number;
+  topScorer?: string;
+  topAssister?: string;
+  gk?: string;
+  recruitmentPriorities?: { position: string; reason: string }[];
+}
+
+export interface LeagueCtx {
+  n: number;
+  avgGF: number;
+  avgGA: number;
+  avgCS: number;
+  avgErr: number;
+  gfRank: (v: number) => number;
+  gaRank: (v: number) => number;
+  csRank: (v: number) => number;
+  errRank: (v: number) => number;
+}
+
+export interface Suggestion {
+  role: string;
+  posGroup: PosGroup;
+  icon: string;
+  color: string;
+  attrs: { k: string; l: string; p: Priority }[];
+  weights: Record<string, Priority>;
+  thresholds?: Record<string, number>;
+  because: string;
+}
 
 // ─── LEAGUE CONTEXT ───
-export const ordinal=n=>['1st','2nd','3rd'][n-1]||`${n}th`;
+export const ordinal = (n: number): string => ['1st', '2nd', '3rd'][n - 1] || `${n}th`;
 
-export function computeLeagueCtx(teamReports){
+export function computeLeagueCtx(teamReports: Record<string, TeamReport> | null | undefined): LeagueCtx | null {
   const reps=Object.values(teamReports||{});
   if(!reps.length)return null;
-  const avg=arr=>arr.reduce((a,b)=>a+b,0)/arr.length;
+  const avg=(arr: number[])=>arr.reduce((a,b)=>a+b,0)/arr.length;
   const gfA=reps.map(r=>r.gfPerGame||0);
   const gaA=reps.map(r=>r.gaPerGame||0);
   const csA=reps.map(r=>r.cleanSheets||0);
   const eA=reps.map(r=>r.errors||0);
   // rank: 1 = best. rD → higher val better. rA → lower val better.
-  const rD=(v,a)=>[...a].sort((x,y)=>y-x).findIndex(x=>x<=v)+1;
-  const rA=(v,a)=>[...a].sort((x,y)=>x-y).findIndex(x=>x>=v)+1;
+  const rD=(v: number,a: number[])=>[...a].sort((x,y)=>y-x).findIndex(x=>x<=v)+1;
+  const rA=(v: number,a: number[])=>[...a].sort((x,y)=>x-y).findIndex(x=>x>=v)+1;
   return{
     n:reps.length,
     avgGF:avg(gfA),avgGA:avg(gaA),avgCS:avg(csA),avgErr:avg(eA),
@@ -25,18 +64,18 @@ export function computeLeagueCtx(teamReports){
 }
 
 // ─── SUGGESTIONS ENGINE ───
-export function getSuggestions(rep,team,ctx){
+export function getSuggestions(rep: TeamReport | null | undefined, team: string, ctx: LeagueCtx | null): Suggestion[] {
   if(!rep)return[];
-  const{n=20,avgGF=1.47,avgGA=1.47,avgCS=8.9,avgErr=25.3,gfRank,gaRank,csRank,errRank}=ctx||{};
+  const{n=20,avgGF=1.47,avgGA=1.47,avgCS=8.9,avgErr=25.3,gfRank,gaRank,csRank,errRank}: Partial<LeagueCtx>=ctx||{};
   const{gaPerGame=0,gfPerGame=0,cleanSheets=0,errors=0,w=0,d=0,l=0,gf=0,topScorer='',topAssister='',gk=''}=rep;
   const total=w+d+l||1;
   const pts=3*w+d;
 
   // Parse top scorer/assister names, goal and assist counts
-  const sGoals=parseInt((topScorer.match(/\((\d+)g\)/)||[0,0])[1])||0;
+  const sGoals=parseInt((topScorer.match(/\((\d+)g\)/)||['','0'])[1])||0;
   const sName=topScorer.replace(/\s*\(\d+g\)$/,'').trim();
   const sShare=gf>0?sGoals/gf:0;
-  const aGoals=parseInt((topAssister.match(/\((\d+)a\)/)||[0,0])[1])||0;
+  const aGoals=parseInt((topAssister.match(/\((\d+)a\)/)||['','0'])[1])||0;
   const aName=topAssister.replace(/\s*\(\d+a\)$/,'').trim();
   const aShare=gf>0?aGoals/gf:0;
 
@@ -74,7 +113,7 @@ export function getSuggestions(rep,team,ctx){
   const manyDraws=d>=12;
 
   // ── Priority scores for each suggestion type (higher = more urgent) ──
-  const sc={
+  const sc: Record<string, number>={
     striker:   attackCrisis?95 : (sWeak&&manyDraws)?88 : sWeak?80
                : (attackPoor&&!sDominant&&pts<60&&!errLow)?65 : 5,
     winger:    (attackPoor&&!attackCrisis&&pts>38&&!sWeak)?68
@@ -95,7 +134,7 @@ export function getSuggestions(rep,team,ctx){
   };
 
   // ── Build suggestion objects ──
-  const build=key=>{
+  const build=(key: string): Suggestion | null=>{
     switch(key){
       case 'striker': return{
         role:'Clinical Striker',posGroup:'FW',icon:"",color:'#1A65D3',
@@ -167,8 +206,8 @@ export function getSuggestions(rep,team,ctx){
 
   // Sort by score, include only >=20, deduplicate by posGroup (max 1 per group except MF allows 2)
   const sorted=Object.entries(sc).filter(([,s])=>s>=20).sort((a,b)=>b[1]-a[1]);
-  const pgCount={};
-  const sugs=[];
+  const pgCount: Partial<Record<PosGroup, number>>={};
+  const sugs: Suggestion[]=[];
   for(const[key] of sorted){
     if(sugs.length>=4)break;
     const s=build(key);
@@ -182,13 +221,13 @@ export function getSuggestions(rep,team,ctx){
   }
 
   // ── Merge recruitmentPriorities from report into sugs ──────────────────────
-  const PRIO_PG={'Centre-Forward':'FW','Clinical Striker':'FW','Forward / Winger':'WG',
+  const PRIO_PG: Record<string, PosGroup>={'Centre-Forward':'FW','Clinical Striker':'FW','Forward / Winger':'WG',
     'Attacking Forward / Winger':'WG','Goalkeeper':'GK','Creative Midfielder':'MF',
     'Midfielder':'MF','Centre-Back':'DF','Aerial Centre-Back':'DF','Defender':'DF',
     'Left Back':'DF','Right Back':'DF','Full-Back':'DF'};
-  const PRIO_ICON={FW:'',WG:'',GK:'',MF:'',DF:''};
-  const PRIO_COLOR={FW:'#1A65D3',WG:'#2B4C5E',GK:'#939A9E',MF:'#4F82D6',DF:'#6E7E8A'};
-  const PRIO_ATTRS={
+  const PRIO_ICON: Record<PosGroup, string>={FW:'',WG:'',GK:'',MF:'',DF:''};
+  const PRIO_COLOR: Record<PosGroup, string>={FW:'#1A65D3',WG:'#2B4C5E',GK:'#939A9E',MF:'#4F82D6',DF:'#6E7E8A'};
+  const PRIO_ATTRS: Record<PosGroup, Suggestion['attrs']>={
     FW:[{k:'goals',l:'Goal Scoring',p:'required'},{k:'xg_over',l:'Finishing Efficiency',p:'high'},{k:'shots',l:'Shot Volume',p:'high'},{k:'box_carry',l:'Carries into Box',p:'medium'}],
     WG:[{k:'goals',l:'Goal Scoring',p:'high'},{k:'takeons',l:'Successful Dribbles',p:'high'},{k:'prog_carry',l:'Progressive Carrying',p:'high'},{k:'key_passes',l:'Key Passes',p:'medium'}],
     GK:[{k:'gk_saves',l:'Save Percentage',p:'required'},{k:'gk_cs',l:'Clean Sheet %',p:'high'},{k:'gk_ga90',l:'Goals Against /90',p:'high'}],

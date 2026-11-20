@@ -1,7 +1,9 @@
-import { SoccerBall, Sparkle, Wind, PaperPlaneTilt, ShieldChevron, Barbell, HandPalm } from "@phosphor-icons/react";
+import type { CSSProperties } from "react";
+import { SoccerBall, Sparkle, Wind, PaperPlaneTilt, ShieldChevron, Barbell, HandPalm, type Icon } from "@phosphor-icons/react";
+import type { Attr, AttrCategory, InjuryRisk, PosFilter, PosGroup, PotentialTier, Priority, ScoutPlayer, Trajectory } from "./types";
 
 // Phosphor icon for each attribute category (replaces former emoji)
-export const CAT_ICON = {
+export const CAT_ICON: Record<string, Icon> = {
   "Attacking": SoccerBall,
   "Creativity & Chance Creation": Sparkle,
   "Ball Carrying & Pace": Wind,
@@ -11,65 +13,67 @@ export const CAT_ICON = {
   "Goalkeeping": HandPalm,
 };
 
-export const EASE = [0.16, 1, 0.3, 1];
+export const EASE = [0.16, 1, 0.3, 1] as const;
 
 /* ═══════════════════════════════════════════════════════════
    SCOUTLAB — Professional Football Scouting Platform
    ═══════════════════════════════════════════════════════════ */
 
 // ─── POSITION GROUPS ───
-export const POS = {
+const str = (v: unknown): string => (v ? String(v) : '');
+
+export const POS: Record<PosGroup, { label: string; sub: string; fn: (p: ScoutPlayer) => boolean }> = {
   FW: { label: "Forward", sub: "ST · SS · CF", fn: p => {
     // 1. WhoScored position is most reliable tiebreaker
     if(p.ws_position) return p.ws_position === 'FW';
     // 2. FBref strict forward — but only if Understat agrees (not a winger)
     if(p.Pos === 'FW'){
       // Check Understat — if has M it's a winger not a striker
-      const u = p.position || '';
+      const u = str(p.position);
       if(/F/.test(u) && /M/.test(u)) return false; // Understat says winger
       return true;
     }
     // 3. Understat forward only (no midfielder component)
-    if(/^F/.test(p.position||'') && !/M/.test(p.position||'')) return true;
+    if(/^F/.test(str(p.position)) && !/M/.test(str(p.position))) return true;
     // 4. TM attack but not a midfielder
-    if((p.main_position||'').toLowerCase() === 'attack' && p.Pos !== 'MF' && !/M/.test((p.position||'').replace(/S/g,''))) return true;
+    if(str(p.main_position).toLowerCase() === 'attack' && p.Pos !== 'MF' && !/M/.test(str(p.position).replace(/S/g,''))) return true;
     return false;
   }},
   WG: { label: "Winger", sub: "LW · RW · IF", fn: p => {
     if(p.ws_position) return p.ws_position === 'WG';
     const pos = p.Pos || '';
-    const u = p.position || '';
+    const u = str(p.position);
     if(pos==='MF,FW' || pos==='FW,MF') return true;
     if(/F/.test(u) && /M/.test(u)) return true; // Understat hybrid = winger
-    if((p.main_position||'').toLowerCase()==='attack' && pos==='MF') return true;
+    if(str(p.main_position).toLowerCase()==='attack' && pos==='MF') return true;
     return false;
   }},
   MF: { label: "Midfielder", sub: "CM · DM · AM", fn: p => {
     if(p.ws_position) return p.ws_position === 'MF';
     const pos = p.Pos || '';
-    const u = p.position || '';
+    const u = str(p.position);
     if(pos==='MF' || pos==='MF,DF' || pos==='DF,MF') return true;
     if(/M/.test(u) && !/F/.test(u) && !/D/.test(u)) return true;
-    if((p.main_position||'').toLowerCase()==='midfield' && !pos) return true;
+    if(str(p.main_position).toLowerCase()==='midfield' && !pos) return true;
     return false;
   }},
   DF: { label: "Defender", sub: "CB · FB · WB", fn: p => {
     if(p.ws_position) return p.ws_position === 'DF';
     const pos = p.Pos || '';
-    const u = p.position || '';
+    const u = str(p.position);
     if(pos==='DF') return true;
     if(/D/.test(u) && !/F/.test(u) && !/M/.test(u)) return true;
-    if((p.main_position||'').toLowerCase()==='defender' && !pos) return true;
+    if(str(p.main_position).toLowerCase()==='defender' && !pos) return true;
     return false;
   }},
   GK: { label: "Goalkeeper", sub: "GK", fn: p => {
     if(p.ws_position) return p.ws_position === 'GK';
-    return (p.Pos||'')==='GK' || (p.main_position||'').toLowerCase()==='goalkeeper';
+    return (p.Pos||'')==='GK' || str(p.main_position).toLowerCase()==='goalkeeper';
   }},
 };
 
 // ─── ATTRIBUTES ───
-export const ATTR_CATS = [
+export const ATTR_CATS: AttrCategory[] = [
   { cat: "Attacking", icon:"", attrs: [
     { k:"goals", l:"Goal Scoring", desc:"Goals & non-penalty xG per 90 — how dangerous is he in front of goal?", c:["goals_per90","npxg_per90","xG_per90","npxG_per90"],z:["goals_per90_zscore","npxg_per90_zscore","xG_per90_zscore","npxG_per90_zscore"],i:"", thresholdLabel:"Min Goals/90", thresholdKey:"goals_per90"},
     { k:"shots", l:"Shot Volume", desc:"Shots per 90 — does he get himself into shooting positions regularly?", c:["shots_per90"],z:["shots_per90_zscore"],i:"", thresholdLabel:"Min Shots/90", thresholdKey:"shots_per90"},
@@ -112,10 +116,10 @@ export const ATTR_CATS = [
   ]},
 ];
 
-export const ALL_A = ATTR_CATS.flatMap(g=>g.attrs);
+export const ALL_A: Attr[] = ATTR_CATS.flatMap(g=>g.attrs);
 
 // Per-threshold input config: {min, max, step} matched to real football data ranges
-export function thresholdCfg(key){
+export function thresholdCfg(key?: string): { min: number; max?: number; step: number; placeholder?: string } {
   if(!key) return {min:0,step:0.1};
   if(key==='pass_success_pct')       return {min:0,max:100,step:1,placeholder:'e.g. 80'};
   if(key==='Save%')                  return {min:0,max:100,step:1,placeholder:'e.g. 68'};
@@ -133,19 +137,19 @@ export function thresholdCfg(key){
   return {min:0,step:0.1,placeholder:'Min value'};
 }
 
-export const PRI = {required:4,high:3,medium:2,low:1,none:0};
+export const PRI: Record<Priority, number> = {required:4,high:3,medium:2,low:1,none:0};
 
-export const PRI_C = {required:"#1A65D3",high:"#3B82F6",medium:"#2B4C5E",low:"#4B5563",none:"transparent"};
+export const PRI_C: Record<Priority, string> = {required:"#1A65D3",high:"#3B82F6",medium:"#2B4C5E",low:"#4B5563",none:"transparent"};
 
-export const PRI_LABELS = {required:"Required",high:"High",medium:"Med",low:"Low",none:"Off"};
+export const PRI_LABELS: Record<Priority, string> = {required:"Required",high:"High",medium:"Med",low:"Low",none:"Off"};
 
-export const BUDGET = [
+export const BUDGET: { l: string; v: number | '' }[] = [
   {l:"Any",v:""},{l:"€100K",v:1e5},{l:"€500K",v:5e5},{l:"€1M",v:1e6},
   ...[5,10,15,20,25,30,35,40,50,60,70,80,100,120,150,200].map(n=>({l:`€${n}M`,v:n*1e6}))
 ];
 
-// ─── SCOUT TEMPLATES ───
-export const SCOUT_TEMPLATES = {
+// ─── SCOUT TEMPLATES ─── (preset priority sets; not yet wired into the search UI)
+export const SCOUT_TEMPLATES: Record<string, Record<string, Priority>> = {
   'Pressing Forward':    {goals:"high",shots:"high",pressing:"high",prog_carry:"medium",takeons:"medium",xg_chain:"medium"},
   'Target Man':          {goals:"high",aerial:"required",shots:"medium",buildup:"high",key_passes:"low"},
   'Poacher':             {goals:"required",shots:"high",xg_over:"high",box_carry:"high",prog_carry:"low"},
@@ -163,7 +167,7 @@ export const SCOUT_TEMPLATES = {
   'Ball-Playing GK':     {gk_saves:"high",gk_dist:"required",gk_sweeper:"high",gk_cs:"medium"},
 };
 
-export const POS_PRESETS = {
+export const POS_PRESETS: Record<PosFilter, Record<string, Priority>> = {
   FW:{goals:"high",shots:"high",xg_over:"medium",assists:"low",aerial:"medium",pressing:"medium"},
   WG:{goals:"medium",shots:"medium",assists:"high",key_passes:"high",prog_carry:"high",takeons:"high",cross:"medium"},
   MF:{assists:"medium",key_passes:"high",sca:"medium",pass_pct:"high",prog_pass:"high",tackles:"medium",interceptions:"medium",pressing:"medium",buildup:"medium"},
@@ -172,14 +176,14 @@ export const POS_PRESETS = {
   ALL:{}
 };
 
-export const IRK={High:{c:'#1A65D3'},Medium:{c:'#6E7E8A'},Low:{c:'#939A9E'}};
+export const IRK: Record<InjuryRisk, { c: string }> = {High:{c:'#1A65D3'},Medium:{c:'#6E7E8A'},Low:{c:'#939A9E'}};
 
-export const TRJ={Improving:{c:'#1A65D3',i:'↑'},Stable:{c:'#939A9E',i:'→'},Declining:{c:'#2B4C5E',i:'↓'}};
+export const TRJ: Record<Trajectory, { c: string; i: string }> = {Improving:{c:'#1A65D3',i:'↑'},Stable:{c:'#939A9E',i:'→'},Declining:{c:'#2B4C5E',i:'↓'}};
 
-export const PTL={'Elite Prospect':{c:'#1A65D3'},'High Potential':{c:'#2B4C5E'},'Developing':{c:'#939A9E'}};
+export const PTL: Record<PotentialTier, { c: string }> = {'Elite Prospect':{c:'#1A65D3'},'High Potential':{c:'#2B4C5E'},'Developing':{c:'#939A9E'}};
 
 // ─── CLUB META ───
-export const CLUB_META = {
+export const CLUB_META: Record<string, { color: string; formation: string; style: string }> = {
   'Arsenal':          {color:'#EF0107',formation:'4-3-3',  style:'High Press'},
   'Aston Villa':      {color:'#670E36',formation:'4-3-3',  style:'Counter-attack'},
   'Bournemouth':      {color:'#DA291C',formation:'4-2-3-1',style:'Counter-attack'},
@@ -210,7 +214,13 @@ export const T = {
   font:"inherit",mono:"inherit",
 };
 
-export const C = {
+export const C: {
+  card: CSSProperties;
+  label: CSSProperties;
+  input: CSSProperties;
+  btn: (active: boolean, color?: string) => CSSProperties;
+  tag: (color?: string) => CSSProperties;
+} = {
   card:{
     position:'relative',
     background:'linear-gradient(145deg, rgba(26,101,211,0.52) 0%, rgba(26,101,211,0.38) 100%)',
@@ -231,7 +241,7 @@ export const C = {
 
 // Single attribute category — collapsible to tame the priorities wall
 // Segmented priority control — replaces 5 scattered buttons
-export const PRI_SEG=[
+export const PRI_SEG: { k: Priority; label: string; short: string }[] = [
   {k:'none',   label:'Off',  short:'—'},
   {k:'low',    label:'Low',  short:'L'},
   {k:'medium', label:'Med',  short:'M'},
@@ -239,14 +249,14 @@ export const PRI_SEG=[
   {k:'required',label:'Must',short:'!'},
 ];
 
-export const PRI_SEG_C={required:'#1A65D3',high:'#3B82F6',medium:'#2B4C5E',low:'#374151',none:'transparent'};
+export const PRI_SEG_C: Record<Priority, string> = {required:'#1A65D3',high:'#3B82F6',medium:'#2B4C5E',low:'#374151',none:'transparent'};
 
-export const PRI_SEG_TEXT={required:'#F2F2F2',high:'#F2F2F2',medium:'#93C5FD',low:'#9CA3AF',none:'#6B7280'};
+export const PRI_SEG_TEXT: Record<Priority, string> = {required:'#F2F2F2',high:'#F2F2F2',medium:'#93C5FD',low:'#9CA3AF',none:'#6B7280'};
 
 // ─── MAIN LAYOUT ───
 // Two-column layout: left sidebar (filters) + right panel (suggestions or compact results)
 // Replaces the old sequential clubreport → search → results → report views
-export const POS_CARDS=[
+export const POS_CARDS: { k: PosGroup; label: string; sub: string }[] = [
   {k:'FW',label:'Forward',sub:'Striker · False 9 · Complete Forward'},
   {k:'WG',label:'Winger',sub:'Inverted · Creative · Wide Forward'},
   {k:'MF',label:'Midfielder',sub:'Box-to-Box · DM · AM · Playmaker'},

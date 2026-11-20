@@ -1,4 +1,5 @@
 const fs = require('fs');
+const zlib = require('zlib');
 const { parse } = require('csv-parse/sync');
 
 const cache = new Map();
@@ -33,8 +34,11 @@ function memo(key, loader) {
 
 const readCsv = (file) => memo(`csv:${file}`, () => parseCsv(file));
 
-const readJson = (file) => memo(`json:${file}`, () => (
-  fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8').replace(/^﻿/, '')) : null
-));
+function readText(file) {
+  const buf = fs.readFileSync(file);
+  return (file.endsWith('.gz') ? zlib.gunzipSync(buf) : buf).toString('utf8').replace(/^﻿/, '');
+}
+
+const readJson = (file) => memo(`json:${file}`, () => (fs.existsSync(file) ? JSON.parse(readText(file)) : null));
 
 module.exports = { readCsv, readJson, memo };

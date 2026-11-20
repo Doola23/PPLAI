@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getPlayerImage, getPlayerImageAsync } from '../../utils/playerImages';
-import { getExtraPlayerImage } from '../../utils/extraPlayerImages';
 import { getImageOverride } from '../../utils/playerImageOverrides';
+import { getPlayerImageIndex, loadPlayerImageIndex } from '../../utils/playerImageIndex';
 
 interface PlayerAvatarProps {
   name: string;
@@ -27,12 +26,13 @@ function buildFallbacks(name: string, playerId?: string | number, src?: string):
   // Direct backend URL (e.g. from ScoutLab img_url) — most reliable for non-PL players
   if (src) list.push(src);
 
+  const index = getPlayerImageIndex();
   // FotMob/extra map — exact, team-verified per-player match
-  const extra = getExtraPlayerImage(name);
+  const extra = index?.extra(name);
   if (extra) list.push(extra);
 
   // FPL map covers PL players
-  const fpl = getPlayerImage(name);
+  const fpl = index?.fpl(name);
   if (fpl) list.push(fpl);
 
   // Transfermarkt CDN last-resort (hotlink-blocked; referrerPolicy="no-referrer" helps)
@@ -86,16 +86,24 @@ export default function PlayerAvatar({ name, playerId, src, size = 40, className
   const [exhausted, setExhausted] = useState(false);
 
   useEffect(() => {
-    const fb = buildFallbacks(name, playerId, src);
-    setFallbacks(fb);
-    setIdx(0);
-    setExhausted(false);
-    // If sync lookup found nothing, try async FPL cache
-    if (!src && !playerId && fb.length === 0) {
-      getPlayerImageAsync(name).then(url => {
-        if (url) { setFallbacks([url]); setExhausted(false); }
-      });
-    }
+    let cancelled = false;
+    const apply = (fb: string[]) => {
+      if (cancelled) return;
+      setFallbacks(fb);
+      setIdx(0);
+      setExhausted(false);
+    };
+    apply(buildFallbacks(name, playerId, src));
+
+    loadPlayerImageIndex().then(index => {
+      const fb = buildFallbacks(name, playerId, src);
+      apply(fb);
+      // If the static maps found nothing, try the runtime FPL cache
+      if (!src && !playerId && fb.length === 0) {
+        index.fplAsync(name).then(url => { if (url) apply([url]); });
+      }
+    }).catch(() => {});
+    return () => { cancelled = true; };
   }, [name, playerId, src]);
 
   const handleError = () => {

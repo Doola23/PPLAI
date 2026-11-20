@@ -18,8 +18,11 @@ services:
     startCommand: node src/index.js
     healthCheckPath: /health
     # Model outputs are read from ../ml (Render clones the full repo).
-    # Users live in backend/data/users.json — ephemeral on the free plan (reset on redeploy).
+    # Set DATABASE_URL (e.g. a free Neon/Supabase Postgres) so accounts survive redeploys;
+    # without it users fall back to backend/data/users.json, which resets on each deploy.
     envVars:
+      - key: DATABASE_URL
+        sync: false
       - key: JWT_SECRET
         sync: false
       # Separate secret for refresh tokens (must be set, or signup/login 500s).
