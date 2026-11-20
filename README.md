@@ -122,3 +122,9 @@ and the backend is a small containerized Node service.
 - Predictions are **forecasts** built from data through the 2024-25 season — no future
   results leak into training.
 - All credentials are environment-based; the repo contains no secrets.
+
+## License
+
+The source code is released under the [MIT License](./LICENSE). The football datasets in
+`ml/` come from FBref, Transfermarkt, Understat, football-data.co.uk and the Fantasy Premier
+League API; they remain subject to their sources' terms and are not covered by the MIT license.
